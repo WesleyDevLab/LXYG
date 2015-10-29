@@ -54,7 +54,7 @@ public class QiniuImgUtil {
 	public static String upload(byte[] data){
 		String key="";
 		  try {
-		        Response res = uploadManager.put(data, loadUUID.getUUID(), loadUpToken());
+		        Response res = uploadManager.put(data, loadUUID.getUUID(), loadUpToken(),null,"image/jpeg",false);
 		         JSONObject obj= JSONObject.fromObject(res.bodyString());
 		         key=obj.getString("key");
 		        if(res.isOK()){

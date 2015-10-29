@@ -717,4 +717,30 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功",district);
     }
 
+    /***
+     * C端 地区列表
+     * */
+    @ActionKey("/app/user/v2/cityList")
+    public void cityList(){
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        int code=json.getInt("code");
+        int pg=1;
+        if(json.containsKey("pg")){
+            pg=json.getInt("pg");
+        }
+        List<Map<String,Object>> lists=new ArrayList<>();
+        List<Record> cityList=Db.find("select city_id, city_name FROM kk_district d WHERE d.province_id = ? GROUP BY city_id ORDER BY  distance (?,?,d.lng,d.lat) ASC ",new Object[]{code,lng,lat});
+        for(Record record:cityList){
+            Map<String,Object> map=new HashMap<>();
+            int cityId=record.getInt("city_id");
+            map.put("cityId",cityId);
+            map.put("cityName",record.getStr("city_name"));
+            List<Record> records=Db.find("select id as districeId,name from kk_district d where d.city_id=?",cityId);
+            map.put("areas",records);
+            lists.add(map);
+        }
+        renderSuccess("获取成功",lists);
+    }
 }

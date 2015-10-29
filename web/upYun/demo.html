@@ -6,8 +6,7 @@
 	<script src="../public/js/jquery-1.10.2.min.js"></script>
 	<script src="lib/spark-md5.js"></script>
 	<script src="lib/async.js"></script>
-	<script src="lib/upload.js"></script>
-	<script src="lib/uuid.js"></script>
+	<script src="lib/upyun-mu.js"></script>
 	<style>
 		input,
 		a#submit {
@@ -47,7 +46,7 @@
 <body>
 
 <form action="">
-	<input type="file" name="file" id="file" multiple="multiple">
+	<input type="file" name="file" id="file" multiple="multiple" onchange="check();">
 	<a id="submit">UPLOAD</a>
 </form>
 
@@ -56,32 +55,51 @@
 </div>
 
 
-
-
 <script>
+	function check(){
+		var files=document.getElementById('file').files;
+		for(var i=0;i<files.length;i++){
+			var file=files[i];
+			var fileReader=new FileReader();
+			fileReader.onloadend=function(e){
+				$("#log").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+			}
+			fileReader.readAsDataURL(file);
+		}
+
+
+
+	}
+
 	document.getElementById('submit').onclick = function() {
-//			var ext = '.' + document.getElementById('file').files[0].name.split('.').pop();
-//			var config = {
-//				bucket:'lxyg8',
-//				expiration: parseInt((new Date().getTime() + 3600000) / 1000),
-//				form_api_secret: 'Jcrn4om4KRTt6FTvMb04r72P4XU='
-//			};
-			//var instance =new Sand(config);
-			upload();
+		var ext = '.' + document.getElementById('file').files[0].name.split('.').pop();
+		var config = {
+			bucket: 'lxyg8',
+			expiration: parseInt((new Date().getTime() + 3600000) / 1000),
+			// 尽量不要使用直接传表单 API 的方式，以防泄露造成安全隐患
+			form_api_secret: 'Jcrn4om4KRTt6FTvMb04r72P4XU='
+		};
+		var instance = new Sand(config);
+		var options = {
+			'notify_url': 'http://upyun.com'
+		};
+		instance.setOptions(options);
+		instance.upload('/platform/' + parseInt((new Date().getTime() + 3600000) / 1000) + ext);
 	};
 
+
+	// demo stuff
 	function addLog(data) {
 		var elem = document.createElement("ul");
 		for (var key in data) {
 			if(key === 'path') {
-				elem.innerHTML += '<li><strong>' + key + ':</strong>' + '<img   src="http://lxyg8.b0.upaiyun.com' + data[key] + '">' + data[key] + '</img>' + '</li>';
+				elem.innerHTML += '<li><strong>' + key + ':</strong>' + '<a target="_blank"  href="http://lxyg8.b0.upaiyun.com' + data[key] + '">' + data[key] + '</a>' + '</li>';
 			} else {
 				elem.innerHTML += '<li><strong>' + key + ':</strong>' + data[key] + '</li>';
 			}
 		}
 		log.appendChild(elem);
 	}
-
 	document.addEventListener('uploaded', function(e) {
 		var log = document.getElementById("log");
 		addLog(e.detail);

@@ -108,7 +108,7 @@ public class ResController extends Controller {
 			try {
 				byte[] buffer = new BASE64Decoder().decodeBuffer(str);
 				key= QiniuImgUtil.upload(buffer);
-			} catch (IOException e1) {
+			} catch (Exception e1) {
 				log.error("error", e1);
 			}			
 		}

@@ -1675,7 +1675,6 @@ public class AppController extends Controller {
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
 					"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
 		}
-
 		renderSuccess("load成功", gs);
 	}
 	/**
