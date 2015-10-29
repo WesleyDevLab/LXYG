@@ -1,0 +1,720 @@
+package com.lxyg.app.customer.platform.controller;
+
+import com.jfinal.aop.Before;
+import com.jfinal.core.ActionKey;
+import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
+import com.lxyg.app.customer.platform.model.*;
+import com.lxyg.app.customer.platform.service.GoodsService;
+import com.lxyg.app.customer.platform.service.OrderService;
+import com.lxyg.app.customer.platform.util.*;
+import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+
+import java.util.*;
+
+/**
+ * Created by Administrator on 2015/9/11.
+ */
+@Before(loginInterceptor.class)
+public class AppControllerV2 extends Controller {
+    private static final Logger log= Logger.getLogger(AppControllerV2.class);
+    public GoodsService goodsService=new GoodsService();
+    public OrderService orderService=new OrderService();
+    public void renderSuccess(String value,Object o){
+        setAttr("code", 10002);
+        setAttr("msg", value);
+        if(o==null){
+            setAttr("data", new JSONObject());
+        }else{
+            setAttr("data", o);
+        }
+        renderJson();
+        return;
+    }
+    public void renderFaile(String value){
+        setAttr("code", 10001);
+        setAttr("msg", value);
+        renderJson();
+        return;
+    }
+
+    public int checkUUID(){
+        String info=getPara("info");
+        JSONObject json= JSONObject.fromObject(info);
+        String uid=json.getString("uid");
+        Shop s=new Shop().findFirst("select * from kk_shop where uuid=?", new Object[]{uid});
+        if(s!=null){
+            return s.getInt("id");
+        }else{
+            return 0;
+        }
+    }
+
+    /***
+     * B端 fb产品添加
+     * **/
+    @ActionKey("app/v2/addFBProduct")
+    public void addFBProduct(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String uid=obj.getString("uid");
+        int price=obj.getInt("price");
+        int marketPrice=obj.getInt("marketPrice");
+        int cash_pay=obj.getInt("cash_pay");
+        FBGoods r=new FBGoods();
+        r.set("name",obj.getString("name"));
+        if(obj.containsKey("title")){
+            r.set("title",obj.getString("title"));
+        }
+        r.set("price",price);
+        if(obj.containsKey("marketPrice")){
+            r.set("market_price",marketPrice);
+        }
+        r.set("cash_pay",cash_pay);
+        r.set("cover_img", RegularUtil.retIMGURL(obj.getString("cover_img")));
+        if(obj.containsKey("p_unit_name")){
+            r.set("p_unit_name",obj.getString("p_unit_name"));
+        }
+        if(obj.containsKey("descripation")){
+            r.set("descripation",obj.getString("descripation"));
+        }
+        r.set("s_uid",uid);
+        r.set("hide",0);
+        if(obj.containsKey("index_show")){
+            r.set("index_show",obj.getInt("index_show"));
+        }else{
+            r.set("index_show",1);
+        }
+        r.set("create_time",new Date());
+        r.set("order_no",1);
+        String item=obj.getString("imgs");
+        r.save();
+        if(item!=null){
+            goodsService.saveFB(r,item);
+        }
+        r.put("product_id",r.getInt("id"));
+        renderSuccess("添加成功", r);
+    }
+
+    /***
+     *  B端 fb产品修改
+     * **/
+    @ActionKey("app/v2/updateFBProduct")
+    public void updateFBProduct(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int productId=obj.getInt("productId");
+        FBGoods r= FBGoods.dao.findbyId(productId);
+
+        int price=obj.getInt("price");
+        int marketPrice=obj.getInt("marketPrice");
+        int cash_pay=obj.getInt("cash_pay");
+        r.set("name",obj.getString("name"));
+        if(obj.containsKey("title")){
+            r.set("title",obj.getString("title"));
+        }
+        r.set("price",price);
+        if(obj.containsKey("marketPrice")){
+            r.set("market_price",marketPrice);
+        }
+        r.set("cash_pay",cash_pay);
+
+        if(obj.containsKey("p_unit_name")){
+            r.set("p_unit_name",obj.getString("p_unit_name"));
+        }
+        if(obj.containsKey("descripation")){
+            r.set("descripation",obj.getString("descripation"));
+        }
+        r.set("hide", 0);
+        if(obj.containsKey("index_show")){
+            r.set("index_show", obj.getInt("index_show"));
+        }else{
+            r.set("index_show", 1);
+        }
+
+        r.set("order_no", 1);
+        r.put("id", productId);
+        if(obj.containsKey("imgs")){
+            net.sf.json.JSONArray array= net.sf.json.JSONArray.fromObject(obj.getString("imgs"));
+            Db.update("DELETE FROM kk_product_fb_img where product_id=?", productId);
+            r.set("cover_img", RegularUtil.retIMGURL(array.get(0).toString()));
+            for(int i=1;i<array.size();i++){
+                Record r1=new Record();
+                r1.set("product_id",productId);
+                r1.set("img_url", RegularUtil.retIMGURL(array.get(i).toString()));
+                Db.save("kk_product_fb_img", r1);
+            }
+        }
+        r.update();
+        renderSuccess("修改成功",r);
+    }
+
+    @ActionKey("app/v2/updateFBProductImg")
+    public void updateFBProductImg(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int productId=obj.getInt("productId");
+        net.sf.json.JSONArray array=obj.getJSONArray("imgs");
+        Db.update("delete from kk_product_fb_img pfi where pfi.product_id=?", productId);
+        for(int i=0;i<array.size();i++){
+            Record r=new Record();
+            r.set("product_id",productId);
+            r.set("img_url",array.get(i).toString());
+            Db.save("kk_product_fb_img", r);
+        }
+        renderSuccess("修改成功",null);
+    }
+
+    /***
+     * B端 fb产品删除
+     * **/
+    @ActionKey("app/v2/delFBProduct")
+    public void deleteFBProduct(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int productId=obj.getInt("productId");
+        Record r= Db.findById("kk_product_fb", productId);
+        r.set("hide",1);
+        Db.update("kk_product_fb", r);
+        renderSuccess("删除成功", r);
+    }
+    /***
+     * B端 fb产品信息
+     * **/
+    @ActionKey("app/v2/FBProduct")
+    public void FBProduct(){
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int productId=obj.getInt("productId");
+        FBGoods fb= FBGoods.dao.findbyId(productId);
+        if(fb==null){
+            renderSuccess("产品异常或丢失",null);
+            return;
+        }
+        renderSuccess("获取成功",fb);
+    }
+    /***
+     * B端 fb店面产品列表
+     * **/
+    @ActionKey("app/v2/FBProducts")
+    public void FBProducts(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String uid=obj.getString("uid");
+        List<FBGoods> fbGoodses= FBGoods.dao.findBySID(uid);
+        renderSuccess("获取成功",fbGoodses);
+    }
+
+    /***
+     * B端 fb店面产品排序
+     * **/
+    @ActionKey("app/v2/FBProductSort")
+    public void FBProductSort(){
+        int sid = checkUUID();
+        if (sid == 0) {
+            renderFaile("uuid 错误");
+            return;
+        }
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String str=obj.getString("pids");
+        String array[] =str.split(",");
+        for(int i=0;i<array.length;i++){
+            FBGoods f= FBGoods.dao.findById(array[i]);
+            f.set("order_no",i);
+            f.update();
+        }
+        renderSuccess("修改成功",null);
+    }
+
+    /***
+     * B端 店铺类型
+     * **/
+    @ActionKey("app/v2/shopTypes")
+    public void shopTypes(){
+        List<Record> records= Db.find("select id as type_id,name,title,imgs as img from kk_shop_type");
+        renderSuccess("获取成功",records);
+    }
+
+
+    @ActionKey("app/v2/updateShopInfo")
+    public void updateShopInfo(){
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        Shop shop=Shop.dao.findBysuid(obj.getString("uid"));
+        Map<String,Object> m=new HashMap<String,Object>();
+        if(obj.containsKey("name")){
+            m.put("name", obj.getString("name"));
+        }
+        if(obj.containsKey("title")){
+            m.put("title",obj.getString("title"));
+        }
+
+        if(obj.containsKey("title2")){
+            m.put("title2",obj.getString("title2"));
+        }
+
+        if(obj.containsKey("title3")){
+            m.put("title3",obj.getString("title3"));
+        }
+
+        if(obj.containsKey("shop_type")){
+            m.put("shop_type",obj.getInt("shop_type"));
+            Record record= Db.findById("kk_shop_type", obj.getInt("shop_type"));
+            if(record!=null){
+                m.put("is_norm",record.getInt("is_norm"));
+            }
+        }
+
+        if(obj.containsKey("password")){
+            m.put("password", obj.getString("password"));
+        }
+        if(obj.containsKey("concact")){
+            m.put("link_man", obj.getString("concact"));
+        }
+        if(obj.containsKey("phone")){
+            m.put("phone", obj.getString("phone"));
+        }
+        if(obj.containsKey("fulladdress")){
+            m.put("full_address", obj.getString("fulladdress"));
+        }
+        if(obj.containsKey("lat")){
+            m.put("lat", obj.getDouble("lat"));
+        }
+        if(obj.containsKey("lng")){
+            m.put("lng", obj.getDouble("lng"));
+        }
+
+        if(obj.containsKey("street")){
+            m.put("street", obj.getString("street"));
+        }
+        if(obj.containsKey("provinceName")){
+            Record r= Db.findFirst("select code from kk_area a where name like ?", new Object[]{"%" + obj.getString("provinceName") + "%"});
+            m.put("province_id", r.get("code"));
+            m.put("province_name", obj.getString("provinceName"));
+        }
+        if(obj.containsKey("cityName")){
+            Record r= Db.findFirst("select code from kk_area a where name like ?", new Object[]{"%" + obj.getString("cityName") + "%"});
+            m.put("city_id", r.get("code"));
+            m.put("city_name", obj.getString("cityName"));
+        }
+        if(obj.containsKey("areaName")){
+            Record r= Db.findFirst("select code from kk_area a where name like ?", new Object[]{"%" + obj.getString("areaName") + "%"});
+            m.put("area_id", r.get("code"));
+            m.put("area_name",obj.getString("areaName"));
+        }
+        if(obj.containsKey("templeId")){
+            m.put("temple_id", obj.getInt("templeId"));
+        }
+        if(obj.containsKey("cover_img")){
+            m.put("cover_img", RegularUtil.retIMGURL(obj.getString("cover_img")));
+        }
+        if(obj.containsKey("mId")){
+            m.put("m_id", obj.getInt("mId"));
+        }
+        shop.setAttrs(m);
+        shop.update();
+        renderSuccess("修改成功",shop);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /***
+     * C端 首页列表
+     * **/
+    @ActionKey("app/user/v2/homePage")
+    public void homePage(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        String lat=json.getString("lat");
+        String lng=json.getString("lng");
+        log.error(lat+"_"+lng);
+        String uid="";
+        Shop s=new Shop();
+        User u=new User();
+
+        if(!json.containsKey("uid")){
+            if(!lat.equals("")&&!lng.equals("")){
+                s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.shop_type=st.id ORDER BY dis asc", new Object[]{lng,lat});
+            }else{
+                renderFaile("定位错误");
+                return;
+            }
+        }else{
+            uid=json.getString("uid");
+            u=new User().getUser(uid);
+            if(u==null || u.equals("")){
+                renderFaile("登录错误！");
+                return;
+            }
+            s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.shop_type=st.id where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
+        }
+
+        if(s==null){
+            renderFaile("异常！");
+            return;
+        }
+        List<Map<String,Object>> maps=new ArrayList<Map<String, Object>>();
+        List<Map<String,Object>> types=new ArrayList<Map<String,Object>>();
+        String [] sorts=s.getStr("sort").split(",");
+        for(int i=0;i<sorts.length;i++){
+            Map<String,Object> obj=new HashMap<String,Object>();
+            Record record= Db.findFirst("select * from kk_product_type pt where pt.id in (" + sorts[i] + ")");
+            obj.put("typeId",record.getInt("id"));
+            obj.put("name",record.getStr("name"));
+            obj.put("img",record.getStr("img"));
+            obj.put("is_norm",record.getInt("is_norm"));
+            types.add(obj);
+        }
+
+        /**标准店 产品推荐**/
+        if(s.getInt("is_norm")==1){
+            List<Goods> recommGoods= Goods.dao.find("SELECT distance ( ?,?, s.lng, s.lat ) AS dis, p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND distance ( ?,?, s.lng, s.lat ) < 5000 GROUP BY p.id ORDER BY is_recomm DESC, dis ASC LIMIT 6",lng,lat,lng,lat);
+            for(int i=0;i<sorts.length;i++){
+                Map<String,Object> m=new HashMap<String, Object>();
+                Record r= Db.findFirst("select id as typeId,name,img from kk_product_type where id=?", sorts[i]);
+                m.put("type", r);
+                List<Goods> g=new Goods().find("select p.id as productId,p.name,p.title,p.price," +
+                        "p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay," +
+                        "p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  from kk_product p right join kk_shop_product ps on p.id=ps.product_id LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and distance(?,?,s.lng,s.lat) <5000   GROUP BY p.id order by cash_pay desc, is_recomm desc LIMIT 0,6", new Object[]{sorts[i],lng,lat});
+                if(g.size()!=0){
+                    m.put("products", g);
+                    maps.add(m);
+                }
+            }
+            s.put("recommGoods", recommGoods);
+            Record record= Db.findFirst("select count(s.id) as count from kk_shop s WHERE distance(?,?,s.lng,s.lat )<5000;", lng, lat);
+            s.put("shopCount",record.getLong("count"));
+            s.put("types",maps);
+        }
+
+        /**非标准店 产品推荐**/
+        if(s.getInt("is_norm")==2){
+            Record record= Db.findFirst("select count(*) as count from kk_product_fb where s_uid=?", s.getStr("uuid"));
+            Long count=record.getLong("count");
+            String sql="select id as fb_product_id,name,title,price,market_price,cash_pay,cover_img,p_unit_name," +
+                    "descripation,hide,index_show,payment,create_time,modify_time,order_no,s_uid from kk_product_fb where 1=1 and s_uid=? and hide=0 order by order_no asc limit 0,"+(count/3)*3 ;
+            List<FBGoods> fbGoodses= FBGoods.dao.find(sql, s.getStr("uuid"));
+            s.put("recommGoods", fbGoodses);
+            List<Record> records= FBGoods.dao.getactivitys(s.getInt("shopId"),3);
+            if(records.size()==0){
+                s.put("recommActivitys",records);
+            }
+        }
+
+        if(s.getActivity()!=null){
+            s.put("shopActivits", s.getActivity());
+        }else{
+            s.put("shopActivits", null);
+        }
+        s.put("category", types);
+        renderSuccess("load成功", s);
+    }
+
+    /***
+     * 乐享云购 订单下载
+     * @author 秦帅
+     *
+     * */
+    @ActionKey("app/user/v2/addOrderInfo")
+    @Before(Tx.class)
+    public void addOrderInfo(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        boolean b=new User().isLogin(json.getString("uid"));
+        if(!b){
+            renderFaile("请登录！");
+            return;
+        }
+        Map<String,Object> map=new HashMap<String, Object>();
+        String orderNo= M.getOrderNo();
+        String orderId=M.getOrderId();
+        String sendTime="";
+        int sendId=0;
+        int orderStatus= IConstant.OrderStatus.order_status_chushi;
+        int price=json.getInt("price");
+        String uid=json.getString("uid");
+        User u=new User().getUser(uid);
+        String shopId=u.getStr("shop_id");
+        if(shopId==null || shopId.equals("0")){
+            renderFaile("下单异常！");
+            return;
+        }
+        int payType=json.getInt("payType");
+
+        int sendType=json.getInt("sendType");
+        int addressId=json.getInt("addressId");
+
+        if(sendType== IConstant.send_type_dingshi){
+            sendTime=json.getString("sendTime");
+            map.put("send_time", DateTools.unixTimeToDate(sendTime));
+        }
+        map.put("order_no", orderNo);
+        map.put("order_id", orderId);
+        map.put("order_status", orderStatus);
+        map.put("create_time", new Date());
+        map.put("price", price);
+        map.put("order_no", orderNo);
+        map.put("order_type", 1);
+        map.put("u_uuid", uid);
+        map.put("s_uuid", shopId);
+        map.put("address_id", addressId);
+        if(addressId!=0){
+            Record r= Db.findById("kk_user_address", addressId);
+            map.put("address", r.get("full_address"));
+        }
+        if(!shopId.equals("")){
+            Shop s=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
+            map.put("shop_name", s.get("name"));
+        }
+
+        map.put("pay_type", payType);
+        if(payType!=0){
+            Record r= Db.findById("kk_pay_type", payType);
+            map.put("pay_name", r.get("pay_type_name"));
+        }
+
+        map.put("send_type", sendType);
+        map.put("send_name", IConstant.sendType.get(sendType));
+        map.put("send_id", sendId);
+        map.put("is_rob", 1);
+        if(!json.containsKey("cashPay")){
+            renderFaile("代金券有异常");
+            return;
+        }
+        String receive_code= RegularUtil.gen();
+        map.put("receive_code", receive_code);
+        String items=json.getString("orderItems");
+        if(json.getInt("cashPay")!=0){
+            Record r= Db.findFirst("select sum(cash) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
+                    "where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
+            if(r!=null){
+                int cash=r.getBigDecimal("cash").intValue();
+                if(cash<json.getInt("cashPay")){
+                    renderFaile("cashPay异常");
+                    return;
+                }
+            }
+        }
+        int allPrice=0;
+        net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
+        if (array.size() > 0) {
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject o = array.getJSONObject(i);
+                int productId = o.getInt("productId");
+                int productNum = o.getInt("productNum");
+                int is_norm=o.getInt("is_norm");
+                if(is_norm==1){
+                    Goods g = new Goods().findById(productId);
+                    int pric=g.getBigDecimal("price").intValue();
+                    allPrice+=pric*productNum;
+                }
+                if(is_norm==2){
+                    FBGoods g = FBGoods.dao.findById(productId);
+                    int pric=g.getBigDecimal("price").intValue();
+                    allPrice+=pric*productNum;
+                }
+            }
+        }
+        allPrice=allPrice-json.getInt("cashPay");
+        if(allPrice!=price){
+            renderFaile("总金额异常");
+            return;
+        }
+//        if(json.getInt("cashPay")!=0){
+//            Record cashRe= Db.findFirst("select * from kk_user_cash where u_uuid=?", uid);
+//            if(cashRe.getBigDecimal("cash").intValue()<json.getInt("cashPay")){
+//                renderFaile("代金券金额不足");
+//                return;
+//            }
+//        }
+        map.put("cash_pay", json.getInt("cashPay"));
+        Order o=new Order();
+        boolean f=orderService.splice2Create_fbz(orderId, items, json.getInt("cashPay"));
+        if(f){
+            map.put("is_norm",1);
+            o.setAttrs(map);
+            boolean s=o.save();
+            if(!s){
+                renderFaile("异常");
+            }
+           // o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
+//            if(s){
+//                if(payType==3){
+//                    orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.manager.phone"),o.getStr("order_id"),0);
+//                    Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
+//                }
+//            }
+
+        }
+        renderSuccess("下单成功",o);
+    }
+
+    /***
+     * C端 fb产品信息
+     * **/
+    @ActionKey("app/user/v2/FBProduct")
+    public void FBProductInfo(){
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int productId=obj.getInt("productId");
+        FBGoods fb= FBGoods.dao.findbyId(productId);
+        if(fb==null){
+            renderSuccess("产品异常或丢失",null);
+            return;
+        }
+        renderSuccess("获取成功",fb);
+    }
+
+    /**
+     * @author M
+     * c端 用户购物车产品id 查询匹配  客户端价格与服务器价格是否一致
+     * */
+    @ActionKey("app/user/v2/SCProduct")
+    public void SCProduct(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        net.sf.json.JSONArray pids= net.sf.json.JSONArray.fromObject(json.get("pids"));
+        if(pids.size()==0){
+            renderFaile("有异常！");
+            return;
+        }
+        List goods=new ArrayList<Goods>();
+        for(int i=0;i<pids.size();i++){
+            JSONObject obj=pids.getJSONObject(i);
+            if(obj.getInt("is_norm")==1){
+                Goods g= Goods.dao.findById_lazy(obj.getInt("productId"));
+                goods.add(g);
+            }
+            if(obj.getInt("is_norm")==2){
+                FBGoods f= FBGoods.dao.findById_lazy(obj.getInt("productId"));
+                goods.add(f);
+            }
+        }
+        renderSuccess("获取信息成功", goods);
+    }
+
+    /**
+     * @author M
+     * c端 非标类型返回店铺
+     * */
+    @ActionKey("app/user/v2/findShopsByType")
+    public void findShopsByType(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        int typeId=json.getInt("typeId");
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        int pg=1;
+        if(json.containsKey("pg")){
+            pg=json.getInt("pg");
+        }
+        Record r= Db.findById("kk_product_type", typeId);
+        Page<Shop> shops=Shop.dao.paginate(pg, IConstant.PAGE_DATA,"select id as shopId,name,full_address,shop_type,is_norm,cover_img,uuid,title,title2,title3","from kk_shop s where shop_type=? order by distance(?,?,s.lng,s.lat) asc",new Object[]{r.getInt("shop_type"),lng,lat,});
+        renderSuccess("success",shops);
+    }
+
+    /***
+     * C端 fb店面产品列表
+     * **/
+    @ActionKey("app/user/v2/FBProducts")
+    public void userFBProducts(){
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int pg=1;
+        if(obj.containsKey("pg")){
+            pg=obj.getInt("pg");
+        }
+        String uid=obj.getString("shopId");
+        Shop s=Shop.dao.findBysuid(uid);
+        Page<FBGoods> fbGoodses=null;
+        if(s.getInt("is_norm")==2){
+             fbGoodses= FBGoods.dao.findBySID(uid,pg);
+        }
+//        if(s.getInt("is_norm")==1){
+//            Page<Goods> goods=Goods.dao.
+//        }
+        renderSuccess("获取成功",fbGoodses);
+    }
+/***
+ * C端 推荐产品列表
+ * **/
+    @ActionKey("app/user/v2/recommProducts")
+    public void recommProducts(){
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        int pg=1;
+        if(obj.containsKey("pg")){
+            pg=obj.getInt("pg");
+        }
+        String lat=obj.getString("lat");
+        String lng=obj.getString("lng");
+        Page<Goods> recommGoods= Goods.dao.paginate(pg, IConstant.PAGE_DATA, "SELECT p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time","FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 GROUP BY p.id ORDER BY is_recomm DESC, distance ( ?, ?, s.lng, s.lat ) ASC", lng, lat);
+        renderSuccess("获取成功",recommGoods);
+    }
+
+    /***
+     * C端 小区列表
+     * **/
+    @ActionKey("/app/user/v2/districtList")
+    public void districtList(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        int pg=1;
+        if(json.containsKey("pg")){
+            pg=json.getInt("pg");
+        }
+        Page<Record> district= Db.paginate(pg, IConstant.PAGE_DATA,"select id as districeId,name,province_name,city_name,area_name ","from kk_district d where distance(?,?,d.lat,d.lng) <=500",lat,lng);
+        renderSuccess("获取成功",district);
+    }
+
+}

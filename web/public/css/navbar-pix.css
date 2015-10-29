@@ -1,0 +1,135 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+body {
+/*整个网页的背景颜色*/
+}
+/*.tit为每个菜单的标题样式  .list 为菜单项目的样式
+*/
+#menu{width:225px; 	background:#cde1e9; position:absolute; bottom:30px; top:91px; padding-top:20px; z-index:99999999;overflow:hidden;}
+.tit , .list{ width:183px; margin-right: auto; margin-left: auto; /*菜单的宽度*/
+} 
+
+/*======================================标题部分===============================*/
+.tit {/*菜单标题的样式*/
+	height: 32px;/*底部边框没有*/
+	background:#f1f6f8;/*背景样式依次为：颜色，图片路径，横向重复*/
+	color: #3F3D3D;/*前景色*/
+	font:bold 14px/32px "lucida Grande", verdana, lucida, Arial, helvetica, "宋体", sans-serif;/*文字样式依次为：粗体 大小/行高 字族*/
+	text-indent: 35px;/*文字缩进*/
+	margin-top:5px;/*外填充*/
+	
+	border: 1px solid #C1CDE1;
+
+}
+.tit a ,.tit a:link , .tit a:hover{/*菜单标题中的链接的样式，共同的部分*/
+	color: #3F3D3D;
+	display:block;
+	text-decoration:none;
+	width:183px;
+	background-repeat: no-repeat;
+	background-position: right top;
+	cursor: pointer;
+}
+.tit a:hover{
+	color: #7E7C7C;/*鼠标经过时的颜色*/
+}
+/*====================
+	菜单标题中的箭头图片
+======================*/
+.on{
+	background-image: url(../images/close.png);/*向上的箭头-暗色*/
+}
+.on:hover{
+	background-image: url(../images/close.png);/*向上的箭头-亮色*/
+}
+.off{
+	background-image: url(../images/open.png);/*向下的箭头-暗色*/
+}
+.off:hover{
+	background-image: url(../images/open.png);/*向下的箭头-亮色*/
+}
+/*标题图标样式*/
+.titpic {
+	position: absolute;
+	height: 32px;
+	width: 32px;
+	left: 0px;
+	bottom: 0px;
+}
+
+
+/*每一个标题图标，可变的部分*/
+
+/*==========================================菜单体部分======================================*/
+/*====================
+	菜单列表的样式
+======================*/
+.list{
+	font-size: 12px;
+	color: #002280;
+	background: #fff no-repeat right bottom;
+	width: 183px;/*宽度*/
+	border: 1px solid #C1C1C1;
+	border-top:0px;
+	text-align:left;
+	padding:10px 10px;
+	voice-family:"\"}\"";
+	voice-family:inherit;
+	width:163px;
+	overflow:hidden;
+}
+.list {
+width:163px;
+}
+.list ul{
+list-style-type:none;
+margin:0;
+padding:0;
+padding-left:18px;
+}
+.list li{
+margin:0;
+padding:0;
+padding-left:5px;
+line-height:24px;
+}
+/*============
+菜单链接的样式
+==============*/
+.list a{
+color:#3F3D3D;
+text-decoration:none;
+}
+.list a:link{
+color:#3F3D3D;
+}
+.list a:hover{
+color:#3F3D3D;
+text-decoration:underline;
+}
+.list a:active{
+color:#3F3D3D;
+}
+
+/*每一个菜单体的背景图片可变部分*/
+#menu1_child{
+	background-image:url(images/bgmv.png);
+}
+/*#menu2_child{
+	background-image:url(images/bgring.png);
+}
+*/#menu3_child{
+	background-image:url(images/bgring.png);
+
+}
+#menu4_child{
+	background-image:url(images/bgpic.png);
+
+}
+#menu5_child{
+	background-image:url(images/bgmv.png);
+}
+
+*/
+

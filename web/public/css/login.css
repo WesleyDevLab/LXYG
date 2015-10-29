@@ -1,0 +1,40 @@
+body {padding:0px; margin:0px auto;  font-family:"宋体", Arial, Helvetica, sans-serif,;  font-size:12px}
+body,html{ height:100%;width:100%; overflow-y:auto}
+body,h1,h2,h3,h4,h5,h6,hr,p,blockquote,dl,dt,dd,ul,ol,li,pre,form,fieldset,legend,button,textarea,th,td,div{margin:0px; padding: 0px; border:0px;}
+a{color: #000;}
+a:hover{color:#006; text-decoration:underline}
+
+h1,h2,h3,h4,h5,h6{font-size:100%;}
+img{border:0;}
+
+.fl{ float:left; display:inline;}
+.fr{ float:right; display:inline;}
+.fl_l{ float:left;}
+.fl_r{ float:right;}
+.clr{ float:none; overflow:hidden;}
+
+.top{ width:100%; height:90px; background:#373737; text-align:center}
+.mar{ margin:0px auto}
+.bg{ background:url(../images/kakabg.jpg); width:100%; height:713px;}
+
+.main_left{background:#cde1e9; width:225px;  overflow:hidden; position:absolute; top:96px; left:0px; bottom:32px; }
+.main_menu{ width:226px; height:50px; line-height:60px; font-size:15px; text-align:center;  color:#2f2f2f; border-bottom:1px solid #006699}
+.main_right{ position:absolute; top:96px; left:225px; right:0px; bottom:32px; height:auto;overflow:hidden; }
+.main_right iframe{ width:100%; min-height:100%; padding:0px 0px;}
+
+.con{ width:1000px; margin:0px auto; height:auto; padding-top:200px; }
+.ad{ width:487px;}
+.login{ width:430px; background:url(../images/tmbg.png) no-repeat;  height:337px; padding-top:100px; }
+.copyright{ height:34px; line-height:34px; background:#d3ebf8; border-bottom:1px solid #FFFFFF; text-align:center; color:#547f8f;}
+.user{font-size:14px;  width:315px; margin:0px auto; padding-bottom:5px;}
+.user.red_bt{ padding-bottom:5px;}
+	.user span{ width:80px; line-height:26px;}
+	.user input{ width:330px; padding:0px; margin:0px; border:1px solid #CCC;  height:40px; line-height:40px; border-radius:5px; -moz-border-radius:5px; }
+	.user input.login_btn{width:330px; height:40px; line-height:34px; text-align:center; font-size:14px;  padding-left:0px; background:#f98200; color:#FFF; border-radius:5px; -moz-border-radius:5px;}
+
+.input_bg_user{ background:#fff url(../images/ren.jpg) no-repeat 5px 5px; text-indent:3em}
+.input_bg_psw{ background:#fff url(../images/lock.jpg) no-repeat 5px 5px; text-indent:3em}
+	.user input.login_btn:hover{background:#e67800;}
+
+.red{ font-size:12px; color:#F00; margin:0px auto; text-align:center; height:20px;}
+.bot{ background:#373737; text-align:center; color:#fff; line-height:26px; padding:30px 0px;}

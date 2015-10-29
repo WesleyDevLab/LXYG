@@ -1,0 +1,200 @@
+/* Retina Display Hack
+=================================================================== */
+@media ( -webkit-min-device-pixel-ratio : 2) , ( min-resolution :
+	192dpi) {
+	.timeslot .task .arrow {
+		background: url(../img/timeline-left-arrow@2x.png) no-repeat;
+		background-size: 100%;
+	}
+	.timeslot.alt .task .arrow {
+		background: url(../img/timeline-right-arrow@2x.png) no-repeat;
+		background-size: 100%;
+	}
+	ul.chat li.left .message .arrow {
+		background: url(../img/chat-left@2x.png) no-repeat 0px 0px;
+		background-size: 100%;
+	}
+	ul.chat li.right .message .arrow {
+		background: url(../img/chat-right@2x.png) no-repeat 0px 0px;
+		background-size: 100%;
+	}
+}
+
+.mart_r {
+	margin-right: 10px;
+}
+
+.color2 {
+	color: blue;
+}
+
+.color2 a {
+	color: blue;
+}
+
+.inpt_sec {
+	width: 100px;
+}
+
+.font_red {
+	color: #FF0000;
+	font-weight: bold
+}
+
+.btn_sx {
+	
+}
+
+.btn_sx ul {
+	list-style-type: none;
+	float: none;
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+.btn_sx ul li {
+	list-style-type: none;
+	width: 135px;
+	height: 36px;
+	border-radius: 5px;
+	background: #1fbba6;
+	float: left;
+	display: inline;
+	text-align: center;
+	color: #FFFFFF;
+	font-weight: bold;
+	line-height: 36px;
+	margin-right: 10px;
+	font-size: 16px;
+}
+
+.btn_sx ul li.frist {
+	background: #dbb900
+}
+
+.btn_sx2 {
+	width: 80%;
+	margin: 0px auto
+}
+
+.btn_sx2 dl {
+	list-style-type: none;
+	float: none;
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+.btn_sx2 dl dd {
+	list-style-type: none;
+	width: 135px;
+	height: 36px;
+	border-radius: 5px;
+	background: #1fbba6;
+	float: left;
+	display: inline;
+	text-align: center;
+	color: #FFFFFF;
+	font-weight: bold;
+	line-height: 36px;
+	margin-right: 10px;
+	font-size: 16px;
+}
+
+.btn_sx2 dl dd.frist {
+	background: #dbb900
+}
+
+.bar_blue {
+	height: 30px;
+	background: #b9ffb7;
+	line-height: 30px;
+	text-indent: 1em;
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 20px;
+}
+
+.tabbox {
+	width: 100%;
+}
+
+.tabmenu {
+	width: 100%;
+	height: 40px;
+	color: #737373;
+}
+
+.tabmenu dl {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	border-bottom: 1px solid #dddddd;
+	height: 37px;
+	float: none;
+}
+
+.tabmenu dd {
+	text-align: center;
+	float: left;
+	display: block;
+	width: 80px;
+	height: 37px;
+	overflow: hidden;
+	background-color: #fff;
+	line-height: 37px;
+	display: inline;
+	font-size: 14px;
+	font-family: "΢���ź�";
+}
+
+.tabmenu .cli {
+	text-align: center;
+	float: left;
+	display: block;
+	width: 80px;
+	height: 37px;
+	overflow: hidden;
+	border: 1px solid #dddddd;
+	border-bottom: 0px;
+	color: #737373;
+	line-height: 36px;
+	font-weight: bold;
+	display: inline;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+#tabcontent {
+	width: px;
+	background-color: #fff;
+}
+
+#tabcontent dl {
+	margin: 0;
+	padding: 5px;
+	list-style-type: none;
+}
+
+#tabcontent .hidden {
+	display: none;
+}
+
+#tabcontent dl dd {
+	color: #bababa;
+}
+
+#tabcontent dl dd a {
+	display: block;
+	width: 230px;
+	line-height: 22px;
+	color: #b18d46;
+	text-decoration: none
+}
+
+.redco {
+	color: #FF0000
+}
+
+.wxf {
+	color: #21baa8;
+}

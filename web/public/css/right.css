@@ -1,0 +1,11 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+.r_page{
+	text-align:right;
+	float:right;
+	padding:0px;
+}
+.r_page li{display: inline;}
+.r_page a{padding:5px; color:#000000;}

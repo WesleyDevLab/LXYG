@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>HTML5桌面消息提示--铂金小猪</title>
+	<script src="http://my.oschina.net/js/2012/jquery-1.7.1.min.js"></script>
+	<script>
+		function DN() {}//装逼用，大家可以不用这种！
+		DN.prototype.isDN = function() {
+			if(window.webkitNotifications){return true}else{return false};
+		}
+		DN.prototype.Notify = function(icon, title, content) {
+			if (window.webkitNotifications.checkPermission() == 0) {//检测有木同意本域使用提醒
+				if(content==""){alert("亲，表调戏我嘛··");return;};
+				var tip = window.webkitNotifications.createNotification(icon="http://my.oschina.net/img/favicon.ico", title, content);
+				tip.show();
+				return true;
+			}
+			window.webkitNotifications.requestPermission();//提示是否允许桌面提醒
+			return false;
+		}
+		$(function() {
+			var tip = new DN();
+			if (!tip.isDN()) {
+				alert("小样儿，你这浏览器还想玩提醒？");
+				return;
+			}
+			$("#tip").click(function() {
+				var content=$('#msgs').val();
+				tip.Notify("", "OSC铂金小猪",content);
+			});
+		});
+	</script>
+	<style type="text/css">
+		*{ outline:none;}
+		#msgs{ border:1px solid #aaa; padding:5px; width:300px; height:200px; box-shadow:1px 0px 10px #CCC; border-radius:5px;}
+		#tip{ cursor:pointer; border:1px solid #aaa; width:100px; height:30px; box-shadow:1px 0px 10px #CCC; border-radius:5px;}
+	</style>
+</head>
+
+<body>
+<header>
+	<h1>HTML5桌面消息提示</h1>
+</header>
+<section>
+	<textarea id="msgs"></textarea><br>
+	<input type="button" value="显示一下" id="tip">
+</section>
+</body>
+</html>

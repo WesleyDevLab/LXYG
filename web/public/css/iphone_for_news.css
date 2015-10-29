@@ -1,0 +1,8 @@
+
+* { padding: 0; margin: 0; }
+#iphone { width:340px; height: 800px; background:url(../images/iphone_new.png) no-repeat; position:relative;  top: 10px; left: 10px; }
+#wrap { width: 318px; height: 490px; position: absolute; top: 145px; left: 36px; overflow:hidden;background-color:#ffffff; padding:10px;overflow: auto}
+.newstitle{	color:#292929;font-size:20px;font-weight:bold;text-align: center;}
+.subtitle{color:#8d8d8d;	font-size:14px;}
+/* .newssource{margin-top: 15px;} */
+.newscontent{color:#656565;	font-size:18px;	LINE-HEIGHT: 20pt;}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>乐享云购</title>
+    <link rel="stylesheet" href="jquery-mobile-flat-ui-theme-master/generated/jquery.mobile.flatui.css">
+    <link rel='icon' href='img/zzz.gif' type=‘image/x-ico’ />
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="jquery.mobile-1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <style>
+        *{margin: 0px;padding: 0px}
+        .ui-btn{
+            background-color:#fff;
+        }
+    </style>
+
+</head>
+<body>
+<div id="star" data-role="page" data-quicklinks="true">
+    <div id="starContent" data-role="content" style="padding:0px;background-color: #eee" >
+        <div id="wrapper">
+            <div id="adstar" style="">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var lat="";
+    var lng="";
+    $(document).ready(function(){
+        var position_option={
+            enableHighAccuracy: true,
+            maximumAge: 30000,
+            timeout: 20000
+        };
+        navigator.geolocation.getCurrentPosition(getPositionSuccess,getPositionError,position_option);
+        function getPositionSuccess(position) {
+            var _lat = position.coords.latitude;
+            var _lng = position.coords.longitude;
+            load(_lng,_lat);
+        }
+        function getPositionError(error) {
+            switch (error.code) {
+                case error.TIMEOUT:
+                        load("113.778666","34.771782");
+                    break;
+                case error.PERMISSION_DENIED:
+                    alert("您拒绝了使用位置共享服务，查询已取消");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    load("113.778666","34.771782");
+                    break;
+            }
+        }
+        function load(_lng,_lat){
+            $.post("http://192.168.0.110:8080/KAKAPlatform/order/loadOrderLis",{"pg":1},function(result){
+                if(result.code==10002){
+                    alert(result);
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

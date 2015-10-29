@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Demo</title>
+	<script src="../public/js/jquery-1.10.2.min.js"></script>
+	<script src="lib/spark-md5.js"></script>
+	<script src="lib/async.js"></script>
+	<script src="lib/upload.js"></script>
+	<script src="lib/uuid.js"></script>
+	<style>
+		input,
+		a#submit {
+			display: block;
+			margin: 10px;
+			height: 40px;
+		}
+		#submit {
+			width: 100px;
+			background: #02a3c6;
+			border: none;
+			color: #fff;
+			line-height: 40px;
+			text-align: center;
+			cursor: pointer;
+		}
+		#submit:hover {
+			background: #09f;
+		}
+		#log {
+			border: 2px solid #f8f8f8;
+		}
+		#log ul {
+			list-style: none;
+			font: 14px;
+			line-height: 1.5;
+			color: #666;
+		}
+		#log ul li strong {
+			display: inline-block;
+			min-width: 100px;
+			color: #39b3d7;
+		}
+	</style>
+
+</head>
+<body>
+
+<form action="">
+	<input type="file" name="file" id="file" multiple="multiple">
+	<a id="submit">UPLOAD</a>
+</form>
+
+<div id="log">
+
+</div>
+
+
+
+
+<script>
+	document.getElementById('submit').onclick = function() {
+//			var ext = '.' + document.getElementById('file').files[0].name.split('.').pop();
+//			var config = {
+//				bucket:'lxyg8',
+//				expiration: parseInt((new Date().getTime() + 3600000) / 1000),
+//				form_api_secret: 'Jcrn4om4KRTt6FTvMb04r72P4XU='
+//			};
+			//var instance =new Sand(config);
+			upload();
+	};
+
+	function addLog(data) {
+		var elem = document.createElement("ul");
+		for (var key in data) {
+			if(key === 'path') {
+				elem.innerHTML += '<li><strong>' + key + ':</strong>' + '<img   src="http://lxyg8.b0.upaiyun.com' + data[key] + '">' + data[key] + '</img>' + '</li>';
+			} else {
+				elem.innerHTML += '<li><strong>' + key + ':</strong>' + data[key] + '</li>';
+			}
+		}
+		log.appendChild(elem);
+	}
+
+	document.addEventListener('uploaded', function(e) {
+		var log = document.getElementById("log");
+		addLog(e.detail);
+	});
+</script>
+</body>
+</html>
