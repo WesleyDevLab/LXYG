@@ -1663,18 +1663,11 @@ public class AppController extends Controller {
 	 * */
 	@ActionKey("app/user/products")
 	public void producListtByType(){
-		log.info("producListtByType");
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		int typeId=json.getInt("typeId");
 		int page=json.getInt("pg");
-		Page<Goods> gs=null;
-		if(json.containsKey("lat")&&json.containsKey("lng")){
-			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id left join kk_shop s on ps.shop_id=s.id " +
-					"where p.p_type_id=? and distance(?,?,s.lng,s.lat) <5000 group by p.id order by p.cash_pay desc,distance(?,?,s.lng,s.lat) asc",new Object[]{typeId,json.getString("lng"), json.getString("lat"),json.getString("lng"), json.getString("lat")});
-		}else{
-			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
-		}
+		Page<Goods> gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+				"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
 		renderSuccess("load成功", gs);
 	}
 	/**

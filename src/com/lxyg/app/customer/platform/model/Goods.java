@@ -35,6 +35,15 @@ public class Goods extends Model<Goods> {
 		Goods gs=new Goods().findFirst("select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay from kk_product p where p.id=? ",new Object[]{productId});
 	    return gs;
 	}
+
+	public Page<Goods> findByName(String s_uid,String p_name,int pg){
+		Page<Goods> goods=dao.paginate(pg,IConstant.PAGE_DATA,"SELECT p.id AS productId, p. NAME, p.title, price, p_type_id, p_brand_id, p_type_name, p_brand_name, p.cover_img, p_unit_id, p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price",
+				"FROM kk_shop_product ps LEFT JOIN kk_product p ON ps.product_id = p.id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE s.uuid = ? AND p. NAME LIKE ?",new Object[]{s_uid,"%"+p_name+"%"});
+		for(Goods g:goods.getList()){
+			g.put("productImgs",g.getProductImgs());
+		}
+		return goods;
+	}
 	/**
 	 * 获取多张图片
 	 */

@@ -54,7 +54,9 @@ public class Config extends JFinalConfig {
 		arp.addMapping("kk_order", Order.class);
 		arp.addMapping("kk_order_cache", OrderCache.class);
 		arp.addMapping("kk_product_fb", FBGoods.class);
+		arp.addMapping("kk_district",District.class);
 		arp.setShowSql(false);
+		arp.setShowSql(true);
 		me.add(arp);
 		
 		// 配置极光推送插件
