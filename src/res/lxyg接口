@@ -1,0 +1,28 @@
+http://192.168.1.134/LXYG/app/user/v2/districtList?info={lat:"113.4",lng:"34.7",pg:1}  小区列表
+http://192.168.1.134/LXYG/app/user/v2/cityList?info={lat:"113.4",lng:"34.7",code:70,pg:1}  地区列表
+http://192.168.1.134/LXYG/app/user/v2/searchName?info={"s_uid":"48957caade98442b",'p_name':'d'} 查询本店产品
+
+
+
+
+
+
+
+
+
+外网地址:rds8kj837u31d9uq95f9o.mysql.rds.aliyuncs.com
+内网地址:rds8kj837u31d9uq95f9.mysql.rds.aliyuncs.com
+数据库账户：myroot
+数据库密码：yungou1030
+数据库名：myapp
+
+www.lexiangyungou.cn 
+
+阿里云--APP
+系统：Ubuntu
+人人赚：4核8G6M200G
+用  户：root
+密  码：KFmaomao8899
+密  码：249095bc
+公网IP：121.41.19.76
+管理终端连接密码：970707
