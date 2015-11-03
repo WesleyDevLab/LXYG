@@ -4,6 +4,7 @@ import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.alipay.util.AlipayNotify;
 import com.lxyg.app.customer.platform.model.Order;
 import com.lxyg.app.customer.platform.model.Shop;
 import com.lxyg.app.customer.platform.service.OrderService;
@@ -56,7 +57,8 @@ public class alipayController extends Controller {
 			}
 			log.error("------:"+params.toString());
 			String alipayNo=params.get("trade_no").toString();
-//			boolean b= AlipayNotify.verify(params);
+			boolean b= AlipayNotify.verify(params);
+			log.info(b);
 			if(true){
 				String orderId="";
 				orderId=request.getParameter("orderId");
@@ -128,46 +130,47 @@ public class alipayController extends Controller {
 			o.set("pay_time", new Date());
 			ub=o.update();
 		}
-		if(o.getBigDecimal("cash_pay").intValue()!=0){
-			log.error("--订单有代金券 修改代金券--");
-			Order.dao.updateCash(o.getStr("u_uuid"),o.getBigDecimal("cash_pay").intValue(),orderId);
-		}
+		return;
+//		if(o.getBigDecimal("cash_pay").intValue()!=0){
+//			log.error("--订单有代金券 修改代金券--");
+//			Order.dao.updateCash(o.getStr("u_uuid"),o.getBigDecimal("cash_pay").intValue(),orderId);
+//		}
 
-		if(ub){
-			log.error("--订单分单  正常状态--");
-			orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.manager.phone"), o.getStr("order_id"), 0);
-			List<Record> rs=o.getOrderItems(orderId);
-			String str="";
-			for(Record r:rs){
-				str+=r.getInt("product_id")+",";
-			}
-			str=str.substring(0, str.length()-1);
-			String shopId=o.getStr("shop_id");
-			String u_uuid=o.getStr("u_uuid");
-			String wechart="";
-			for(Record r:rs){
-				str+=r.getInt("product_id")+",";
-			}
-			orderDao.createLog(orderId, IConstant.orderAction.order_action_pay,IConstant.sendType.get(o.getInt("send_type")), 
-					str, null, null, IConstant.OrderStatus.order_status_pay,shopId);
-			int account=o.getBigDecimal("price").intValue();
-
-			shopDao.createAccount(u_uuid, wechart,orderId,o.getBigDecimal("price").intValue(), o.getBigDecimal("cash_pay").intValue(), o.getInt("is_rob"), 5, IConstant.accountRecord.accountRecord_type_userPay,
-					account,1,shopId, 0, 0, 0, "",payNo);
-
-			Map<String,Object> res=orderService.splice2Create_2(orderId);
-			if(Integer.parseInt(res.get("code").toString())==10001){
-				log.error("--订单分单异常--");	
-				renderText("success");
-				return;
-			}
-			log.error("--正常状态 结束--");
-			renderText("success");
-			return;
-		}else{
-			log.error("--订单状态异常--");	
-			renderText("success");
-			return;
-		}
+//		if(ub){
+//			log.error("--订单分单  正常状态--");
+//			orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.manager.phone"), o.getStr("order_id"), 0);
+//			List<Record> rs=o.getOrderItems(orderId);
+//			String str="";
+//			for(Record r:rs){
+//				str+=r.getInt("product_id")+",";
+//			}
+//			str=str.substring(0, str.length()-1);
+//			String shopId=o.getStr("shop_id");
+//			String u_uuid=o.getStr("u_uuid");
+//			String wechart="";
+//			for(Record r:rs){
+//				str+=r.getInt("product_id")+",";
+//			}
+//			orderDao.createLog(orderId, IConstant.orderAction.order_action_pay,IConstant.sendType.get(o.getInt("send_type")),
+//					str, null, null, IConstant.OrderStatus.order_status_pay,shopId);
+//			int account=o.getBigDecimal("price").intValue();
+//
+//			shopDao.createAccount(u_uuid, wechart,orderId,o.getBigDecimal("price").intValue(), o.getBigDecimal("cash_pay").intValue(), o.getInt("is_rob"), 5, IConstant.accountRecord.accountRecord_type_userPay,
+//					account,1,shopId, 0, 0, 0, "",payNo);
+//
+//			Map<String,Object> res=orderService.splice2Create_2(orderId);
+//			if(Integer.parseInt(res.get("code").toString())==10001){
+//				log.error("--订单分单异常--");
+//				renderText("success");
+//				return;
+//			}
+//			log.error("--正常状态 结束--");
+//			renderText("success");
+//			return;
+//		}else{
+//			log.error("--订单状态异常--");
+//			renderText("success");
+//			return;
+//		}
 	}
 }

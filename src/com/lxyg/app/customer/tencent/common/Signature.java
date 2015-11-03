@@ -42,9 +42,7 @@ public class Signature {
         }
         String result = sb.toString();
         result += "key=" +WXUtil.KEY;
-        Util.log("Sign Before MD5:" + result);
         result = MD5.MD5Encode(result).toUpperCase();
-        Util.log("Sign Result:" + result);
         return result;
     }
 

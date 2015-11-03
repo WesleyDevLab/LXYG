@@ -223,13 +223,11 @@ public class JPushKit {
 
 
 	public static void main(String[] args) {
-
 		String alias_android="18837145615";
-//		String alias_ios="18625838770";
 		Map<String,Object> map=new HashMap<String, Object>();
 		map.put("orderId", "2e7f037ec8fe4cd1");
 		map.put("type", IConstant.OrderStatus.order_status_kqd);
-		send_alias(masterSecretB,aB,alias_android,map,"tetetetetet","test");
+		send_alias(masterSecretC,aC,alias_android,map,"tetetetetet","test");
 	}
 
 }

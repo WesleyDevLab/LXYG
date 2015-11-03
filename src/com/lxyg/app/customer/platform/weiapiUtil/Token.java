@@ -33,26 +33,26 @@ public class Token{
 		
 	}
 
-	public static String loadTokenD(){
-		String appid="wxe3112550c99b97e6";
-		String secret="e4fc2d5793e4ae94b1d687d8abc90877";
-
-		String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+appid+"&secret="+secret;
-		String rs = "";
-		JSONObject obj=new JSONObject();
-		try {
-			rs = HttpKit.get(token_url);
-			obj = JSONObject.fromObject(rs);
-		} catch (Exception e) {
-			log.error("异常",e);
-		}
-		return obj.getString("access_token");
-
-	}
+//	public static String loadTokenD(){
+//		String appid="wxe3112550c99b97e6";
+//		String secret="e4fc2d5793e4ae94b1d687d8abc90877";
+//
+//		String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+appid+"&secret="+secret;
+//		String rs = "";
+//		JSONObject obj=new JSONObject();
+//		try {
+//			rs = HttpKit.get(token_url);
+//			obj = JSONObject.fromObject(rs);
+//		} catch (Exception e) {
+//			log.error("异常",e);
+//		}
+//		return obj.getString("access_token");
+//
+//	}
 
 
 	public static void main(String[] args) {
-		loadTokenD();
+
 	}
 
 

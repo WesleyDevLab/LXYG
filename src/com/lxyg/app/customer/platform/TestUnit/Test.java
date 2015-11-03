@@ -5,11 +5,13 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import net.sf.json.JSONArray;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.List;
+import java.net.URL;
+
+import static com.lxyg.app.customer.platform.TestUnit.Test.download;
 
 /**
  * Created by ÇØË§ on 2015/10/23.
@@ -76,7 +78,6 @@ public class Test extends TestBefore {
         }
 
     }
-    @org.junit.Test
     public void comp(){
         int i=3;
         int j=4;
@@ -85,5 +86,47 @@ public class Test extends TestBefore {
             System.out.println(123);
         }
     }
-}
 
+    public void loadImg(){
+        String sql="select cover_img from kk_product";
+        String sql2="select img_url from kk_product_img";
+        List<Record> records=Db.find(sql);
+        List<Record> records1=Db.find(sql2);
+        for(Record record:records){
+            String url=record.getStr("cover_img");
+            download(url,"d://cover_imgs");
+        }
+        for(Record record:records1){
+            String url=record.getStr("img_url");
+            download(url,"d://imgs");
+        }
+    }
+
+
+    public static void download(String urlString,String path){
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection= (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(5*1000);
+            InputStream is=connection.getInputStream();
+            byte[] bs=new byte[1024];
+            int len;
+            File file=new File(path);
+            if(!file.exists()){
+                file.mkdir();
+            }
+            OutputStream os = new FileOutputStream(file.getPath()+"\\"+urlString.substring(urlString.lastIndexOf("/")+1,urlString.length()));
+            while ((len = is.read(bs)) != -1){
+                os.write(bs, 0, len);
+            }
+            os.close();
+            is.close();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+}

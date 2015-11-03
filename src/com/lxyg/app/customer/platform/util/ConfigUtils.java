@@ -33,12 +33,8 @@ public class ConfigUtils {
         String val = properties.getProperty(key);
         return val;
 	}
-
-
-	
 	public static int rate=Integer.parseInt(getProperty("kaka.commission_rate"));
 	public static int clear=Integer.parseInt(getProperty("kaka.Distribution_coefficient"));
-
 	/**
 	 * @param args
 	 */

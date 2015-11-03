@@ -1,5 +1,6 @@
 package com.lxyg.app.customer.platform.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
@@ -795,6 +796,28 @@ public class AppControllerV2 extends Controller {
         }
         Page<Goods> products=Goods.dao.findByName(s_uid,name,pg);
         renderSuccess("获取成功",products);
+    }
 
+    @ActionKey("/app/user/v2/types")
+    public void productType(){
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        String s_uid=json.getString("s_uid");
+        List<Record> records=Db.find("SELECT p.p_type_id, p.p_type_name, pt.img FROM kk_product p LEFT JOIN kk_shop_product ps ON ps.product_id = p.id LEFT JOIN kk_shop s ON ps.shop_id = s.id LEFT JOIN kk_product_type pt ON pt.id = p.p_type_id WHERE s.uuid = ? GROUP BY p_type_id",s_uid);
+        renderSuccess("获取成功",records);
+    }
+    @ActionKey("/app/user/v2/searchBands")
+    public void searchBands(){
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        int type_id=json.getInt("type_id");
+        String s_uid=json.getString("s_uid");
+        List<Record> records=Db.find("SELECT p.p_brand_id, p.p_brand_name,p.p_type_id, p.p_type_name FROM kk_product p LEFT JOIN kk_shop_product ps ON ps.product_id = p.id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE s.uuid = ? AND p.p_type_id = ? GROUP BY p_brand_id;",s_uid,type_id);
+        renderSuccess("获取成功",records);
+    }
+    @ActionKey("/app/user/v2/versionController")
+    public void version(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        String system=json.getString("system");
+        Record record=Db.findFirst("select * from kk_app where app like ?","%"+system+"%");
+        renderSuccess("获取成功",record);
     }
 }

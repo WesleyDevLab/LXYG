@@ -1,6 +1,9 @@
 http://192.168.1.134/LXYG/app/user/v2/districtList?info={lat:"113.4",lng:"34.7",pg:1}  小区列表
 http://192.168.1.134/LXYG/app/user/v2/cityList?info={lat:"113.4",lng:"34.7",code:70,pg:1}  地区列表
 http://192.168.1.134/LXYG/app/user/v2/searchName?info={"s_uid":"48957caade98442b",'p_name':'d'} 查询本店产品
+http://192.168.0.210/LXYG/app/user/v2/types?info={"s_uid":"48957caade98442b"}  查询所有分类
+http://192.168.0.210/LXYG/app/user/v2/searchBands?info={"s_uid":"48957caade98442b","type_id":"1"}  查询分类下的子类
+http://192.168.1.210/LXYG/app/user/v2/versionController?info={"system":"android"} 获取版本号
 
 
 
