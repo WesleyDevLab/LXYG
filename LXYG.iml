@@ -47,5 +47,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="jpush-client-3.2.5" level="project" />
+    <orderEntry type="library" name="message" level="project" />
   </component>
 </module>

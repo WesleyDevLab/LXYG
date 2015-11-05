@@ -4,6 +4,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import sun.awt.GlobalCursorManager;
 
 import java.io.*;
@@ -12,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class M {
+	private static final Logger log=Logger.getLogger(M.class);
 	
 	/**
 	 * 产品属性
@@ -127,8 +129,7 @@ public class M {
             Map.Entry entry = (Map.Entry) it.next();     
             String  key  =  entry.getKey().toString();        
             int  value  =  Integer.parseInt(entry.getValue().toString());  
-            System.out.println("key is :"+key+"---value :"+value);  
-        } 
+        }
     }
     
     public static String mapToString(Map<String,String> map){
@@ -210,10 +211,16 @@ public class M {
      * 
      * **/
     public static void main(String[] args){
-		List<Record> records=Db.find("select * from kk_area");
-		if(records.size()!=0){
-			System.out.println(records);
-		}
+		String str="1,2,3,4,5,6";
+		System.out.println(str.contains("6"));
+
+//		log.info("info");
+//		log.error("error");
+		//throw new RuntimeException();
+//		List<Record> records=Db.find("select * from kk_area");
+//		if(records.size()!=0){
+//			System.out.println(records);
+//		}
 //		File f=new File("res/jdbc.properties");
 //		if(f.exists()){
 //			System.out.println(f.getAbsoluteFile());

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<script>
+var userAgent=navigator.userAgent.toLowerCase();
+var ios = userAgent.match(/(iphone|ipod|ipad|wechat)/);
+var android=userAgent.match(/(android|wechat)/);
+var wechat = userAgent.match(/(micromessenger)/);
+    if(android){
+        if(wechat){
+            alert("请点击右上角选择【在浏览器中打开】，以下载乐享云购商家端");
+        }
+        var path="http://lxyg8.b0.upaiyun.com/app/fengqu-b.apk";
+        window.top.location.href=path;
+    }
+    if(ios){
+        if(wechat){
+
+        }
+      /*  var path="http://www.pgyer.com/WCRq";
+        window.top.location.href=path;*/
+    }
+</script>
+<body>
+</body>
+</html>

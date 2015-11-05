@@ -17,12 +17,15 @@ import static com.lxyg.app.customer.platform.TestUnit.Test.download;
  * Created by ÇØË§ on 2015/10/23.
  */
 public class Test extends TestBefore {
+
+    @org.junit.Test
     public void cityJson(){
         JSONArray array=new JSONArray();
-        List<Record> pList=Db.find("select * from kk_area where father_id=0");
+        List<Record> pList=Db.find("select * from kk_area where father_id=0 and code=70");
         for(Record record:pList){
             JSONObject pObject=new JSONObject();
             pObject.put("province",record.getStr("name"));
+            pObject.put("code",record.getStr("code"));
             String code=record.getStr("code");
             JSONArray cityArray=new JSONArray();
             List<Record> cList=Db.find("select * from kk_area where  father_id=?",code);
@@ -30,6 +33,7 @@ public class Test extends TestBefore {
                 if(record1!=null){
                     JSONObject cObject=new JSONObject();
                     cObject.put("name",record1.getStr("name"));
+                    cObject.put("code",record1.getStr("code"));
                     String acode=record1.getStr("code");
                     JSONArray aArray=new JSONArray();
                     List<Record> aList=Db.find("select * from kk_area where father_id=?",acode);
@@ -37,6 +41,7 @@ public class Test extends TestBefore {
                         if(record2!=null){
                             JSONObject aObject=new JSONObject();
                             aObject.put("name",record2.getStr("name"));
+                            aObject.put("code",record2.getStr("code"));
                             aArray.add(aObject);
                         }
                     }

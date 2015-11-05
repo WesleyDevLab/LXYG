@@ -1,23 +1,25 @@
 package com.lxyg.app.customer.platform.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.jfinal.aop.Before;
-import com.jfinal.core.ActionKey;
-import com.jfinal.core.Controller;
-import com.jfinal.plugin.activerecord.Db;
-import com.jfinal.plugin.activerecord.Page;
-import com.jfinal.plugin.activerecord.Record;
-import com.jfinal.plugin.activerecord.tx.Tx;
-import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
-import com.lxyg.app.customer.platform.model.*;
-import com.lxyg.app.customer.platform.service.GoodsService;
-import com.lxyg.app.customer.platform.service.OrderService;
-import com.lxyg.app.customer.platform.util.*;
-import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
+        import com.alibaba.fastjson.JSON;
+        import com.alibaba.fastjson.JSONArray;
+        import com.jfinal.aop.Before;
+        import com.jfinal.core.ActionKey;
+        import com.jfinal.core.Controller;
+        import com.jfinal.plugin.activerecord.Db;
+        import com.jfinal.plugin.activerecord.Page;
+        import com.jfinal.plugin.activerecord.Record;
+        import com.jfinal.plugin.activerecord.tx.Tx;
+        import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
+        import com.lxyg.app.customer.platform.model.*;
+        import com.lxyg.app.customer.platform.service.GoodsService;
+        import com.lxyg.app.customer.platform.service.OrderService;
+        import com.lxyg.app.customer.platform.util.*;
+        import net.sf.json.JSONObject;
+        import org.apache.log4j.Logger;
 
-import javax.swing.*;
-import java.util.*;
+        import javax.management.RuntimeErrorException;
+        import javax.swing.*;
+        import java.util.*;
 
 /**
  * Created by Administrator on 2015/9/11.
@@ -341,6 +343,36 @@ public class AppControllerV2 extends Controller {
         renderSuccess("修改成功",shop);
     }
 
+    @ActionKey("app/v2/districts")
+    public void loadDistricts(){
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        if(!obj.containsKey("area_id")){
+            renderFaile("数据异常");
+        }
+        int area_id=obj.getInt("area_id");
+        List<District> districtList=District.dao.find("select id as districtId,name from kk_district where area_id=?",area_id);
+        renderSuccess("获取成功",districtList);
+    }
+
+    @ActionKey("app/v2/productTypes")
+    public void allProductTypes(){
+        List<GoodType> records=GoodType.dao.find("select id as typeId,name,img from kk_product_type");
+        for(GoodType record:records){
+            List<Record> records1=Db.find("select id as brandId,name,p_type_id,p_type_name,img from kk_product_brand where p_type_id=?",record.getInt("typeId"));
+            record.put("brands",records1);
+        }
+        renderSuccess("获取成功",records);
+    }
+    @ActionKey("app/v2/searchProduct")
+    public void search(){
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        int page=1;
+        if(obj.containsKey("pg")){
+            page=obj.getInt("pg");
+        }
+        Page<Goods> goodsPage=Goods.dao.findByName(obj.getString("name"),page);
+        renderSuccess("获取成功",goodsPage);
+    }
 
 
 
@@ -472,18 +504,31 @@ public class AppControllerV2 extends Controller {
             renderFaile("店铺id");
             return;
         }
-
         String s_uid=json.getString("s_uid");
-        Shop s=Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.shop_type=st.id where s.uuid=? ",s_uid);
+        Shop s=Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ",s_uid);
         if(s==null){
-           renderFaile("异常！");
+            renderFaile("异常！");
             return;
+        }
+        if(s.getActivity()!=null){
+            s.put("shopActivits", s.getActivity());
+        }else{
+            s.put("shopActivits", null);
         }
 
         List<Map<String,Object>> maps=new ArrayList<Map<String, Object>>();
         List<Map<String,Object>> types=new ArrayList<Map<String,Object>>();
-        List<Goods> recommGoods= Goods.dao.find("SELECT  p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid " +
-                "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0  GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6");
+        List<Goods> recommGoods=new ArrayList<Goods>();
+        if(s.getStr("sort")==null||s.getStr("sort").equals("")){
+            s.put("types",maps);
+            s.put("shopCount",1);
+            s.put("category", types);
+            s.put("recommGoods",recommGoods);
+            renderSuccess("暂无上货",s);
+            return;
+        }
+         recommGoods= Goods.dao.find("SELECT  p.id AS productId, p.NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid " +
+                "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND s.uuid=? GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6",s.getStr("uuid"));
         s.put("recommGoods", recommGoods);
         String [] sorts=s.getStr("sort").split(",");
         for(int i=0;i<sorts.length;i++){
@@ -496,18 +541,12 @@ public class AppControllerV2 extends Controller {
             obj.put("img",record.getStr("img"));
             obj.put("is_norm",record.getInt("is_norm"));
             types.add(obj);
-
             m.put("type", r);
-           List<Goods> g=new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  " +
-                   "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
-                   "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=?  GROUP BY p.id order by cash_pay desc, is_recomm desc LIMIT 0,6", new Object[]{sorts[i]});
+            List<Goods> g=new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  " +
+                    "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
+                    "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=?  GROUP BY p.id order by cash_pay desc, is_recomm desc LIMIT 0,6", new Object[]{sorts[i],s.getStr("uuid")});
             if(g.size()!=0){m.put("products", g);maps.add(m);}
         }
-        if(s.getActivity()!=null){
-            s.put("shopActivits", s.getActivity());
-       }else{
-            s.put("shopActivits", null);
-       }
         s.put("types",maps);
         s.put("shopCount",1);
         s.put("category", types);
@@ -549,6 +588,14 @@ public class AppControllerV2 extends Controller {
             sendTime=json.getString("sendTime");
             map.put("send_time", DateTools.unixTimeToDate(sendTime));
         }
+        map.put("pay_type", payType);
+        if(payType!=0){
+            Record r= Db.findById("kk_pay_type", payType);
+            map.put("pay_name", r.get("pay_type_name"));
+            if(payType==3){
+                orderStatus=IConstant.OrderStatus.order_status_dfh;
+            }
+        }
         map.put("order_no", orderNo);
         map.put("order_id", orderId);
         map.put("order_status", orderStatus);
@@ -567,13 +614,6 @@ public class AppControllerV2 extends Controller {
             Shop s=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
             map.put("shop_name", s.get("name"));
         }
-
-        map.put("pay_type", payType);
-        if(payType!=0){
-            Record r= Db.findById("kk_pay_type", payType);
-            map.put("pay_name", r.get("pay_type_name"));
-        }
-
         map.put("send_type", sendType);
         map.put("send_name", IConstant.sendType.get(sendType));
         map.put("send_id", sendId);
@@ -638,14 +678,13 @@ public class AppControllerV2 extends Controller {
             if(!s){
                 renderFaile("异常");
             }
-           // o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
+//             o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){
 //                    orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.manager.phone"),o.getStr("order_id"),0);
 //                    Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
 //                }
 //            }
-
         }
         renderSuccess("下单成功",o);
     }
@@ -725,16 +764,16 @@ public class AppControllerV2 extends Controller {
         Shop s=Shop.dao.findBysuid(uid);
         Page<FBGoods> fbGoodses=null;
         if(s.getInt("is_norm")==2){
-             fbGoodses= FBGoods.dao.findBySID(uid,pg);
+            fbGoodses= FBGoods.dao.findBySID(uid,pg);
         }
 //        if(s.getInt("is_norm")==1){
 //            Page<Goods> goods=Goods.dao.
 //        }
         renderSuccess("获取成功",fbGoodses);
     }
-/***
- * C端 推荐产品列表
- * **/
+    /***
+     * C端 推荐产品列表
+     * **/
     @ActionKey("app/user/v2/recommProducts")
     public void recommProducts(){
         JSONObject obj = JSONObject.fromObject(getPara("info"));
@@ -815,9 +854,11 @@ public class AppControllerV2 extends Controller {
     }
     @ActionKey("/app/user/v2/versionController")
     public void version(){
+        log.info("version");
         JSONObject json= JSONObject.fromObject(getPara("info"));
         String system=json.getString("system");
         Record record=Db.findFirst("select * from kk_app where app like ?","%"+system+"%");
         renderSuccess("获取成功",record);
     }
+
 }

@@ -19,6 +19,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -393,8 +394,11 @@ public class AppController extends Controller {
 			mId=obj.getInt("mId");
 			m.put("m_id", mId);
 		}
+		if(obj.containsKey("districtId")){
+			m.put("district_id",obj.getInt("districtId"));
+		}
 
-		//Shop shop=new Shop().findFirst("select * from kk_shop where phone like ?", new Object[]{phone});
+//		Shop shop=new Shop().findFirst("select * from kk_shop where phone like ?", new Object[]{phone});
 //		if(shop!=null){
 //			setAttr("code", 10001);
 //			setAttr("msg", "该手机号已存在");
@@ -511,7 +515,7 @@ public class AppController extends Controller {
 		String uid=json.getString("uid");
 		Shop s=new Shop().findFirst("select * from kk_shop where uuid=?", new Object[]{uid});
 		if(s!=null){
-			s=s.findFirst("select s.id as shopId,s.name,s.link_man,s.phone,s.full_address,s.city_name,s.province_name,s.area_name,s.street,s.cover_img,s.title,s.title2,s.title3,s.is_norm,s.create_time,s.uuid,s.q_verifi,s.ewm_code,si.user_name," +
+			s=s.findFirst("select s.id as shopId,s.name,s.link_man,s.phone,s.full_address,s.city_name,s.province_name,s.area_name,s.street,s.cover_img,s.title2,s.title3,s.is_norm,s.create_time,s.uuid,s.q_verifi,s.ewm_code,si.user_name," +
 					"si.id_number,si.bank_name,si.bank_branch_name,si.handle_id_img,si.id_num_img,si.bank_card_img,si.bussiness_num_img," +
 					"si.bussiness_number,si.bank_branch_province,si.bank_branch_city,si.bank_card_num from kk_shop s left join kk_shop_identi si on s.id=si.shop_id where s.uuid=?", new Object[]{uid});
 			setAttr("code", 10002);
@@ -584,14 +588,17 @@ public class AppController extends Controller {
 			int cid=json.getInt("typeId");
 			int type=json.getInt("type");
 			int page=json.getInt("pg");
-			Page<Goods> goods = new Goods().goodsList(type, page, cid, s.getInt("id"), "");
+			int brandId=0;
+			if(json.containsKey("brandId")){
+				brandId=json.getInt("brandId");
+			}
+			Page<Goods> goods = new Goods().goodsList(type, page, cid, s.getInt("id"),"",brandId);
 			renderSuccess("添加成功",goods);
 		}else{
 			renderFaile("uuid 错误");
 			return;
 		}
 	}
-	
 	/**
 	 * @author M
 	 * 商品详细信息
@@ -666,6 +673,18 @@ public class AppController extends Controller {
 			case 1:
 				if (r.getLong("num") == 0) {
 					Db.update("insert into kk_shop_product(product_id,shop_id,status,create_time,product_number) values(?,?,?,?,?)", new Object[]{pid, sid, 1, new Date(), 0});
+					Goods goods=Goods.dao.findById(pid);
+					int type_id=goods.getInt("p_type_id");
+					Record record=Db.findFirst("SELECT * from kk_shop_type st where st.s_id=?",sid);
+					if(record==null){
+						Db.update("insert into kk_shop_type(name,title,imgs,sort,is_norm,s_id) values(?,?,?,?,?,?)","","","",type_id,1,sid);
+					}else{
+						String tyStr=record.getStr("sort");
+						if(!tyStr.contains(""+type_id)){
+							record.set("sort",tyStr+","+type_id);
+							Db.update("kk_shop_type",record);
+						}
+					}
 				}
 				break;
 			case 2:
@@ -1664,12 +1683,21 @@ public class AppController extends Controller {
 	@ActionKey("app/user/products")
 	public void producListtByType(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
-		int typeId=json.getInt("typeId");
+		Page<Goods> gs=null;
 		int page=json.getInt("pg");
-		Page<Goods> gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-				"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
+		if(json.containsKey("typeId")&&json.getInt("typeId")>0){
+			int typeId=json.getInt("typeId");
+			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+					"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
+		}
+		if(json.containsKey("brandId")&&json.getInt("brandId")>0){
+			int brandId=json.getInt("brandId");
+			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+					"where p.p_brand_id=? group by p.id order by p.cash_pay desc",new Object[]{brandId});
+		}
 		renderSuccess("load成功", gs);
 	}
+
 	/**
 	 * @author M
 	 * c端 首页展示 产品详情页
@@ -1968,6 +1996,14 @@ public class AppController extends Controller {
 			sendTime=json.getString("sendTime");
 			map.put("send_time", DateTools.unixTimeToDate(sendTime));
 		}
+		map.put("pay_type", payType);
+		if(payType!=0){
+			Record r= Db.findById("kk_pay_type", payType);
+			map.put("pay_name", r.get("pay_type_name"));
+			if(payType==3){
+				orderStatus=IConstant.OrderStatus.order_status_dfh;
+			}
+		}
 		map.put("order_no", orderNo);
 		map.put("order_id", orderId);
 		map.put("order_status", orderStatus);
@@ -1985,12 +2021,6 @@ public class AppController extends Controller {
 		if(!shopId.equals("")){
 			Shop s=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
 			map.put("shop_name", s.get("name"));
-		}
-		
-		map.put("pay_type", payType);
-		if(payType!=0){
-			Record r= Db.findById("kk_pay_type", payType);
-			map.put("pay_name", r.get("pay_type_name"));			
 		}
 		
 		map.put("send_type", sendType);
@@ -2056,10 +2086,10 @@ public class AppController extends Controller {
 //			}
 			o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 			if(s){
-				if(payType==3){
-					Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
-					log.error(res);
-				}
+//				if(payType==3){
+//					Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
+//					log.error(res);
+//				}
 				renderSuccess("添加成功", o.findById(false, orderId));
 				return;
 			}else{
@@ -2210,8 +2240,7 @@ public class AppController extends Controller {
 			return;
 		}
 		renderFaile("异常");
-		
-	}	
+	}
 	/**
 	 * @author M
 	 * 扫描接口
@@ -2395,7 +2424,6 @@ public class AppController extends Controller {
 			obj.put("pos",ms);
 			objs.add(obj);
 		}
-		
 		renderSuccess("获取成功", objs);
 	}
 	/**
@@ -2418,8 +2446,6 @@ public class AppController extends Controller {
 			renderFaile("异常！");
 			return;
 		}
-
-
 		boolean flag=orderService.delOrder(order);
 		if(flag){
 			renderSuccess("删除成功",null);

@@ -4,7 +4,12 @@ http://192.168.1.134/LXYG/app/user/v2/searchName?info={"s_uid":"48957caade98442b
 http://192.168.0.210/LXYG/app/user/v2/types?info={"s_uid":"48957caade98442b"}  查询所有分类
 http://192.168.0.210/LXYG/app/user/v2/searchBands?info={"s_uid":"48957caade98442b","type_id":"1"}  查询分类下的子类
 http://192.168.1.210/LXYG/app/user/v2/versionController?info={"system":"android"} 获取版本号
+http://192.168.1.210/LXYG/app/user/products?info={"pg":1,"typeId":1,"brandId":0}  分类查询
 
+
+http://192.168.1.210/LXYG/app/v2/districts?info={"area_id":"700402"}
+http://192.168.1.210/LXYG/app/v2/productTypes 所有一级分类二级分类
+http://192.168.1.210/LXYG/app/v2/searchProduct?info={pg:1,name:"d"}  产品搜索
 
 
 
