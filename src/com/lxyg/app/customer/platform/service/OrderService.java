@@ -15,6 +15,7 @@ import java.util.*;
 
 public class OrderService {
 	private static Order orderDao = new Order();
+	private static Shop shopDao=new Shop();
 	private static final Logger log = Logger.getLogger(OrderService.class);
 
 	public boolean splice2Create_1(String orderId, String items,int cashPay) {
@@ -327,8 +328,7 @@ public class OrderService {
 		result.put("msg", "立即送-count=1-推送");
 		return result;
 	}
-	
-	
+
 	/***
 	 * 记录完成订单的订单
 	 * **/
@@ -337,52 +337,56 @@ public class OrderService {
 		String shopId = o.getStr("shop_id");
 		int allPrice =o.getBigDecimal("price").intValue();
 		int allCash = o.getBigDecimal("cash_pay").intValue();
-		int allPay = allPrice-allCash;
-		int shopAccount = 0;
-		int shopCommission = 0;
-		String returnCommission=o.getStr("original_order_id");
-		
-		if(returnCommission!=null&&!returnCommission.equals(orderId)&&o.getInt("pay_type")!=3){
-			log.info("有佣金");
+		shopDao.updateBalance(shopId,allPrice,1);
+		shopDao.createBalanceLog(shopId,allPrice,0,IConstant.balanceType.getType(o.getInt("pay_type")),orderId);
 
-			shopCommission=allPrice;
-			shopCommission = shopCommission * ConfigUtils.rate / 100;
-			shopAccount = allPay  + (allCash * ConfigUtils.clear / 100);
+//		int allPay = allPrice-allCash;
+//		int shopAccount = 0;
+//		int shopCommission = 0;
+//		String returnCommission=o.getStr("original_order_id");
+//
+//		if(returnCommission!=null&&!returnCommission.equals(orderId)&&o.getInt("pay_type")!=3){
+//			log.info("有佣金");
+//
+//			shopCommission=allPrice;
+//			shopCommission = shopCommission * ConfigUtils.rate / 100;
+//			shopAccount = allPay  + (allCash * ConfigUtils.clear / 100);
+//
+//			Shop.dao.updateBalance(shopId, allPay, 1);
+//			Shop.dao.createBalanceLog(shopId, shopAccount, 0, IConstant.balanceType.balance_type_in_dd, orderId);
+//			Shop.dao.updateBalance(shopId, shopCommission, 2);
+//			Shop.dao.createBalanceLog(shopId, 0, shopCommission, IConstant.balanceType.balance_type_out_yj, orderId);
+//
+//
+//			Shop.dao.updateBalance(returnCommission, shopCommission, 1);
+//			Shop.dao.createBalanceLog(returnCommission, shopCommission,
+//					0, IConstant.balanceType.balance_type_in_yj, orderId);
+//
+//
+//
+//			Shop s=Shop.dao.findBysuid(returnCommission);
+//			new JPush(IConstant.Title, IConstant.content_order_ToreturnCommission+shopCommission/100+"元",
+//					s.getStr("phone"), IConstant.PUSH_ONE,
+//					M.pushMap(o.getStr("original_order_id"), IConstant.OrderStatus.order_status_ywc),"shop")
+//					.start();
+//			SdkMessage.sendUser(s.getStr("phone"), IConstant.content_order_ToreturnCommission + shopCommission / 100 + "元");
+//
+//		}
+//
+//		if(returnCommission.equals(orderId)&&o.getInt("pay_type")!=3){
+//			log.info("无佣金");
+//			shopAccount = allPay + allCash * ConfigUtils.clear / 100;
+//
+//			Shop.dao.updateBalance(shopId, shopAccount, 1);
+//			Shop.dao.createBalanceLog(shopId, shopAccount, 0, IConstant.balanceType.balance_type_in_dd, orderId);
+//		}
+//
+//
+//		if(o.getInt("pay_type")==3){
+//			shopAccount=allPay;
+//			Shop.dao.createBalanceLog(shopId, shopAccount, allPay, IConstant.balanceType.balance_type_in_xf, orderId);
+//		}
 
-			Shop.dao.updateBalance(shopId, allPay, 1);
-			Shop.dao.createBalanceLog(shopId, shopAccount, 0, IConstant.balanceType.balance_type_in_dd, orderId);
-			Shop.dao.updateBalance(shopId, shopCommission, 2);
-			Shop.dao.createBalanceLog(shopId, 0, shopCommission, IConstant.balanceType.balance_type_out_yj, orderId);
-
-
-			Shop.dao.updateBalance(returnCommission, shopCommission, 1);
-			Shop.dao.createBalanceLog(returnCommission, shopCommission,
-					0, IConstant.balanceType.balance_type_in_yj, orderId);
-
-
-
-			Shop s=Shop.dao.findBysuid(returnCommission);
-			new JPush(IConstant.Title, IConstant.content_order_ToreturnCommission+shopCommission/100+"元",
-					s.getStr("phone"), IConstant.PUSH_ONE,
-					M.pushMap(o.getStr("original_order_id"), IConstant.OrderStatus.order_status_ywc),"shop")
-					.start();
-			SdkMessage.sendUser(s.getStr("phone"), IConstant.content_order_ToreturnCommission + shopCommission / 100 + "元");
-
-		}
-
-		if(returnCommission.equals(orderId)&&o.getInt("pay_type")!=3){
-			log.info("无佣金");
-			shopAccount = allPay + allCash * ConfigUtils.clear / 100;
-
-			Shop.dao.updateBalance(shopId, shopAccount, 1);
-			Shop.dao.createBalanceLog(shopId, shopAccount, 0, IConstant.balanceType.balance_type_in_dd, orderId);
-		}
-
-
-		if(o.getInt("pay_type")==3){
-			shopAccount=allPay;
-			Shop.dao.createBalanceLog(shopId, shopAccount, allPay, IConstant.balanceType.balance_type_in_xf, orderId);
-		}
 
 		return true;
 	}
@@ -695,5 +699,34 @@ public class OrderService {
 		}else{
 			SdkMessage.sendUser(phone, IConstant.content_order_new+str);
 		}
+	}
+
+	public boolean  updateOrderStatus(Order o,JSONObject json){
+		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_dfh){
+			o.set("send_goods_time", new Date());
+			String userPhone=o.getStr("phone");
+			if(userPhone==null||userPhone.equals("")){
+				userPhone=o.getStr("wechat_id");
+			}
+			new JPush(IConstant.Title, IConstant.content_order_Touser_send +o.getStr("receive_code") , userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_psz),"user").start();
+			if(o.getInt("address_id")!=0){
+				Record r= Db.findFirst("select * from kk_user_address where id=?", new Object[]{o.getInt("address_id")});
+				if(r!=null){
+					String phone=r.get("phone");
+					SdkMessage.sendUser(phone, IConstant.content_order_Touser_send + o.getStr("receive_code"));
+				}
+			}
+		}
+		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_psz){
+			String code=json.getString("recCode");
+			if(code.equals(o.getStr("receive_code"))){
+				o.set("finish_time", new Date());
+				//new JPush(IConstant.Title, IConstant.content_order_Touser_finish, userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"),IConstant.OrderStatus.order_status_ywc)).start();
+				new OrderService().recordfinshOrder(o);
+			}
+		}
+		o.set("order_status", o.getInt("order_status")+1);
+		return  o.update();
+
 	}
 }

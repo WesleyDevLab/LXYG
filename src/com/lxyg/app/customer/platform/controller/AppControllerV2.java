@@ -575,7 +575,8 @@ public class AppControllerV2 extends Controller {
         int price=json.getInt("price");
         String uid=json.getString("uid");
         User u=new User().getUser(uid);
-        String shopId=u.getStr("shop_id");
+
+        String shopId=json.getString("shopId");
         if(shopId==null || shopId.equals("0")){
             renderFaile("下单异常！");
             return;
@@ -594,6 +595,8 @@ public class AppControllerV2 extends Controller {
             map.put("pay_name", r.get("pay_type_name"));
             if(payType==3){
                 orderStatus=IConstant.OrderStatus.order_status_dfh;
+            }else{
+                orderStatus=IConstant.OrderStatus.order_status_chushi;
             }
         }
         map.put("order_no", orderNo);
@@ -685,6 +688,7 @@ public class AppControllerV2 extends Controller {
 //                    Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
 //                }
 //            }
+
         }
         renderSuccess("下单成功",o);
     }

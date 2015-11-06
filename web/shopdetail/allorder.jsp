@@ -19,7 +19,7 @@ var totalRows=0;
 
 
 $(document).ready(function(){
-	var payType="<option value=0> 请选择... </option>";
+	var payType="<option value=0> 全部... </option>";
     var url="${path}/goods/loadGoodsAttribute";
     $.get(url,function(result){
        if(result.code==10010){
@@ -69,15 +69,12 @@ function loadDataByPage(type,pageNum){
         page=pageNum
      }
    }
-	console.info("---"+page);
    check("",page);
 }
 
 
 function check(str,page) {
 	str=searchItem();
-	console.info("searchItem"+str)
-	console.info("page"+page)
 	$.post("${path}/order/allOrderJson",{"pg":page,"searchItem":str},function(result){
 	   if(result.code==10002){
 		   console.info(result);
@@ -101,13 +98,13 @@ function check(str,page) {
 	                  "<td>"+order.pay_name+"</td>"+
 	                  "<td>"+order.cash_pay+"</td>"+
 	                  status+
-	                  "<td>"+order.price/100+"</td>"+
+	                  "<td>￥ "+order.price/100+"</td>"+
 					  "<td><span  style='color:steelblue' >"+order.sep+"</span><a id="+order.order_id+"  style='color:firebrick'   href='javascript:void(0)' onclick='detail(this.id)'>详细信息</a></td></tr>"
 	        }
 		    pageHtml+="第"+page+"/"+totalPage+"页    共"+totalRows+"条";
 	       console.info(item);
 		   $("#tbody").append(item);
-		    $("#page").append(pageHtml);
+		   $("#page").append(pageHtml);
 	   }
 	});
 }
@@ -138,7 +135,7 @@ function searchItem(){
 	if(payMode!=undefined && payMode!=0) {
 	   str+="payType:"+payMode+",";
 	}
-	str+="type:web,";
+	//str+="type:web,";
 	if(str.length>1){
 	   str=str.substr(0,str.length-1);
 	   str+="}";
@@ -147,7 +144,6 @@ function searchItem(){
 	}
 	return str;
 }
-
 
 
 function statusName(code){

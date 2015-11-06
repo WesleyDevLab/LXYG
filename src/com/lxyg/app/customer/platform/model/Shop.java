@@ -234,12 +234,12 @@ public class Shop extends Model<Shop> {
 		r.set("modify_time", new Date());
 		Db.update("kk_shop_balance", r);
 	}
-	public void createBalanceLog(String suid,int in_b,int rob,int let,String order_id){
+	public void createBalanceLog(String suid,int in_come,int expend,int balance_type,String order_id){
 		Record r=new Record();
 		r.set("s_uid", suid);
-		r.set("in_come", in_b);
-		r.set("expend", rob);
-		r.set("balance_type", let);
+		r.set("in_come", in_come);
+		r.set("expend", expend);
+		r.set("balance_type", balance_type);
 		r.set("create_time", new Date());
 		r.set("order_id",order_id);
 		Db.save("kk_shop_balance_log", r);

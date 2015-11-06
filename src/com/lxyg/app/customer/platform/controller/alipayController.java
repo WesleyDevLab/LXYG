@@ -28,7 +28,6 @@ public class alipayController extends Controller {
 	private static Shop shopDao=new Shop();
 	private static OrderService orderService=new OrderService();
 	private static Order orderDao=new Order();
-	
 	public void renderFaile(String value){
 		setAttr("code", 10001);
 		setAttr("msg", value);

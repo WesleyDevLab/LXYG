@@ -99,7 +99,7 @@ public interface IConstant {
 	//-1 初始订单 0 支付完成   1 可抢单 2 待发货 3 待收货 4 已完成 5 拒收 6 让单 7 流单;
 	 class OrderStatus {
 		public static int order_status_chushi = -1;
-		public static final String order_status_chushi_String = "初始订单";
+		public static final String order_status_chushi_String = "待付款";
 		
 		public static int order_status_pay = 0;
 		public static final String order_status_fendan_String = "支付完成";
@@ -246,11 +246,11 @@ public interface IConstant {
 		public static final int balance_type_out_tx=4;
 		public static final int balance_type_in_xf=5;
 
-		public static final String balance_type_in_dd__str="订单收入";
+		public static final String balance_type_in_dd__str="微信/支付宝 订单收入";
 		public static final String balance_type_in_yj_str="订单佣金收入";
 		public static final String balance_type_out_yj_str="让单佣金支出";
 		public static final String balance_type_out_tx_str="账号体现";
-		public static final String balance_type_in_xf_str="货到付款收入";
+		public static final String balance_type_in_xf_str="货到付款/自提收入";
 
 		private static Map<Integer, String> map = new HashMap<Integer, String>();
 		static {
@@ -262,6 +262,13 @@ public interface IConstant {
 		}
 		public static String get(int key) {
 			return map.get(key);
+		}
+
+		public static int getType(int pay_type){
+			if(pay_type!=3){
+				return balance_type_in_dd;
+			}
+			return balance_type_in_xf;
 		}
 	}
 	

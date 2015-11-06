@@ -67,8 +67,6 @@
 	function closeProductInfo(){
 		$("#product").fadeOut();
 	}
-
-
 	function showShopInfo(shopId){
 		$.post("${path}/order/loadShopInfo",{"shop_id":shopId},function(result){
 			if(result.code==10002){
@@ -80,7 +78,6 @@
 				$("#shop").fadeIn();
 			}
 		});
-
 	}
 
 	function closeShopInfo(){
@@ -93,7 +90,6 @@
 <body>
 <div id="product" class="white_product">
 	<div >
-
 		<img onclick="closeProductInfo();" src="http://7xk59r.com2.z0.glb.qiniucdn.com/exit.png"  style="float: right;padding-bottom: 10px">
 	</div>
 	<table class="table table-bordered  table-condensed" style="overflow:scroll;color: white">

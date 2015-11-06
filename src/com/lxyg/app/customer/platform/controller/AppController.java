@@ -755,39 +755,8 @@ public class AppController extends Controller {
 			return;
 		}
 		o.set("id", o.getInt("orderId"));
-		
-		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_dfh){
-			log.info("--------------");
-			o.set("send_goods_time", new Date());
-			String userPhone=o.getStr("phone");
-
-			if(userPhone==null||userPhone.equals("")){
-				userPhone=o.getStr("wechat_id");
-			}
-			new JPush(IConstant.Title, IConstant.content_order_Touser_send +o.getStr("receive_code") , userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_psz),"user").start();
-			if(o.getInt("address_id")!=0){
-				Record r= Db.findFirst("select * from kk_user_address where id=?", new Object[]{o.getInt("address_id")});
-				if(r!=null){
-					String phone=r.get("phone");
-					SdkMessage.sendUser(phone, IConstant.content_order_Touser_send + o.getStr("receive_code"));
-				}
-			}
-		}
-		
-		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_psz){
-			String code=json.getString("recCode");
-			if(code.equals(o.getStr("receive_code"))){
-				o.set("finish_time", new Date());
-				//new JPush(IConstant.Title, IConstant.content_order_Touser_finish, userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"),IConstant.OrderStatus.order_status_ywc)).start();
-				orderService.recordfinshOrder(o);
-			}else{
-				renderFaile("交易码异常");
-				return;
-			}
-		}
-		o.set("order_status", o.getInt("order_status")+1);
-		o.update();
-		renderSuccess("成功",null);
+		orderService.updateOrderStatus(o,json);
+		renderSuccess("成功", null);
 	}
 	/**
 	 * @author M
@@ -1054,7 +1023,7 @@ public class AppController extends Controller {
 				              " ( SELECT count(o.id) FROM kk_order o WHERE o.order_status =? AND o.s_uuid =? ) AS shouHuo, " +
 				               "(SELECT COUNT(oc.id) FROM kk_order_cache oc WHERE oc.`status` =? and oc.u_uuid=? ) AS robOrder";
 		
-		Record orderR= Db.findFirst(ordersql, IConstant.OrderStatus.order_status_dfh, shopId, IConstant.OrderStatus.order_status_pay, shopId, 1, shopId);
+		Record orderR= Db.findFirst(ordersql, IConstant.OrderStatus.order_status_dfh, shopId, IConstant.OrderStatus.order_status_psz, shopId, 1, shopId);
 		String cusSql="select ( SELECT count(u.id) AS new_add FROM kk_shop s, kk_user u WHERE u.create_time LIKE '%"+time+"%' AND s.uuid = u.shop_id AND u.shop_id = '"+shopId+"' ) AS new_add," +
 				              "(10) as hyl,( SELECT count(u.id) AS allU FROM kk_shop s, kk_user u WHERE s.uuid = u.shop_id AND u.shop_id = '"+shopId+"' ) AS allU ";
 		Record cusR= Db.findFirst(cusSql);
@@ -1085,12 +1054,10 @@ public class AppController extends Controller {
     	for(int i=0;i< IConstant.PAGE_DATA;i++){
     		cl= M.getBeforeDay(cl.getTime());
     		String time= M.printCalendar(cl);
-
-    		String str="SELECT ('"+time+"') as time, " +
+    		String str="SELECT ('"+time+"') as time," +
         			"( SELECT count(u.id) AS new_add FROM kk_user u WHERE u.create_time LIKE '%"+time+"%'  AND u.shop_id = '"+shopId+"' ) AS new_add, " +
     				"( SELECT ('"+2+"') ) AS huoyue ,"+
         			"( SELECT count(u.id) AS allU from  kk_user u WHERE  u.shop_id = '"+shopId+"' ) AS allU ";
-
     		Record r= Db.findFirst(str);
     		rs.add(r);
     	}
@@ -1132,15 +1099,11 @@ public class AppController extends Controller {
 			r.set("bank_name", r1.getStr("shop_bank"));
 			r.set("bank_card", r1.getStr("shop_bank_card_num"));
 			Db.save("kk_shop_withdraw", r);
-
-
 			renderSuccess("申请成功！", r);
-			
 		}else{
 			renderFaile("异常");
 		}	
 	}
-	
 	/**
 	 * @author M
 	 * 意见反馈接口

@@ -117,7 +117,6 @@ public class Order extends Model<Order> {
 
 	public List<Order> getSpliceOrder(String order_id){
 		return dao.find(sql_all_select + sql_all_from + " and o.original_order_id=?", order_id);
-
 	}
 
 	public List<Order> getloadInfo(String order_id){
@@ -174,7 +173,6 @@ public class Order extends Model<Order> {
 		for (int i = 0; i < list.size(); i++) {
 			o[i] = list.get(i);
 		}
-
 		Page<Order> os = new Order().paginate(page, IConstant.PAGE_DATA,
 				sql_all_select, sql_all_from + where, o);
 		return os;

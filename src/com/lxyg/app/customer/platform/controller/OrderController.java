@@ -93,18 +93,18 @@ public class OrderController extends Controller {
 	}
 
 	public static String analyzeOrder(Order o){
-		List<Order> sepOrder=Order.dao.getSpliceOrder(o.getStr("order_id"));
+		//List<Order> sepOrder=Order.dao.getloadInfo(o.getStr("order_id"));
 		String str="";
 		if(o.getInt("pay_type")!=3){
 			if(o.getInt("order_status")==-1){
 				str+=o.getStr("pay_name")+"未成功支付订单 |";
 			}
 		}
-		if(sepOrder.size()==0){
-			str+="暂无商家收货 |";
+		if(o.getInt("order_status")==IConstant.OrderStatus.order_status_dfh){
+			str+="商家准备发货 |";
 		}
-		if(sepOrder.size()!=0){
-			str+="有商家接收订单 | ";
+		if(o.getInt("order_status")==IConstant.OrderStatus.order_status_psz){
+			str+="商家配送中 | ";
 		}
 		return str;
 	}
@@ -116,7 +116,7 @@ public class OrderController extends Controller {
 			render("/login.jsp");
 		}
 		String order_id=getPara("orderId");
-		List<Order> os=Order.dao.getSpliceOrder(order_id);
+		List<Order> os=Order.dao.getloadInfo(order_id);
 		List<JSONObject> objs=new ArrayList<JSONObject>();
 		for(Order o:os){
 			JSONObject obj=new JSONObject();
