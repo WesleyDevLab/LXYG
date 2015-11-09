@@ -864,5 +864,4 @@ public class AppControllerV2 extends Controller {
         Record record=Db.findFirst("select * from kk_app where app like ?","%"+system+"%");
         renderSuccess("获取成功",record);
     }
-
 }
