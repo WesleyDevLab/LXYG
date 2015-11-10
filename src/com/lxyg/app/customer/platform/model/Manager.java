@@ -6,7 +6,7 @@ public class Manager extends Model<Manager> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 106L;
 	/**
 	 * 
 	 */

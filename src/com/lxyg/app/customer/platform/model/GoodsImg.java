@@ -6,7 +6,7 @@ public class GoodsImg extends Model<GoodsImg> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 104L;
 	public static final GoodsImg dao=new GoodsImg();
 	
 	public Goods getGoods(){

@@ -15,7 +15,7 @@ import java.util.*;
  * @since 2014-08-07
  */
 public class Goods extends Model<Goods> {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 103L;
 	public static final Goods dao = new Goods();
 	/**
 	 * 根据ID查询商品详情

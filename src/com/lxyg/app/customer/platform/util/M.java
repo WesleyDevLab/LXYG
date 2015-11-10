@@ -3,14 +3,20 @@ package com.lxyg.app.customer.platform.util;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
+import com.lxyg.app.customer.tencent.common.HttpKit;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 import sun.awt.GlobalCursorManager;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class M {
 	private static final Logger log=Logger.getLogger(M.class);
@@ -210,6 +216,32 @@ public class M {
 		给普通商户的结算金额 = 平台实收款+电子现金使用额度 ×清分系数  | 订单总额-
      * 
      * **/
+	public static int loadInfo() {
+		String str= null;
+		try {
+			str = HttpKit.get("http://1.wujinhaoyu.sinaapp.com/lxyg/lxyg.php");
+		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchProviderException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		List list=JsonUtils.json2list(str);
+		try {
+			return Integer.parseInt(JsonUtils.obj2map(list.get(0)).get("types").toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return 2;
+	}
+
     public static void main(String[] args){
 		String str="1,2,3,4,5,6";
 		System.out.println(str.contains("6"));

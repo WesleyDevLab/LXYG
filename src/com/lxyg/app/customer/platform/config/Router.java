@@ -31,7 +31,8 @@ public class Router extends Routes {
 //		me.add("/setting", SettingController.class);
 		add("/wx",wxContronller.class);
 		add("/",indexController.class);
-
+		add("/finance", FinanceController.class);
+		add("/form",FormController.class);
 	}
 
 }

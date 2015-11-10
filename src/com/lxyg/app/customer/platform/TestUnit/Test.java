@@ -1,24 +1,26 @@
 package com.lxyg.app.customer.platform.TestUnit;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.model.Form;
+import com.lxyg.app.customer.platform.model.FormImg;
+
+import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.util.Date;
 import java.util.List;
 import java.net.URL;
-
 import static com.lxyg.app.customer.platform.TestUnit.Test.download;
 
 /**
- * Created by ÇØË§ on 2015/10/23.
+
  */
 public class Test extends TestBefore {
 
-    @org.junit.Test
     public void cityJson(){
         JSONArray array=new JSONArray();
         List<Record> pList=Db.find("select * from kk_area where father_id=0 and code=70");
@@ -56,10 +58,6 @@ public class Test extends TestBefore {
         }
          toFile(array.toString());
     }
-
-
-
-
     public void toFile(String str){
         BufferedWriter writer = null;
         try{
@@ -91,7 +89,6 @@ public class Test extends TestBefore {
             System.out.println(123);
         }
     }
-
     public void loadImg(){
         String sql="select cover_img from kk_product";
         String sql2="select img_url from kk_product_img";
@@ -106,8 +103,6 @@ public class Test extends TestBefore {
             download(url,"d://imgs");
         }
     }
-
-
     public static void download(String urlString,String path){
         try {
             URL url = new URL(urlString);
@@ -133,5 +128,13 @@ public class Test extends TestBefore {
         }
     }
 
-
+    public void addForm(){
+        Form f=new Form();
+        FormImg fi=new FormImg();
+        f.set("title","test");
+        f.set("content","test111");
+        f.set("create_time",new Date());
+        f.set("u_uid","asdasdsad");
+        f.save();
+    }
 }

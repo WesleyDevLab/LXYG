@@ -13,7 +13,7 @@ public class Shop extends Model<Shop> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 110L;
 	public static final Shop dao = new Shop();
 	
 	public List<Record> getActivity(){

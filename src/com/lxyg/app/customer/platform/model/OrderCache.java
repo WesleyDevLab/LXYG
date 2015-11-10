@@ -14,7 +14,7 @@ public class OrderCache extends Model<OrderCache> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 108L;
 
 	public static final OrderCache dao=new OrderCache();
 	

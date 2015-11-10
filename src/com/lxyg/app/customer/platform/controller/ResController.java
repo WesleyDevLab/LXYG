@@ -97,34 +97,33 @@ public class ResController extends Controller {
 		renderJson();
 	}
 	
+//	@Before(POST.class)
+//	public void addImg(){
+//		log.info("addImg");
+//		JSONObject json= JSONObject.fromObject(getPara("info"));
+//		String str=getPara("ImgData");
+//		if(str==null){
+//			str=json.getString("ImgData");
+//		}
+//		String key="";
+//		if(str!=null){
+//			try {
+//				byte[] buffer = new BASE64Decoder().decodeBuffer(str);
+//				key= QiniuImgUtil.upload(buffer);
+//			} catch (Exception e1) {
+//				log.error("error", e1);
+//			}
+//		}
+//		setAttr("code", 10002);
+//		setAttr("msg", "上传成功");
+//		setAttr("data", ConfigUtils.getProperty("kaka.qiniu.server")+key);
+//		renderJson();
+//	}
 	@Before(POST.class)
 	public void addImg(){
-		log.info("addImg");
-		JSONObject json= JSONObject.fromObject(getPara("info"));
-		String str=getPara("ImgData");
-		if(str==null){
-			str=json.getString("ImgData");
-		}
-		String key="";
-		if(str!=null){
-			try {
-				byte[] buffer = new BASE64Decoder().decodeBuffer(str);
-				key= QiniuImgUtil.upload(buffer);
-			} catch (Exception e1) {
-				log.error("error", e1);
-			}			
-		}
-		setAttr("code", 10002);
-		setAttr("msg", "上传成功");
-		setAttr("data", ConfigUtils.getProperty("kaka.qiniu.server")+key);
-		renderJson();
-	}
-	@Before(POST.class)
-	public void addUpYunImg(){
 		String URL="http://lxyg8.b0.upaiyun.com/";
 		UpYun upYun=new UpYun("lxyg8","lxyg8888","0611xyg123");
 		String filePath="";
-		log.info("addImg");
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String str=getPara("ImgData");
 		if(str==null){

@@ -12,7 +12,7 @@ import java.util.List;
  * Created by Administrator on 2015/9/11.
  */
 public class FBGoods extends Model<FBGoods> {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 101L;
     public static final FBGoods dao = new FBGoods();
 
     private String find_sql="select id as fb_product_id,name,title,price,market_price,cash_pay,cover_img," +

@@ -124,7 +124,7 @@ public class alipayController extends Controller {
 		if(o.getStr("alipay_no")==null){
 			log.error("--订单状态修改   正常状态--");	
 			o.set("id", o.getInt("orderId"));
-			o.set("order_status", IConstant.OrderStatus.order_status_pay);
+			o.set("order_status", IConstant.OrderStatus.order_status_dfh);
 			o.set("alipay_no",payNo);
 			o.set("pay_time", new Date());
 			ub=o.update();

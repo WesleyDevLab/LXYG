@@ -13,7 +13,7 @@ public class User extends Model<User> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 111L;
 	public static final User dao = new User();
 
 	public Map<String, Object> getAttrs() {

@@ -6,6 +6,7 @@
 <jsp:include page="/metro.jsp"></jsp:include>
 <script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js"></script>
 <script type="text/javascript">
+	console.info("${orders}");
 function init(){
 	initRow();			
 }

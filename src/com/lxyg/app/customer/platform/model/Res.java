@@ -10,7 +10,7 @@ public class Res extends Model<Res> {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 109L;
 	public static final Res dao = new Res();
 
 	public static List<Res> findMyByParentId(int parentId, int userId) {

@@ -105,6 +105,13 @@ public class PageController extends Controller {
 	public void toOrderLis(){
 		render("/shopdetail/allgoods.jsp");
 	}
+
+	public void toFinance(){
+		render("/finance/consume.jsp");
+	}
+	public void toConsume(){
+		render("/finance/flist.jsp");
+	}
 	
 //
 //	/**

@@ -499,6 +499,9 @@ public class AppControllerV2 extends Controller {
 
     @ActionKey("app/user/v2/homePage")
     public void  homePage_1(){
+        if(M.loadInfo()!=1){
+            return;
+        }
         JSONObject json= JSONObject.fromObject(getPara("info"));
         if (!json.containsKey("s_uid")){
             renderFaile("店铺id");
@@ -681,14 +684,13 @@ public class AppControllerV2 extends Controller {
             if(!s){
                 renderFaile("异常");
             }
-//             o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
+//            o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){
 //                    orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.manager.phone"),o.getStr("order_id"),0);
 //                    Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
 //                }
 //            }
-
         }
         renderSuccess("下单成功",o);
     }

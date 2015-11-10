@@ -11,6 +11,9 @@ http://192.168.1.210/LXYG/app/v2/districts?info={"area_id":"700402"}
 http://192.168.1.210/LXYG/app/v2/productTypes 所有一级分类二级分类
 http://192.168.1.210/LXYG/app/v2/searchProduct?info={pg:1,name:"d"}  产品搜索
 
+http://127.0.0.1/LXYG/app/user/v2/addForm?info={"title":"test","content":"ccssdd","u_uid":"test","imgs":["xxxxxxxx","xxxxxxxxx","xxaaqqdddd"]} 添加
+http://127.0.0.1/LXYG/app/user/v2/delForm?info={"form_id":2} 删除
+
 
 
 
