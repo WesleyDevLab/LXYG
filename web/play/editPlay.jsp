@@ -10,8 +10,11 @@
 <!--  <script type="text/javascript" src="${path }/public/js/public.js"></script>-->
 <script type="text/javascript" src="${path }/js/jquery.fileupload.js"></script>
 <script type="text/javascript" src="${path }/public/kindeditor/kindeditor.js"></script>
-<script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js">
-</script>
+<script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js"></script>
+	<script type="text/javascript" src="${path}/upYun/lib/async.js"></script>
+	<script type="text/javascript" src="${path}/upYun/lib/spark-md5.js"></script>
+	<script type="text/javascript" src="${path}/upYun/lib/upyun-mu.js"></script>
+	<script type="text/javascript" src="${path}/upYun/lib/uuid.js"></script>
 <script type="text/javascript">
 var serverUrl="${qiniuServer}";
 var imgCover="";
@@ -32,7 +35,6 @@ $(document).ready(function(){
 	                 type+="<option  value="+result.type[i].id+" > "+result.type[i].name+" </option>"
 	           }
 	       }
-	       
 	       brand+="<option  selected='selected' value=${goods.p_brand_id}> ${goods.p_brand_name} </option>"
 	        for(var i=0;i<result.unit.length;i++){
 	         if("${goods.p_unit_id}"==result.unit[i].id){
@@ -42,7 +44,6 @@ $(document).ready(function(){
 	          }
 	       }
 	        for(var i=0;i<result.payType.length;i++){
-	           
 	           payType+="<input type='checkbox' name='payType' checked='true'  value="+result.payType[i].id+"><span style='padding-right:10px'>"+result.payType[i].pay_type_name+"</span>"
 	       }
 	       for(var i=0;i<result.server.length;i++){
@@ -64,65 +65,120 @@ $(document).ready(function(){
 });
 
 
-$(function(){
-   $("#img").click(function(){
-		$("#coverFile").click();
-	});
-   $("#coverFile").fileupload({
-        url: "http://upload.qiniu.com/",
-        formData:{
-        	"token": "${token}"
-        },
-        done: function (e, data) {
-        	$("#img").html("上传成功,读取中...");
-	        if(data.result.key && data.result.hash){
-	        imgCover=data.result.key;
-	        var url=serverUrl+data.result.key
-	           $("#imgs").append("<img key='"+data.result.key+"' src='"+url+"' onclick='deleteImg($(this));' style='width:100px;height:100px;padding:5px' />")
-	        }else{
-				alert("上传失败");
-	        }
-        },
-        progressall: function (e, data) {
-            var progress = data.loaded / data.total;
-        },
-        start:function(e){
-        	$("#img").html("上传中...");
-        }
-    });
-});
+function showImg(type){
+	if(type==1){
+		var files=document.getElementById('coverFile').files;
+		for(var i=0;i<files.length;i++){
+			var file=files[i];
+			var fileReader=new FileReader();
+			fileReader.onloadend=function(e){
+				$("#imgs").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+			}
+			fileReader.readAsDataURL(file);
+		}
+		imgCover=selectFile(files)[0];
+	}
+	if(type==2){
+		var files=document.getElementById('coverFiles').files;
+		for(var i=0;i<files.length;i++){
+			var file=files[i];
+			var fileReader=new FileReader();
+			fileReader.onloadend=function(e){
+				$("#imgss").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+			}
+			fileReader.readAsDataURL(file);
+		}
+		imgs=selectFile(files);
+	}
+}
+
+function selectFile(files){
+	var img_urls=new Array();
+	for(var i=0;i<files.length;i++){
+		var ext = '.' +files[i].name.split('.').pop();
+		var path='/platform/' + Math.uuid(16,"")+ext;
+		uploadImg(path,files[i])
+		img_urls[i]="http://lxyg8.b0.upaiyun.com"+path;
+	}
+	return img_urls;
+}
+
+function uploadImg(path,file){
+	var config={
+		bucket:'lxyg8',
+		expiration: parseInt((new Date().getTime() + 3600000) / 1000),
+		form_api_secret: 'Jcrn4om4KRTt6FTvMb04r72P4XU='
+	};
+	var instance=new Sand(config);
+	var options = {
+		'notify_url': 'http://upyun.com'
+	};
+	instance.setOptions(options);
+	instance.upload(path,file);
+
+};
+
+
+
+<%--$(function(){--%>
+   <%--$("#img").click(function(){--%>
+		<%--$("#coverFile").click();--%>
+	<%--});--%>
+   <%--$("#coverFile").fileupload({--%>
+        <%--url: "http://upload.qiniu.com/",--%>
+        <%--formData:{--%>
+        	<%--"token": "${token}"--%>
+        <%--},--%>
+        <%--done: function (e, data) {--%>
+        	<%--$("#img").html("上传成功,读取中...");--%>
+	        <%--if(data.result.key && data.result.hash){--%>
+	        <%--imgCover=data.result.key;--%>
+	        <%--var url=serverUrl+data.result.key--%>
+	           <%--$("#imgs").append("<img key='"+data.result.key+"' src='"+url+"' onclick='deleteImg($(this));' style='width:100px;height:100px;padding:5px' />")--%>
+	        <%--}else{--%>
+				<%--alert("上传失败");--%>
+	        <%--}--%>
+        <%--},--%>
+        <%--progressall: function (e, data) {--%>
+            <%--var progress = data.loaded / data.total;--%>
+        <%--},--%>
+        <%--start:function(e){--%>
+        	<%--$("#img").html("上传中...");--%>
+        <%--}--%>
+    <%--});--%>
+<%--});--%>
 
  var i=0;
-$(function(){
-   $("#details").click(function(){
-		$("#coverFiles").click();
-	});
-   $("#coverFiles").fileupload({
-        url: "http://upload.qiniu.com/",
-        formData:{
-        	"token": "${token}"
-        },
-        done: function (e, data) {
-        	$("#details").html("上传成功,读取中...");
-	        if(data.result.key && data.result.hash){
-	        var url=serverUrl+data.result.key
-	           $("#imgss").append("<img key='"+data.result.key+"' src='"+url+"' onclick='deleteImg($(this));'  style='width:100px;height:100px;padding:5px'/>");
-        	   imgs[i]=data.result.key;
-        	   i++;
-	        }else{
-				alert("上传失败");
-	        }
-        },
-        progressall: function (e, data) {
-            var progress = data.loaded / data.total;
-        },
-        start:function(e){
-        	$("#details").html("上传中...");
-        }
-        
-    });
- 
-});
+<%--$(function(){--%>
+   <%--$("#details").click(function(){--%>
+		<%--$("#coverFiles").click();--%>
+	<%--});--%>
+   <%--$("#coverFiles").fileupload({--%>
+        <%--url: "http://upload.qiniu.com/",--%>
+        <%--formData:{--%>
+        	<%--"token": "${token}"--%>
+        <%--},--%>
+        <%--done: function (e, data) {--%>
+        	<%--$("#details").html("上传成功,读取中...");--%>
+	        <%--if(data.result.key && data.result.hash){--%>
+	        <%--var url=serverUrl+data.result.key--%>
+	           <%--$("#imgss").append("<img key='"+data.result.key+"' src='"+url+"' onclick='deleteImg($(this));'  style='width:100px;height:100px;padding:5px'/>");--%>
+        	   <%--imgs[i]=data.result.key;--%>
+        	   <%--i++;--%>
+	        <%--}else{--%>
+				<%--alert("上传失败");--%>
+	        <%--}--%>
+        <%--},--%>
+        <%--progressall: function (e, data) {--%>
+            <%--var progress = data.loaded / data.total;--%>
+        <%--},--%>
+        <%--start:function(e){--%>
+        	<%--$("#details").html("上传中...");--%>
+        <%--}--%>
+        <%----%>
+    <%--});--%>
+ <%----%>
+<%--});--%>
 
 var editor;
 KindEditor.ready(function(K) {
@@ -180,8 +236,18 @@ function checkForm() {
 	
 	var serverText=$("#column_server").find("option:selected").text();
 	var serverValue=$("#column_server").val();
-	
-	
+
+
+	$("#imgss").children().each(function(i){
+		var obj=$(this).context.currentSrc;
+		if(obj.indexOf("data:image/jpeg;base64")!=-1){
+			return true;
+		}else{
+			imgs[imgs.length+i]=obj;
+		}
+	});
+	console.info(imgs);
+
 	var key=new Array();
 	var value=new Array();
 	$("input[name='payType']").each(function(j){
@@ -201,11 +267,12 @@ function checkForm() {
 	if(imgs.length!=0){
 	    imgDetail+="[";
 		for(var k=0;k<imgs.length;k++){
-		   imgDetail+=imgs[k]+",";
+		   imgDetail+="\""+imgs[k]+"\",";
 		}
 		imgDetail=imgDetail.substr(0,imgDetail.length-1)+"]";
 	}
-	
+
+	console.info(imgCover);
 	if (name == "") {
 		alert("产品名字！");
 		return false;
@@ -249,7 +316,6 @@ function checkForm() {
 	   alert("选择产品单位 ！");
 	   return false;
 	}
-	
 	$.post("${path}/goods/updateGoods",{"goodsId":"${goods.productId}","name":name,"title":title,"price":price,"marketPrice":market_price,
 	           "typeId":typeValue,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
@@ -367,29 +433,56 @@ function deleteImg(el){
 						</div>
 						
 						
+						<%--<div class="control-group">--%>
+							<%--<label class="control-label" >产品图片：</label>--%>
+							<%--<div class="controls">--%>
+								<%--<input  name="img" id="img" type="button" value="选择封面图片" />--%>
+								<%--<input id="coverFile" name="file" style="display:none;" type="file" /><br/>--%>
+							<%--<div style="border: 10px"  id="imgs">--%>
+							   <%----%>
+							<%--</div>--%>
+							<%--</div>--%>
+						<%--</div>--%>
+						<%----%>
+						<%--<div class="control-group">--%>
+							<%--<label class="control-label" >产品图片：</label>--%>
+							<%--<div class="controls">--%>
+								<%--<input class="input-file uniform_on" name="img" id="details" type="button" value="选择产品详细图片" />--%>
+								<%--<input id="coverFiles" name="file" style="display:none;" type="file"  multiple="multiple"/><br/>--%>
+							<%--<div style="border: 10px"  id="imgss">--%>
+							   <%--<c:forEach items="${goods.productImgs}" var="col">--%>
+							       <%--<img key="${col.img_url}" src="${col.img_url}" onclick='deleteImg($(this));' style='width:100px;height:100px;padding:5px'/>--%>
+								<%--</c:forEach>--%>
+							<%--</div>--%>
+							<%--</div>--%>
+						<%--</div>--%>
+						<%----%>
+
 						<div class="control-group">
-							<label class="control-label" >产品图片：</label>
+							<label class="control-label" >产品封面：</label>
 							<div class="controls">
-								<input  name="img" id="img" type="button" value="选择封面图片" />
-								<input id="coverFile" name="file" style="display:none;" type="file" /><br/>
-							<div style="border: 10px"  id="imgs">
-							   
-							</div>
+								<input id="coverFile" name="file"  type="file" onchange="showImg(1)" /><br/>
+								<div style="border: 10px"  id="imgs">
+
+								</div>
 							</div>
 						</div>
-						
+
 						<div class="control-group">
-							<label class="control-label" >产品图片：</label>
+							<label class="control-label" >产品详细图片：</label>
 							<div class="controls">
-								<input class="input-file uniform_on" name="img" id="details" type="button" value="选择产品详细图片" />
-								<input id="coverFiles" name="file" style="display:none;" type="file"  multiple="multiple"/><br/>
-							<div style="border: 10px"  id="imgss">
-							   <c:forEach items="${goods.productImgs}" var="col">
-							       <img key="${col.img_url}" src="${col.img_url}" onclick='deleteImg($(this));' style='width:100px;height:100px;padding:5px'/>
-								</c:forEach>
-							</div>
+								<input id="coverFiles" name="file"  type="file"  multiple="multiple" onchange="showImg(2)"/><br/>
+								<div style="border: 10px"  id="imgss">
+									<c:forEach items="${goods.productImgs}" var="col">
+										<img key="${col.img_url}" src="${col.img_url}" onclick='deleteImg($(this));' style='width:100px;height:100px;padding:5px'/>
+									</c:forEach>
+								</div>
 							</div>
 						</div>
+
+
+
+
 						<div class="control-group">
 							<label class="control-label" >是否首页展示：</label>
 								<div class="controls">
@@ -409,7 +502,6 @@ function deleteImg(el){
 						</div>
 						
 						<div class="form-actions">
-							
 							<input type="button" value="保存" class="btn btn-primary" onclick="checkForm()" />
 							<input type="reset" class="btn" value="重置" />
 						</div>

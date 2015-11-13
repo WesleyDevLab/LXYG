@@ -121,26 +121,26 @@ public class ResController extends Controller {
 //	}
 	@Before(POST.class)
 	public void addImg(){
-		String URL="http://lxyg8.b0.upaiyun.com/";
-		UpYun upYun=new UpYun("lxyg8","lxyg8888","0611xyg123");
-		String filePath="";
+		String URL="http://lxyg8.b0.upaiyun.com";
+		UpYun upYun=new UpYun("lxyg8","lxyg8888","0611lxyg123");
+		String filePath="/lxyg/";
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String str=getPara("ImgData");
 		if(str==null){
 			str=json.getString("ImgData");
-
 		}
-		filePath=loadUUID.getUUID()+".jpg";
+		filePath+= loadUUID.getUUID()+".jpg";
+		boolean result=false;
 		try {
 			byte[] buffer = new BASE64Decoder().decodeBuffer(str);
-			boolean result = upYun.writeFile(filePath, buffer, true);
-			assert (result);
+			result = upYun.writeFile(filePath, buffer, true);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		setAttr("code", 10002);
-		setAttr("msg", "上传成功");
-		setAttr("data",URL+"lxyg8/"+filePath);
+		setAttr("msg", result ?"上传成功":"上传失败");
+		setAttr("data",URL+filePath);
 		renderJson();
 	}
 

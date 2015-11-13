@@ -13,7 +13,13 @@ http://192.168.1.210/LXYG/app/v2/searchProduct?info={pg:1,name:"d"}  产品搜�
 
 http://127.0.0.1/LXYG/app/user/v2/addForm?info={"title":"test","content":"ccssdd","u_uid":"test","imgs":["xxxxxxxx","xxxxxxxxx","xxaaqqdddd"]} 添加
 http://127.0.0.1/LXYG/app/user/v2/delForm?info={"form_id":2} 删除
-
+http://127.0.0.1/LXYG/app/user/v2/listForm?info={"pg":1,,"uid":"b4f8f2652073400b"} 帖子列表
+http://127.0.0.1/LXYG/app/user/v2/form?info={"form_id":3,"uid":"b4f8f2652073400b"} 帖子详情
+http://192.168.0.210/LXYG/app/user/v2/replay?info={"form_id":3,"uid":"b4f8f2652073400b","to_uid":"ad5d333b591e42fa","content":"xxaasdsdxcz"} 评论
+http://192.168.0.210/LXYG/app/user/v2/delReplay?info={"replayId":1,"uid":"b4f8f2652073400b"} 删除评论
+http://192.168.0.210/LXYG/app/user/v2/zan?info={"form_id":3,"uid":"b4f8f2652073400b"} 点赞
+http://192.168.0.210/LXYG/app/user/v2/delZan?info={"zId":1,"uid":"b4f8f2652073400b"} 取消赞
+http://192.168.0.210/LXYG/app/user/weLogin?info={"weName":"xx","openId":"b4f8f2652073400b","lng":"113.4","lat":"34.7","headimgurl":"http://123.jpg"} 微信登陆
 
 
 

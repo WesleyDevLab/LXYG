@@ -64,6 +64,7 @@ public class Config extends JFinalConfig {
 			arp.addMapping("kk_form",Form.class);
 			arp.addMapping("kk_form_img",FormImg.class);
 			arp.addMapping("kk_form_replay",FormReplay.class);
+			arp.addMapping("kk_form_zan",FormZan.class);
 			arp.setShowSql(false);
 			me.add(arp);
 			// 配置极光推送插件

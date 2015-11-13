@@ -206,7 +206,6 @@ public class GoodsController extends Controller {
 			String cover= getPara("cover");
 			Goods goods = new Goods().findById(getPara("goodsId"), "id");
 			if(cover!=null&&!cover.equals("")){
-				cover=ConfigUtils.getProperty("kaka.qiniu.server")+cover;
 				goods.set("cover_img", cover);
 			}
 			goods.set("name", getPara("name"));
@@ -226,15 +225,12 @@ public class GoodsController extends Controller {
 			goods.set("server_name", getPara("serverName"));
 			goods.set("payment", getPara("payment"));
 			goods.set("modify_time", DateTools.createTime());
-			
 			boolean flag=false;
 			if(getPara("imgs")!=null&&!getPara("imgs").equals("")){
 				flag=goodsService.save(goods, getPara("imgs"));
-				
 			}else{
 				flag=goods.update();
 			}
-			
 			if(flag){
 				setAttr("code", 10010);
 				setAttr("message", "修改成功");

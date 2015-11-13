@@ -3,9 +3,10 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Demo</title>
-	<script src="../public/js/jquery-1.10.2.min.js"></script>
+	<script src="../js/jquery-1.7.1.min.js"></script>
 	<script src="lib/spark-md5.js"></script>
 	<script src="lib/async.js"></script>
+	<script src="lib/uuid.js"></script>
 	<script src="lib/upyun-mu.js"></script>
 	<style>
 		input,
@@ -66,9 +67,6 @@
 			}
 			fileReader.readAsDataURL(file);
 		}
-
-
-
 	}
 
 	document.getElementById('submit').onclick = function() {
@@ -84,7 +82,7 @@
 			'notify_url': 'http://upyun.com'
 		};
 		instance.setOptions(options);
-		instance.upload('/platform/' + parseInt((new Date().getTime() + 3600000) / 1000) + ext);
+		instance.upload();
 	};
 
 

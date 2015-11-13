@@ -1,13 +1,21 @@
 package com.lxyg.app.customer.platform.TestUnit;
 
+import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonArray;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.model.Form;
 import com.lxyg.app.customer.platform.model.FormImg;
 
+import com.lxyg.app.customer.platform.util.JsonUtils;
+import com.lxyg.app.customer.platform.util.UpYun;
+import com.lxyg.app.customer.platform.util.loadUUID;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
+import org.json.JSONException;
+import sun.misc.BASE64Decoder;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -128,6 +136,45 @@ public class Test extends TestBefore {
         }
     }
 
+    public void upload(){
+        String URL="http://lxyg8.b0.upaiyun.com";
+        UpYun upYun=new UpYun("lxyg8","lxyg8888","0611lxyg123");
+        String filePath="/lxyg/";
+//        net.sf.json.JSONObject json= net.sf.json.JSONObject.fromObject(getPara("info"));
+//        String str=getPara("ImgData");
+//        if(str==null){
+//            str=json.getString("ImgData");
+//        }
+        filePath+= loadUUID.getUUID()+".jpg";
+        byte[] buffer = image2byte("d://aa.jpg");
+        boolean result = upYun.writeFile(filePath, buffer, true);
+        System.out.println(result);
+    }
+
+    public static byte[] image2byte(String path){
+        byte[] data = null;
+        FileImageInputStream input = null;
+        try {
+            input = new FileImageInputStream(new File(path));
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buf = new byte[1024];
+            int numBytesRead = 0;
+            while ((numBytesRead = input.read(buf)) != -1) {
+                output.write(buf, 0, numBytesRead);
+            }
+            data = output.toByteArray();
+            output.close();
+            input.close();
+        }
+        catch (FileNotFoundException ex1) {
+            ex1.printStackTrace();
+        }
+        catch (IOException ex1) {
+            ex1.printStackTrace();
+        }
+        return data;
+    }
+
     public void addForm(){
         Form f=new Form();
         FormImg fi=new FormImg();
@@ -136,5 +183,14 @@ public class Test extends TestBefore {
         f.set("create_time",new Date());
         f.set("u_uid","asdasdsad");
         f.save();
+    }
+
+    @org.junit.Test
+    public void jsonParse(){
+        String str="[\"/platform/cV5zsOBe1JJlujUR.jpg\",/platform/LLMIWpwmiURyKQKM.jpg\"]";
+        String str1="[\"/platform/pDXXpAr9IFnUGYiM.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\"]";
+
+        com.alibaba.fastjson.JSONArray array = com.alibaba.fastjson.JSONArray.parseArray(str);
+        System.out.println(array.size());
     }
 }

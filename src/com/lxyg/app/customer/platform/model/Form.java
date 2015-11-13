@@ -20,9 +20,12 @@ public class Form extends Model<Form>{
     private String content;
     private String create_time;
     private String u_uid;
+
+    private boolean isZan;
+
     private FormImg formImg;
     private FormReplay formReplay;
-    private FromZan fromZan;
+    private FormZan FormZan;
 
     public String getTitle() {
         return title;
@@ -57,6 +60,7 @@ public class Form extends Model<Form>{
     }
 
 
+
     public void setFormImg(String imgUrl,int formId) {
         FormImg formImg=new FormImg();
         formImg.set("img_url", imgUrl);
@@ -73,33 +77,64 @@ public class Form extends Model<Form>{
         formReplay.save();
     }
 
-    public void setFromZan(String u_uid,int formId) {
-        FromZan fromZan=new FromZan();
-        fromZan.set("form_id", formId);
-        fromZan.set("u_uid",u_uid);
-        fromZan.save();
+    public void setFormZan(String u_uid,int formId) {
+        FormZan FormZan=new FormZan();
+        FormZan.set("form_id", formId);
+        FormZan.set("u_uid",u_uid);
+        FormZan.save();
     }
 
-    public List<FromZan> getFromZan(int formId) {
-        return fromZan.find("select z.u_uid,z.form_id,u.name,u.head_img from kk_from_zan z left join kk_user u on z.u_uid=u.uuid  where z.form_id=?",formId);
+    public List<FormZan> getFormZan(int formId) {
+        List<FormZan> zans= FormZan.dao.find("select z.id as zId,z.u_uid,z.form_id,u.name,u.head_img from kk_form_zan z left join kk_user u on z.u_uid=u.uuid  where z.form_id=?", formId);
+        if(zans.size()==0){
+            return null;
+        }
+        return zans;
     }
-    public List<FromZan> getFromZanAll(int formId) {
-        return fromZan.find("select *,count(id) as count from kk_from_zan z  where z.form_id=?",formId);
+    public List<FormZan> getFormZanAll(int formId) {
+        List<FormZan> zans=FormZan.find("select *,count(id) as count from kk_form_zan z  where z.form_id=?",formId);
+        if(zans.size()==0){
+            return null;
+        }
+        return zans;
+    }
+    public boolean isZan(String u_uid,int form_id) {
+        FormZan z=FormZan.dao.findFirst("select count(id) as count from kk_form_zan z  where z.form_id=? and z.u_uid=?", form_id, u_uid);
+        if(z.getLong("count")>0){
+            return true;
+        }
+        return false;
     }
 
     public List<FormReplay> getFormReplays(int formId){
-        return FormReplay.dao.find("SELECT r.id AS replayId, r.form_id, r.u_uid, r.to_u_uid, r.content, u. name, u.head_img, tu. name, tu.head_img " +
+        List<FormReplay> replays= FormReplay.dao.find("SELECT r.id AS replayId, r.form_id, r.u_uid, r.to_u_uid, r.content, u. name, u.head_img, tu. name as tu_name, tu.head_img as tu_head_img " +
                 "FROM kk_form_replay r LEFT JOIN kk_user u ON u.uuid = r.u_uid LEFT JOIN kk_user tu ON tu.uuid = r.to_u_uid where r.form_id=?",formId);
+        if(replays.size()==0){
+            return null;
+        }
+        return replays;
     }
     public List<FormReplay> getFormReplaysAll(int formId){
-        return FormReplay.dao.find("SELECT *,count(id) as count from kk_form_replay  where r.form_id=?",formId);
+        List<FormReplay> replays=FormReplay.dao.find("SELECT *,count(id) as count from kk_form_replay  where r.form_id=?",formId);
+        if(replays.size()==0){
+            return null;
+        }
+        return replays;
     }
 
     public List<FormImg> getFormImgs(int formId){
-        return FormImg.dao.find("select id as formImgId,img_url,form_id from kk_form_img where form_id=?",formId);
+        List<FormImg> imgs=FormImg.dao.find("select id as formImgId,img_url,form_id from kk_form_img where form_id=?",formId);
+        if(imgs.size()==0){
+            return null;
+        }
+        return imgs;
     }
     public List<FormImg> getFormImgsAll(int formId){
-        return FormImg.dao.find("select *,count(id) as count from kk_form_img where form_id=?",formId);
+        List<FormImg> imgs= FormImg.dao.find("select *,count(id) as count from kk_form_img where form_id=?",formId);
+        if(imgs.size()==0){
+            return null;
+        }
+        return imgs;
     }
 
 
@@ -115,31 +150,31 @@ public class Form extends Model<Form>{
         for(FormReplay formReplay:getFormReplaysAll(formId)){
             formReplay.delete();
         }
-        for(FromZan zan:getFromZanAll(formId)){
+        for(FormZan zan:getFormZanAll(formId)){
             zan.delete();
         }
         return flag;
     }
 
-    public Page<Form> forms(int page){
+    public Page<Form> forms(int page,String s_uid){
        Page<Form> forms= Form.dao.paginate(page, IConstant.PAGE_DATA, "select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img ",
                "from kk_form f left join kk_user u on f.u_uid=u.uuid");
         for(Form f:forms.getList()){
-            Record r= Db.findFirst("select count(r.id) as countR,count(z.id) as countZ from kk_form_replay r,kk_form_zan z where r.form_id=? and z.form_id=?",f.getInt("form_id"));
+            Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?;",f.getInt("form_id"));
             f.put("formImgs",getFormImgs(f.getInt("form_id")));
-            f.put("replayNum",r.getBigDecimal("countR"));
-            f.put("zanNum",r.getBigDecimal("countZ"));
+            f.put("replayNum",r.getLong("countR"));
+            f.put("zanNum",r.getLong("countZ"));
+            f.put("isZan",isZan(s_uid,f.getInt("form_id")));
         }
         return forms;
     }
 
-    public Form form(int formId){
+    public Form form(int formId,String u_id){
         Form form=Form.dao.findFirst("select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img from kk_form f left join kk_user u on f.u_uid=u.uuid where f.id=?",formId);
         form.put("formImgs",getFormImgs(formId));
         form.put("replays",getFormReplays(formId));
-        form.put("zans",getFromZan(formId));
+        form.put("zans",getFormZan(formId));
+        form.put("isZan",isZan(u_id,form.getInt("form_id")));
         return  form;
     }
-
-
 }
