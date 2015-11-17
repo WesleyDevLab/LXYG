@@ -134,13 +134,16 @@ public class FormController extends Controller {
     @ActionKey("app/user/v2/replay")
     public void addReplay(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
-        if(!json.containsKey("form_id")||!json.containsKey("uid")||!json.containsKey("to_uid")||!json.containsKey("content")){
+        if(!json.containsKey("form_id")||!json.containsKey("uid")||!json.containsKey("content")){
             renderFaile("提交信息异常");
             return;
         }
         int form_id=json.getInt("form_id");
+        String to_u_uid="";
+        if(json.containsKey("to_uid")){
+             to_u_uid=json.getString("to_uid");
+        }
         String u_uid=json.getString("uid");
-        String to_u_uid=json.getString("to_uid");
         String content=json.getString("content");
         Form.dao.setFormReplay(u_uid,to_u_uid,content,form_id);
         renderSuccess("添加成功",null);

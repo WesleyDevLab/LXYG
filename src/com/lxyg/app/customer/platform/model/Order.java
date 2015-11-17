@@ -133,15 +133,15 @@ public class Order extends Model<Order> {
 			list.add(map.get("endTime"));
 		}
 		if (map.containsKey("shopId")) {
-			where += "and o.s_uuid =? ";
+			where += " and o.s_uuid =? ";
 			list.add(map.get("shopId"));
 		}
 		if (map.containsKey("shopName")) {
-			where += "and o.shop_name like ? ";
+			where += " and o.shop_name like ? ";
 			list.add("%"+map.get("shopName")+"%");
 		}
 		if(map.containsKey("uid")){
-			where += "and o.u_uuid=?";
+			where += " and o.u_uuid=?";
 			list.add(map.get("uid"));
 		}
 		if (map.containsKey("payType")) {
@@ -149,7 +149,7 @@ public class Order extends Model<Order> {
 			list.add(map.get("payType"));
 		}
 		if (map.containsKey("status")) {
-			where += "and o.order_status =?";
+			where += " and o.order_status =? ";
 			list.add(map.get("status"));
 		}
 		if(map.containsKey("type")){
@@ -165,7 +165,7 @@ public class Order extends Model<Order> {
 		}
 		if(map.containsKey("userStatus")){
 			String userStatus=map.get("userStatus").toString();
-			where +=" and o.order_status in "+userStatus +" group by o.order_id";
+			where +=" and o.order_status in "+userStatus +" group by o.order_id order by o.create_time desc";
 		}
 
 		Object[] o = new Object[list.size()];

@@ -612,14 +612,21 @@ public class AppControllerV2 extends Controller {
         map.put("u_uuid", uid);
         map.put("s_uuid", shopId);
         map.put("address_id", addressId);
-        if(addressId!=0){
+        Shop shop=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
+        if(addressId!=0 && !shopId.equals("")){
             Record r= Db.findById("kk_user_address", addressId);
             map.put("address", r.get("full_address"));
+            map.put("shop_name", shop.get("name"));
+            /**
+             * 配送距离超过1000米 不让下单
+             * */
+            Record dis=Db.findFirst("select distance(?,?,?,?) as dis",r.getDouble("lng"),r.getDouble("lat"),shop.getDouble("lng"),shop.getDouble("lat"));
+            if(dis.getDouble("dis")>1000){
+                renderFaile("太远了！！送不到啊 亲~");
+                return;
+            }
         }
-        if(!shopId.equals("")){
-            Shop s=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
-            map.put("shop_name", s.get("name"));
-        }
+
         map.put("send_type", sendType);
         map.put("send_name", IConstant.sendType.get(sendType));
         map.put("send_id", sendId);
@@ -649,17 +656,19 @@ public class AppControllerV2 extends Controller {
                 JSONObject o = array.getJSONObject(i);
                 int productId = o.getInt("productId");
                 int productNum = o.getInt("productNum");
-                int is_norm=o.getInt("is_norm");
-                if(is_norm==1){
-                    Goods g = new Goods().findById(productId);
-                    int pric=g.getBigDecimal("price").intValue();
-                    allPrice+=pric*productNum;
-                }
-                if(is_norm==2){
-                    FBGoods g = FBGoods.dao.findById(productId);
-                    int pric=g.getBigDecimal("price").intValue();
-                    allPrice+=pric*productNum;
-                }
+                Goods g = new Goods().findById(productId);
+                int pric=g.getBigDecimal("price").intValue();
+                allPrice+=pric*productNum;
+//                if(is_norm==1){
+//                    Goods g = new Goods().findById(productId);
+//                    int pric=g.getBigDecimal("price").intValue();
+//                    allPrice+=pric*productNum;
+//                }
+//                if(is_norm==2){
+//                    FBGoods g = FBGoods.dao.findById(productId);
+//                    int pric=g.getBigDecimal("price").intValue();
+//                    allPrice+=pric*productNum;
+//                }
             }
         }
         allPrice=allPrice-json.getInt("cashPay");
@@ -684,6 +693,20 @@ public class AppControllerV2 extends Controller {
             if(!s){
                 renderFaile("异常");
             }
+            if(s&&payType==3){
+                String str="";
+                str=",收货人:"+o.getStr("name");
+                str+=",联系电话："+o.getStr("phone");
+                str+=",收获地址:"+o.getStr("address");
+                str+=",支付方式："+o.getStr("pay_name");
+                str+=",购买产品：【";
+                for(Record r:o.getOrderItems(o.getStr("uuid"))){
+                    str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
+                }
+                str+="】";
+                str+="总价:"+o.getInt("price")/100+"元";
+                SdkMessage.sendUser(shop.getStr("phone"),str);
+            }
 //            o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){
@@ -691,6 +714,9 @@ public class AppControllerV2 extends Controller {
 //                    Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
 //                }
 //            }
+        }else{
+            renderFaile("异常");
+            return;
         }
         renderSuccess("下单成功",o);
     }
@@ -866,4 +892,17 @@ public class AppControllerV2 extends Controller {
         Record record=Db.findFirst("select * from kk_app where app like ?","%"+system+"%");
         renderSuccess("获取成功",record);
     }
+    @ActionKey("/app/user/v2/getShopLatLng")
+    public void loadLatLng(){
+        log.info("loadLatLng");
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        if(!json.containsKey("s_uid")){
+            renderFaile("异常");
+        }
+        String s_uid=json.getString("s_uid");
+        Shop s=Shop.dao.findFirst("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where s.uuid=?",s_uid);
+        renderSuccess("获取成功",s);
+    }
+
+
 }

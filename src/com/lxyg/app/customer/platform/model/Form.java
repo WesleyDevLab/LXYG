@@ -175,6 +175,9 @@ public class Form extends Model<Form>{
         form.put("replays",getFormReplays(formId));
         form.put("zans",getFormZan(formId));
         form.put("isZan",isZan(u_id,form.getInt("form_id")));
+        Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?",formId);
+        form.put("replayNum",r.getLong("countR"));
+        form.put("zanNum",r.getLong("countZ"));
         return  form;
     }
 }

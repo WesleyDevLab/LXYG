@@ -2426,12 +2426,17 @@ public class AppController extends Controller {
 	public void loadCash(){
 		log.info("loadCash");
 		JSONObject json= JSONObject.fromObject(getPara("info"));
+		if(!json.containsKey("uid")){
+			renderFaile("请登录！");
+			return;
+		}
 		String uid=json.getString("uid");
 		boolean b=new User().isLogin(uid);
 		if(!b){
 			renderFaile("请登录！");
 			return;
 		}
+
 		Record r= Db.findFirst("select sum(cash) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
 		renderSuccess("获取成功", r);
 	}

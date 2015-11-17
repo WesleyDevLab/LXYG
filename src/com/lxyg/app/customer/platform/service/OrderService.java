@@ -61,40 +61,21 @@ public class OrderService {
 				int is_norm=o.getInt("is_norm");
 				int productId = o.getInt("productId");
 				int productNum = o.getInt("productNum");
-				if(is_norm==1){
-					Goods g = new Goods().findById(productId);
-					BigDecimal price = g.getBigDecimal("price");
-					BigDecimal cash = g.getBigDecimal("cash_pay");
-					int productPay=0;
-					if(cashPay!=0){
-						productPay = g.getBigDecimal("price").intValue()
-								- g.getBigDecimal("cash_pay").intValue();
-					}else{
-						productPay=g.getBigDecimal("price").intValue();
-					}
-					Db.update(
-							"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
-									+ "values(?,?,?,?,?,?,?,?)", new Object[]{
-									orderId, productId, productNum, price, cash,
-									productPay, new Date(), 1});
+				Goods g = new Goods().findById(productId);
+				BigDecimal price = g.getBigDecimal("price");
+				BigDecimal cash = g.getBigDecimal("cash_pay");
+				int productPay=0;
+				if(cashPay!=0){
+					productPay = g.getBigDecimal("price").intValue()
+							- g.getBigDecimal("cash_pay").intValue();
+				}else{
+					productPay=g.getBigDecimal("price").intValue();
 				}
-				if(is_norm==2){
-					FBGoods g =FBGoods.dao.findById(productId);
-					BigDecimal price = g.getBigDecimal("price");
-					BigDecimal cash = g.getBigDecimal("cash_pay");
-					int productPay=0;
-					if(cashPay!=0){
-						productPay = g.getBigDecimal("price").intValue()
-								- g.getBigDecimal("cash_pay").intValue();
-					}else{
-						productPay=g.getBigDecimal("price").intValue();
-					}
-					Db.update(
-							"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
-									+ "values(?,?,?,?,?,?,?,?)", new Object[]{
-									orderId, productId, productNum, price, cash,
-									productPay, new Date(), 2});
-				}
+				Db.update(
+						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
+								+ "values(?,?,?,?,?,?,?,?)", new Object[]{
+								orderId, productId, productNum, price, cash,
+								productPay, new Date(), 1});
 			}
 		}
 
@@ -122,7 +103,7 @@ public class OrderService {
 			map.put("pay_type","(1,2)");
 		}
 		if(status== IConstant.OrderStatus.order_status_dfh){
-			map.put("userStatus","(0,1,2)");
+			map.put("userStatus","(2)");
 		}
 		Page<Order> os = new Order().find(map, page);
 		for (Order or : os.getList()) {

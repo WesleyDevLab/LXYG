@@ -32,7 +32,7 @@ public class WXUtil {
 	private static final String body="fengqushangcheng";
 	public static final String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+ WXUtil.APPID+"&secret="+ WXUtil.SECRET;
 	private static final String pay_order_url="https://api.mch.weixin.qq.com/pay/unifiedorder";
-	private static final String notify_url="www.lexiangyungou.cn/LXYG/app/pay/wxpayNotify";
+	private static final String notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
 
 
 	public static Map<String, Object> loadPrepayid(String orderNo,int total,String ip,String attach) throws IOException, ExecutionException, InterruptedException{
