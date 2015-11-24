@@ -19,6 +19,8 @@ http://192.168.0.210/LXYG/app/user/v2/replay?info={"form_id":3,"uid":"b4f8f26520
 http://192.168.0.210/LXYG/app/user/v2/delReplay?info={"replayId":1,"uid":"b4f8f2652073400b"} 删除评论
 http://192.168.0.210/LXYG/app/user/v2/zan?info={"form_id":3,"uid":"b4f8f2652073400b"} 点赞
 http://192.168.0.210/LXYG/app/user/v2/delZan?info={"zId":1,"uid":"b4f8f2652073400b"} 取消赞
+http://192.168.0.210/LXYG/app/user/v2/myForms?info={"uid":"8a1a9f99fbc54896"} 我的帖子
+
 http://192.168.0.210/LXYG/app/user/weLogin?info={"weName":"xx","openId":"b4f8f2652073400b","lng":"113.4","lat":"34.7","headimgurl":"http://123.jpg"} 微信登陆
 
 http://192.168.0.210/LXYG/app/user/v2/getShopLatLng?info={"s_uid":"48957caade98442b"} 获取店面经纬度

@@ -92,7 +92,7 @@ public class Form extends Model<Form>{
         return zans;
     }
     public List<FormZan> getFormZanAll(int formId) {
-        List<FormZan> zans=FormZan.find("select *,count(id) as count from kk_form_zan z  where z.form_id=?",formId);
+        List<FormZan> zans=FormZan.dao.find("select *,count(id) as count from kk_form_zan z  where z.form_id=?", formId);
         if(zans.size()==0){
             return null;
         }
@@ -115,7 +115,7 @@ public class Form extends Model<Form>{
         return replays;
     }
     public List<FormReplay> getFormReplaysAll(int formId){
-        List<FormReplay> replays=FormReplay.dao.find("SELECT *,count(id) as count from kk_form_replay  where r.form_id=?",formId);
+        List<FormReplay> replays=FormReplay.dao.find("SELECT *,count(id) as count from kk_form_replay fr where fr.form_id=?",formId);
         if(replays.size()==0){
             return null;
         }
@@ -143,28 +143,63 @@ public class Form extends Model<Form>{
     public boolean delForm(int formId){
         Form form=Form.dao.findById(formId);
         boolean flag= form.delete();
-        List<FormImg> formImgs=getFormImgsAll(formId);
-        for(FormImg formImg:formImgs){
-            formImg.delete();
-        }
-        for(FormReplay formReplay:getFormReplaysAll(formId)){
-            formReplay.delete();
-        }
-        for(FormZan zan:getFormZanAll(formId)){
-            zan.delete();
+        if(flag){
+            /**删除图片*/
+            List<FormImg> formImgs=getFormImgsAll(formId);
+            if(formImgs!=null&&formImgs.size()!=0){
+                for(FormImg formImg:formImgs){
+                    if(formImg.getInt("id")!=null){
+                        formImg.delete();
+                    }
+                }
+            }
+            /**删除回复*/
+            List<FormReplay> replays=getFormReplaysAll(formId);
+            if(replays!=null&&replays.size()!=0){
+                for(FormReplay formReplay:replays){
+                    if(formReplay.getInt("d")!=null){
+                        formReplay.delete();
+                    }
+                }
+            }
+            /**删除赞*/
+            List<FormZan> zans=getFormZanAll(formId);
+            if(zans!=null&&zans.size()!=0){
+                for(FormZan zan:zans){
+                    if(zan.getInt("id")!=null){
+                        zan.delete();
+                    }
+                }
+            }
         }
         return flag;
     }
 
-    public Page<Form> forms(int page,String s_uid){
+    public Page<Form> forms(int page,String uid){
        Page<Form> forms= Form.dao.paginate(page, IConstant.PAGE_DATA, "select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img ",
-               "from kk_form f left join kk_user u on f.u_uid=u.uuid");
+               "from kk_form f left join kk_user u on f.u_uid=u.uuid order by f.create_time desc");
         for(Form f:forms.getList()){
             Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?;",f.getInt("form_id"));
             f.put("formImgs",getFormImgs(f.getInt("form_id")));
             f.put("replayNum",r.getLong("countR"));
             f.put("zanNum",r.getLong("countZ"));
-            f.put("isZan",isZan(s_uid,f.getInt("form_id")));
+            if(uid!=null&&!uid.equals("")){
+                f.put("isZan",isZan(uid,f.getInt("form_id")));
+            }else{
+                f.put("isZan",false);
+            }
+        }
+        return forms;
+    }
+    public Page<Form> myForms(int page,String uid){
+        Page<Form> forms = Form.dao.paginate(page, IConstant.PAGE_DATA, "select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img ",
+                "from kk_form f left join kk_user u on f.u_uid=u.uuid where u.uuid=? order by f.create_time desc",uid);
+        for(Form f:forms.getList()){
+            Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?;",f.getInt("form_id"));
+            f.put("formImgs",getFormImgs(f.getInt("form_id")));
+            f.put("replayNum",r.getLong("countR"));
+            f.put("zanNum",r.getLong("countZ"));
+            f.put("isZan",isZan(uid,f.getInt("form_id")));
         }
         return forms;
     }

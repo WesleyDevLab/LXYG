@@ -2,11 +2,14 @@ package com.lxyg.app.customer.platform.TestUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonArray;
+import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.model.Form;
 import com.lxyg.app.customer.platform.model.FormImg;
 
+import com.lxyg.app.customer.platform.model.User;
 import com.lxyg.app.customer.platform.util.JsonUtils;
 import com.lxyg.app.customer.platform.util.UpYun;
 import com.lxyg.app.customer.platform.util.loadUUID;
@@ -19,6 +22,7 @@ import javax.imageio.stream.FileImageInputStream;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.net.URL;
@@ -31,7 +35,7 @@ public class Test extends TestBefore {
 
     public void cityJson(){
         JSONArray array=new JSONArray();
-        List<Record> pList=Db.find("select * from kk_area where father_id=0 and code=70");
+        List<Record> pList=Db.find("select * from kk_area where father_id=0 ");
         for(Record record:pList){
             JSONObject pObject=new JSONObject();
             pObject.put("province",record.getStr("name"));
@@ -89,6 +93,8 @@ public class Test extends TestBefore {
         }
 
     }
+
+
     public void comp(){
         int i=3;
         int j=4;
@@ -185,12 +191,60 @@ public class Test extends TestBefore {
         f.save();
     }
 
-    @org.junit.Test
     public void jsonParse(){
-        String str="[\"/platform/cV5zsOBe1JJlujUR.jpg\",/platform/LLMIWpwmiURyKQKM.jpg\"]";
-        String str1="[\"/platform/pDXXpAr9IFnUGYiM.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\"]";
-
-        com.alibaba.fastjson.JSONArray array = com.alibaba.fastjson.JSONArray.parseArray(str);
-        System.out.println(array.size());
+//        String str="[\"/platform/cV5zsOBe1JJlujUR.jpg\",/platform/LLMIWpwmiURyKQKM.jpg\"]";
+//        String str1="[\"/platform/pDXXpAr9IFnUGYiM.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\",\"/platform/CsNQ99w2F81l0H73.jpg\"]";
+//
+//        com.alibaba.fastjson.JSONArray array = com.alibaba.fastjson.JSONArray.parseArray(str);
     }
+
+
+    public void addLoginLog(){
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        Date d=new Date();
+        Record r=Db.findFirst("select count(id) as cc from kk_login_log where u_uid=? and create_time like ? ","b4f8f2652073400b", "%"+sdf.format(d)+"%");
+        if(r.getLong("cc") > 0){
+            return;
+        }
+        r.clear();
+        r.set("u_uid","b4f8f2652073400b");
+        r.set("create_time",d);
+        Db.save("kk_login_log",r);
+        Record record=Db.findFirst("select * from kk_login_sign where u_uid=?","b4f8f2652073400b");
+        if(record==null){
+            Db.update("insert into kk_login_sign(u_uid,num,create_time) values(?,?,?)","b4f8f2652073400b",1,new Date());
+            return;
+        }else{
+            Date d1=record.getDate("create_time");
+            Date d2=new Date();
+
+            if(d2.getTime()-d1.getTime()>1000*60*60*24){
+                record.set("num",1);
+            }else{
+                record.set("num",record.getInt("num")+1);
+            }
+            record.set("create_time",new Date());
+            Db.update("kk_login_sign",record);
+        }
+    }
+
+    /**随机*/
+    public void choujiang(){
+        int days=3; //连续签到天数
+        Date start=new Date();//开始时间
+
+        Date end=new Date();//结束时间
+        Record record=Db.findFirst("SELECT * from kk_login_sign where create_time BETWEEN ? and ? and num>=? ORDER BY rand() ",start,end,days);
+    }
+    /**随机
+     * 去掉已经获得的
+     * */
+    @org.junit.Test
+    public void choujiang_1(){
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        Date date=new Date();
+        date.setTime(date.getTime()-7*1000*60*60*24);
+        System.out.println(sdf.format(date));
+    }
+
 }

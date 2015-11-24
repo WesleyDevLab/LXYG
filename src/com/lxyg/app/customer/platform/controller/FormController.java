@@ -4,14 +4,21 @@ import com.alibaba.fastjson.JSONArray;
 import com.jfinal.aop.Before;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.JPush.JPushKit;
 import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
 import com.lxyg.app.customer.platform.model.Form;
 import com.lxyg.app.customer.platform.model.FormReplay;
 import com.lxyg.app.customer.platform.model.FormZan;
+import com.lxyg.app.customer.platform.model.User;
+import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.EmojiFilter;
+import com.lxyg.app.customer.platform.util.M;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+
+import java.util.List;
 
 
 /**
@@ -51,6 +58,10 @@ public class FormController extends Controller {
     public void addForm(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
         Form form=new Form();
+        if(!json.containsKey("uid")){
+            renderFaile("异常");
+            return;
+        }
         if(json.containsKey("title")){
             form.setTitle(json.getString("title"));
         }
@@ -81,10 +92,14 @@ public class FormController extends Controller {
     @Before(Tx.class)
     public void delFrom(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
+        if(!json.containsKey("uid")){
+            renderFaile("异常");
+            return;
+        }
         int form_id=json.getInt("form_id");
         boolean b=Form.dao.delForm(form_id);
         if(b){
-            renderSuccess(isSuccess(b),null);
+            renderSuccess(isSuccess( b),null);
         }else{
             renderFaile("异常");
             return;
@@ -97,15 +112,15 @@ public class FormController extends Controller {
     @ActionKey("app/user/v2/listForm")
     public void listForm(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
-        if(!json.containsKey("uid")){
-            renderFaile("异常");
-            return;
-        }
         int page=1;
         if(json.containsKey("pg")){
             page=json.getInt("pg");
         }
-        renderSuccess("获取成功",Form.dao.forms(page,json.getString("uid")));
+        String uid="";
+        if(json.containsKey("uid")){
+            uid=json.getString("uid");
+        }
+        renderSuccess("获取成功",Form.dao.forms(page,uid));
     }
 
     /**
@@ -142,6 +157,9 @@ public class FormController extends Controller {
         String to_u_uid="";
         if(json.containsKey("to_uid")){
              to_u_uid=json.getString("to_uid");
+            pushBySDK(json.getString("uid"),form_id,to_u_uid,json.getString("content"));
+        }else{
+            pushBySDK(json.getString("uid"),form_id,json.getString("content"));
         }
         String u_uid=json.getString("uid");
         String content=json.getString("content");
@@ -203,8 +221,44 @@ public class FormController extends Controller {
         }
         int zId=json.getInt("zId");
         String u_uid=json.getString("uid");
-        boolean b=  FormZan.dao.deleteById(zId);
+        boolean b= FormZan.dao.deleteById(zId);
         renderSuccess(isSuccess(b), null);
     }
+
+    @ActionKey("app/user/v2/myForms")
+    public void myForms(){
+        JSONObject json= JSONObject.fromObject(getPara("info"));
+        if(!json.containsKey("uid")){
+            renderFaile("异常");
+            return;
+        }
+        int page=1;
+        if(json.containsKey("pg")){
+            page=json.getInt("pg");
+        }
+        renderSuccess("获取成功",Form.dao.myForms(page,json.getString("uid")));
+    }
+
+    public static void pushBySDK(String u_uid,int form_id,String to_uid,String content){
+        User user=User.dao.findFirst("select * from kk_user u where u.uuid=?",u_uid);
+        User to_user=User.dao.findFirst("select * from kk_user u where u.uuid=?",to_uid);
+        if(user!=null && to_user!=null){
+            String str=user.getStr("name")+"回复了您："+content;
+            String alias=to_user.getStr("phone")!=null?to_user.getStr("phone"):to_user.getStr("wechat_id");
+           new JPush(alias,"user",str, M.pushMap(form_id),"你有新的回复","alias_one").start();
+        }
+    }
+    public static void pushBySDK(String u_uid,int form_id,String content){
+        User user=User.dao.findFirst("select * from kk_user u where u.uuid=?",u_uid);
+        List<User> users=User.dao.find("SELECT u.phone, u.wechat_id FROM kk_form_replay fr LEFT JOIN kk_user u ON fr.u_uid = u.uuid WHERE form_id = ? AND u_uid != ? GROUP BY u_uid",form_id,u_uid);
+        if(user!=null&&users.size()!=0){
+            String str=user.getStr("name")+"评论："+content;
+            for(User to_user:users){
+                String alias=to_user.getStr("phone")!=null?to_user.getStr("phone"):to_user.getStr("wechat_id");
+                new JPush(alias,"user",str, M.pushMap(form_id),"你有新的评论","alias_one").start();
+            }
+        }
+    }
+
 
 }

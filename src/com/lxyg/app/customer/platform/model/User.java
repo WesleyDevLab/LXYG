@@ -5,6 +5,7 @@ import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.util.IConstant;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -111,5 +112,32 @@ public class User extends Model<User> {
 		}
 		return false;
 	}
-
+	/**
+	 * 登陆记录
+	 * **/
+	public void addLoginLog(String u_uid){
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+		Date d=new Date();
+		Record r=Db.findFirst("select count(id) as cc from kk_login_log where u_uid=? and create_time like ? ",u_uid, "%"+sdf.format(d)+"%");
+		if(r.getLong("cc") > 0){
+			return;
+		}
+		r.clear();
+		r.set("u_uid",u_uid);
+		r.set("create_time",d);
+		Db.save("kk_login_log", r);
+		Record record=Db.findFirst("select * from kk_login_sign where u_uid=?",u_uid);
+		if(record==null){
+			Db.update("insert into kk_login_sign(u_uid,num,create_time) values(?,?,?)",u_uid,1,new Date());
+			return;
+		}else{
+			if(new Date().getTime()-record.getDate("create_time").getTime()>1000*60*60*24){
+				record.set("num",1);
+			}else{
+				record.set("num",record.getInt("num")+1);
+			}
+			record.set("create_time",new Date());
+			Db.update("kk_login_sign",record);
+		}
+	}
 }

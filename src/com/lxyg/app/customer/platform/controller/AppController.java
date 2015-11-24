@@ -1425,7 +1425,7 @@ public class AppController extends Controller {
 			renderFaile("登录异常");
 			return;
 		}
-		List<User> us= User.dao.find("select * from kk_user u where u.phone=?", new Object[]{phone});
+		List<User> us= User.dao.find("select id,uuid,name,password,shop_id,cash_pay,create_time,cash_pay,score,phone from kk_user u where u.phone=?", new Object[]{phone});
 
 		if(us.size()!=0){
 			u=us.get(0);
@@ -1453,7 +1453,13 @@ public class AppController extends Controller {
 				u.update();
 			}
 		}
-		renderSuccess("登陆成功",u);
+		/**
+		 * 登陆自动签到
+		 **/
+		new User().dao.addLoginLog(u.getStr("u_uuid"));
+
+
+		renderSuccess("登陆成功", u);
 	}
 	/**
 	 * 
@@ -2253,6 +2259,7 @@ public class AppController extends Controller {
 			u.set("login_" + version, 1);
 			u.update();
 		}
+		new User().dao.addLoginLog(u.getStr("u_uuid"));
 		renderSuccess("登陆成功", u);
 	}
 

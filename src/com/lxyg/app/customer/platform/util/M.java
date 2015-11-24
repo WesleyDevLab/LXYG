@@ -60,9 +60,14 @@ public class M {
     	Map<String,Object> map=new HashMap<String, Object>();
     	map.put("orderId", orderId);
     	map.put("type", type);
-    	
     	return map;
     }
+	public static Map<String,Object> pushMap(int formId){
+		Map<String,Object> map=new HashMap<String, Object>();
+		map.put("formId", formId);
+		return map;
+	}
+
     
     public static String getCashItemSql(int cashId,int count,int unit){
     	String str="";

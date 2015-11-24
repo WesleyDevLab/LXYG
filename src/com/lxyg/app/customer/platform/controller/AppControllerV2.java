@@ -19,6 +19,7 @@ package com.lxyg.app.customer.platform.controller;
 
         import javax.management.RuntimeErrorException;
         import javax.swing.*;
+        import java.text.SimpleDateFormat;
         import java.util.*;
 
 /**
@@ -902,6 +903,13 @@ public class AppControllerV2 extends Controller {
         String s_uid=json.getString("s_uid");
         Shop s=Shop.dao.findFirst("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where s.uuid=?",s_uid);
         renderSuccess("获取成功",s);
+    }
+
+    @ActionKey("/app/user/v2/sign")
+    public void sign(){
+        log.info("sign");
+
+        Record record=Db.findFirst("SELECT * from kk_login_sign where create_time BETWEEN ? and ? and num>=? ORDER BY rand()");
     }
 
 

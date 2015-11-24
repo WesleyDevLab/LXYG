@@ -32,14 +32,21 @@ public class JPush implements IPlugin {
 		this.Title=Title;
 		this.plat=plat;
 	}
-	
+	public JPush(String phone,String plat,String content,Map<String,Object> map,String Title,String pushType) {
+		super();
+		this.Content = content;
+		this.phone=phone;
+		this.map=map;
+		this.Title=Title;
+		this.plat=plat;
+		this.pushType=pushType;
+	}
 	public boolean stop() {
 		return true;
 	}
 
 	
 	public boolean start() {
-
 		if(pushType.equals("alias_one")){
 			JPushKit.push(phone, plat, Content, map, Title);
 		}
