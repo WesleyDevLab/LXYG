@@ -17,9 +17,6 @@ package com.lxyg.app.customer.platform.controller;
         import net.sf.json.JSONObject;
         import org.apache.log4j.Logger;
 
-        import javax.management.RuntimeErrorException;
-        import javax.swing.*;
-        import java.text.SimpleDateFormat;
         import java.util.*;
 
 /**
@@ -905,10 +902,43 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功",s);
     }
 
+    @ActionKey("/app/user/v2/getShopsByLatLng")
+    public void getShopsByLatLng(){
+        log.info("loadLatLng");
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        if(!json.containsKey("lat")||!json.containsKey("lng")){
+            renderFaile("异常");
+            return;
+        }
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        List<Shop> s=Shop.dao.find("select  name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng,lat);
+        renderSuccess("获取成功",s);
+    }
+    @ActionKey("/app/user/v2/shopList")
+    public void loadShopByArea(){
+        log.info("loadShopByArea");
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        int areaCode=json.getInt("code");
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        List<Shop> shops=Shop.dao.find("SELECT s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone FROM kk_shop s LEFT JOIN kk_district d ON d.id = s.district_id WHERE d.area_id = ? ORDER BY  distance (?,?,d.lng,d.lat) ASC",areaCode,lng,lat);
+        renderSuccess("获取成功",shops);
+    }
+    @ActionKey("/app/user/v2/searchShop")
+    public void searchShop(){
+        log.info("searchShop");
+        JSONObject json=JSONObject.fromObject(getPara("info"));
+        String name=json.getString("name");
+        String lng=json.getString("lng");
+        String lat=json.getString("lat");
+        List<Shop> shops=Shop.dao.find("select s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone from kk_shop s where s.name like ? ORDER BY  distance (?,?,s.lng,s.lat) ASC","%"+name+"%",lng,lat);
+        renderSuccess("获取成功",shops);
+    }
+
     @ActionKey("/app/user/v2/sign")
     public void sign(){
         log.info("sign");
-
         Record record=Db.findFirst("SELECT * from kk_login_sign where create_time BETWEEN ? and ? and num>=? ORDER BY rand()");
     }
 

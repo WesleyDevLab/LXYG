@@ -61,6 +61,18 @@ CREATE TABLE if NOT EXISTS kk_login_sign(
  u_uid VARCHAR (17) CHARACTER SET utf8 NOT NULL,
  num INT(11) not null DEFAULT 0,
  create_time DATETIME NOT NULL,
- is_
  PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+DROP  TABLE if EXISTS kk_join_info;
+CREATE TABLE if NOT EXISTS kk_join_info(
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  name VARCHAR (255) DEFAULT NULL ,
+  phone VARCHAR (15) DEFAULT NULL ,
+  content VARCHAR (255) DEFAULT null,
+  address varchar (255) DEFAULT null,
+   PRIMARY KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0;
+ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0;

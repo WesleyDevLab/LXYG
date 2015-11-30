@@ -2,8 +2,10 @@ package com.lxyg.app.customer.platform.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.jfinal.aop.Before;
+import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.JPush.JPushKit;
@@ -81,6 +83,7 @@ public class FormController extends Controller {
            // form.set("form_id",form.getInt("id"));
             form.put("formImgs",form.getFormImgs(form.getInt("id")));
         }
+
         renderSuccess("添加成功", form);
     }
 
@@ -110,6 +113,7 @@ public class FormController extends Controller {
      * 帖子列表
      * */
     @ActionKey("app/user/v2/listForm")
+    @ClearInterceptor
     public void listForm(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
         int page=1;
@@ -120,7 +124,18 @@ public class FormController extends Controller {
         if(json.containsKey("uid")){
             uid=json.getString("uid");
         }
-        renderSuccess("获取成功",Form.dao.forms(page,uid));
+        if(isParaExists("pg")){
+            page=getParaToInt("pg");
+        }
+        Page<Form> formpage=Form.dao.forms(page,uid);
+        if(isParaExists("type")&&getPara("type").equals("web")){
+            setAttr("forms",formpage);
+            setAttr("code", 10010);
+            setAttr("message", "load成功");
+            render("/forum/forumList.jsp");
+            return;
+        }
+        renderSuccess("获取成功",formpage);
     }
 
     /**
@@ -129,7 +144,7 @@ public class FormController extends Controller {
     @ActionKey("app/user/v2/form")
     public void form(){
         JSONObject json= JSONObject.fromObject(getPara("info"));
-        if(!json.containsKey("form_id")||!json.containsKey("uid")){
+        if(!json.containsKey("form_id")){
             renderFaile("异常");
             return;
         }
@@ -139,7 +154,11 @@ public class FormController extends Controller {
             renderFaile("加载异常");
             return;
         }
-        Form f=Form.dao.form(form_id,json.getString("uid"));
+        String uid="";
+        if(json.containsKey("uid")){
+            uid=json.getString("uid");
+        }
+        Form f=Form.dao.form(form_id,uid);
         renderSuccess("获取成功 ",f);
     }
 

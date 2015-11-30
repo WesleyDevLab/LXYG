@@ -126,6 +126,7 @@ public class User extends Model<User> {
 		r.set("u_uid",u_uid);
 		r.set("create_time",d);
 		Db.save("kk_login_log", r);
+
 		Record record=Db.findFirst("select * from kk_login_sign where u_uid=?",u_uid);
 		if(record==null){
 			Db.update("insert into kk_login_sign(u_uid,num,create_time) values(?,?,?)",u_uid,1,new Date());

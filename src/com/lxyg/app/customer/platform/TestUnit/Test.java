@@ -239,12 +239,18 @@ public class Test extends TestBefore {
     /**随机
      * 去掉已经获得的
      * */
-    @org.junit.Test
     public void choujiang_1(){
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         Date date=new Date();
         date.setTime(date.getTime()-7*1000*60*60*24);
         System.out.println(sdf.format(date));
+    }
+    @org.junit.Test
+    public void test1(){
+        Record activity=Db.findById("kk_shop_activity", 1);
+        if(activity.getInt("limit_e")==null){
+        }
+        Db.update("update kk_product_activity set surplus_num=surplus_num-? where activity_id=?", activity.getInt("limit_e"), 1);
     }
 
 }

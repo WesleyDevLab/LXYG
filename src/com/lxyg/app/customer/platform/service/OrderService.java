@@ -698,6 +698,7 @@ public class OrderService {
 				}
 			}
 		}
+
 		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_psz){
 			String code=json.getString("recCode");
 			if(code.equals(o.getStr("receive_code"))){

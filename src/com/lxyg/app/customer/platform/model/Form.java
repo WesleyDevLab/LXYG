@@ -99,6 +99,9 @@ public class Form extends Model<Form>{
         return zans;
     }
     public boolean isZan(String u_uid,int form_id) {
+        if(u_uid==null||u_uid.equals("")){
+            return false;
+        }
         FormZan z=FormZan.dao.findFirst("select count(id) as count from kk_form_zan z  where z.form_id=? and z.u_uid=?", form_id, u_uid);
         if(z.getLong("count")>0){
             return true;
@@ -179,7 +182,7 @@ public class Form extends Model<Form>{
        Page<Form> forms= Form.dao.paginate(page, IConstant.PAGE_DATA, "select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img ",
                "from kk_form f left join kk_user u on f.u_uid=u.uuid order by f.create_time desc");
         for(Form f:forms.getList()){
-            Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?;",f.getInt("form_id"));
+            Record r= Db.findFirst("SELECT ( SELECT COUNT(z.id) FROM kk_form_zan z WHERE z.form_id = ? ) AS countZ, ( SELECT count(r.id) FROM kk_form_replay r WHERE r.form_id = ? ) AS countR;",f.getInt("form_id"),f.getInt("form_id"));
             f.put("formImgs",getFormImgs(f.getInt("form_id")));
             f.put("replayNum",r.getLong("countR"));
             f.put("zanNum",r.getLong("countZ"));
@@ -195,7 +198,7 @@ public class Form extends Model<Form>{
         Page<Form> forms = Form.dao.paginate(page, IConstant.PAGE_DATA, "select f.id as form_id,f.title,f.content,f.create_time,f.u_uid,u.name,u.head_img ",
                 "from kk_form f left join kk_user u on f.u_uid=u.uuid where u.uuid=? order by f.create_time desc",uid);
         for(Form f:forms.getList()){
-            Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?;",f.getInt("form_id"));
+            Record r= Db.findFirst("SELECT ( SELECT COUNT(z.id) FROM kk_form_zan z WHERE z.form_id = ? ) AS countZ, ( SELECT count(r.id) FROM kk_form_replay r WHERE r.form_id = ? ) AS countR;",f.getInt("form_id"),f.getInt("form_id"));
             f.put("formImgs",getFormImgs(f.getInt("form_id")));
             f.put("replayNum",r.getLong("countR"));
             f.put("zanNum",r.getLong("countZ"));
@@ -210,7 +213,7 @@ public class Form extends Model<Form>{
         form.put("replays",getFormReplays(formId));
         form.put("zans",getFormZan(formId));
         form.put("isZan",isZan(u_id,form.getInt("form_id")));
-        Record r= Db.findFirst("SELECT COUNT(z.id) AS countZ, count(r.id) AS countR FROM kk_form_zan z LEFT JOIN kk_form_replay r ON z.form_id = r.form_id WHERE z.form_id = ?",formId);
+        Record r= Db.findFirst("SELECT ( SELECT COUNT(z.id) FROM kk_form_zan z WHERE z.form_id = ? ) AS countZ, ( SELECT count(r.id) FROM kk_form_replay r WHERE r.form_id = ? ) AS countR;",formId,formId);
         form.put("replayNum",r.getLong("countR"));
         form.put("zanNum",r.getLong("countZ"));
         return  form;

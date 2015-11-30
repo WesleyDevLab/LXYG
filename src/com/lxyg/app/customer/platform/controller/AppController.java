@@ -8,6 +8,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.Queue.orderQueue;
 import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.plugin.JPush;
@@ -648,6 +649,8 @@ public class AppController extends Controller {
 		}
 		renderSuccess("添加成功", null);
 	}
+
+
 	/**
 	 * @author M
 	 * 商品详细信息
@@ -697,8 +700,69 @@ public class AppController extends Controller {
 		}
 		renderSuccess("修改成功", null);
 	}
-	
-	
+
+	/**
+	 * @author M
+	 * 修改库存接口
+	 *
+	 * */
+	public void modifyProductNum(){
+		log.info("modifyProductNum");
+		JSONObject obj= JSONObject.fromObject(getPara("info"));
+		if(!obj.containsKey("s_uid") || !obj.containsKey("p_id")){
+			renderFaile("提交数据异常");
+			return;
+		}
+		Shop s=Shop.dao.findBysuid(obj.getString("s_uid"));
+		if(s==null){
+			renderFaile("提交数据异常");
+			return;
+		}
+		int product_id=obj.getInt("p_id");
+		int num=obj.getInt("p_num");
+		int b=Db.update("update kk_shop_product set product_number=? where product_id=? and shop_id=?",num,product_id,s.getInt("id"));
+		if(b<=0){
+			renderFaile("修改失败");
+			return;
+		}
+		renderSuccess("修改成功",null);
+	}
+
+	/**
+	 * @author M
+	 * 查看库存接口
+	 *
+	 * */
+	public void checkProductNum(){
+		log.info("checkProductNum");
+		JSONObject obj= JSONObject.fromObject(getPara("info"));
+		if(!obj.containsKey("s_uid")){
+			renderFaile("提交数据异常");
+			return;
+		}
+		int page=1;
+		if(obj.containsKey("pg")){
+			page=obj.getInt("page");
+		}
+		Page<Goods> goodsPage=null;
+		String select="SELECT p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price, ps.product_number";
+		String left="FROM kk_product p LEFT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s on ps.shop_id=s.id ";
+		if(obj.containsKey("p_id")&&obj.getInt("p_id")!=0){
+			goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,select,
+					left+" WHERE p.id = ? AND s.uuid = ?",obj.getInt("p_id"),obj.getString("s_uid"));
+		}
+		if(obj.containsKey("brand_id")&&obj.getInt("brand_id")!=0){
+			goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,select,
+					left+
+					"WHERE p.p_brand_id = ? AND s.uuid =?",obj.getInt("brand_id"),obj.getString("s_uid"));
+		}
+		if(obj.containsKey("is_low")&&obj.getInt("is_low")!=0){
+			goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,select,left+"WHERE ps.product_number <=? AND s.uuid =?",IConstant.low,obj.getString("s_uid"));
+		}
+		renderSuccess("获取成功",goodsPage);
+	}
+
+
 	/**
 	 * @author M
 	 * 商户订单
@@ -1456,8 +1520,7 @@ public class AppController extends Controller {
 		/**
 		 * 登陆自动签到
 		 **/
-		new User().dao.addLoginLog(u.getStr("u_uuid"));
-
+		new User().dao.addLoginLog(u.getStr("uuid"));
 
 		renderSuccess("登陆成功", u);
 	}
@@ -2259,7 +2322,7 @@ public class AppController extends Controller {
 			u.set("login_" + version, 1);
 			u.update();
 		}
-		new User().dao.addLoginLog(u.getStr("u_uuid"));
+		new User().dao.addLoginLog(u.getStr("uuid"));
 		renderSuccess("登陆成功", u);
 	}
 
@@ -2515,6 +2578,7 @@ public class AppController extends Controller {
 
 
 	@ActionKey("app/user/addActivityOrder")
+	@Before(Tx.class)
 	public void addActivityOrder(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String uid=json.getString("uid");
@@ -2550,24 +2614,54 @@ public class AppController extends Controller {
 		r.set("address", ra.get("full_address"));
 		Record rp= Db.findById("kk_pay_type", json.getInt("pay_type"));
 		r.set("pay_name", rp.getStr("pay_type_name"));
-		Db.save("kk_order_activity", r);
 
-		JSONArray array = JSONArray.fromObject(items);
-		if(array.size()!=0){
-			for(int i=0;i<array.size();i++){
-				JSONObject o = array.getJSONObject(i);
-				int productId = o.getInt("productId");
-				int productNum = o.getInt("productNum");
-				Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
-				Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
-								"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
-						pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
+		/**
+		 * 队列
+		 * */
+
+		IConstant.orderQueue.insert(r);//放入队列中
+
+		while(!IConstant.orderQueue.isEmpty()){
+			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
+			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
+			if(r1!=null){
+				if(r1.getInt("surplus_num")<=0){
+					renderFaile("已经购买完");
+					return;
+				}
+			}
+			/**下单*/
+			boolean save=Db.save("kk_order_activity", record);
+			if(save){
+				JSONArray array = JSONArray.fromObject(items);
+				if(array.size()!=0){
+					for(int i=0;i<array.size();i++){
+						JSONObject o = array.getJSONObject(i);
+						int productId = o.getInt("productId");
+						int productNum = o.getInt("productNum");
+						Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
+						Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
+										"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
+								pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
+
+						/**
+						 * 减少库存数量
+						 * */
+						Record activity=Db.findById("kk_shop_activity",activityId);
+						if(activity.getInt("limit_e")!=null&&activity.getInt("limit_e")!=0){
+							productNum=activity.getInt("limit_e");
+						}
+						Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
+
+					}
+				}
+				if(r.getInt("pay_type")==3){
+					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
+				}
+				IConstant.orderQueue.remove();//从队列移除第一个项目
 			}
 		}
-		if(r.getInt("pay_type")==3){
-			orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
-		}
-		renderSuccess("添加成功", r);
+		renderSuccess("购买成功", r);
 	}
 	@ActionKey("app/user/activityOrderPay")
 	public void activityOrderPay(){

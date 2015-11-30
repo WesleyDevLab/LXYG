@@ -1,0 +1,113 @@
+
+body {
+    background: #f8f8f8;
+    color: #606060;
+    font-family: 'Proxima', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+}
+html, body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    text-align: center;
+    vertical-align: middle;
+}
+#home{
+    background: url('TB1h9xxIFXXXXbKXXXXXXXXXXXX.jpg') round;
+    color: #ffffff;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+#home .btn {
+    background: #eb5424;
+    border-radius: 4px;
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 20px 40px;
+    margin-top: 60px;
+}
+#home .btn:hover {
+    background: #fff;
+    color: #eb5424;
+    transition: all 0.4s ease-in-out;
+}
+.navbar-default{
+    background: #fff;
+    border: none;
+    box-shadow: 0 2px 8px 0 rgba(50, 50, 50, 0.04);
+    margin: 0 !important;
+}
+.navbar-default .navbar-brand {
+    font-weight: bold;
+    margin: 0;
+    line-height: 40px !important;
+}
+.navbar-default .navbar-nav li a {
+    color: #606060;
+    font-weight: bold;
+    padding-right: 20px;
+    padding-left: 20px;
+    line-height: 40px;
+}
+
+.code{
+    padding-top: 20%;
+    padding-bottom: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#contact{
+    background: url(contact-bg.jpg);
+    color: #ffffff;
+    padding-top: 100px;
+    padding-bottom: 80px;
+}
+#contact .form-control {
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+    margin-top: 12px;
+    margin-bottom: 14px;
+}
+#contact input {
+    height: 50px;
+}
+#contact input[type="button"] {
+    background-color: #eb5424;
+    color: #ffffff;
+    height: 60px;
+    font-weight: bold;
+    transition: all 0.4s ease-in-out;
+}
+#contact input[type="button"]:hover {
+    background-color: #202020;
+}
+footer{
+    background: #202020;
+    color: #ffffff;
+    border-bottom: 10px solid #ffffff;
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+footer h2 {
+    padding-top: 40px;
+    padding-bottom: 20px;
+}
+footer p {
+    line-height: 20px;
+}
+footer .copyright a {
+    color: #eb5424;
+}

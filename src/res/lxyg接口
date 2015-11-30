@@ -24,7 +24,12 @@ http://192.168.0.210/LXYG/app/user/v2/myForms?info={"uid":"8a1a9f99fbc54896"} �
 http://192.168.0.210/LXYG/app/user/weLogin?info={"weName":"xx","openId":"b4f8f2652073400b","lng":"113.4","lat":"34.7","headimgurl":"http://123.jpg"} 微信登陆
 
 http://192.168.0.210/LXYG/app/user/v2/getShopLatLng?info={"s_uid":"48957caade98442b"} 获取店面经纬度
+http://192.168.0.210/LXYG/app/user/v2/shopList?info={"code":"700105"} 根据区域id获取店面
+http://192.168.0.210/LXYG/app/user/v2/searchShop?info={"name":"12",lat:"113.4",lng:"34.7"} 搜索店面接口
+http://192.168.0.210/LXYG/app/user/v2/getShopsByLatLng?info={lat:"113.4",lng:"34.7"} 根据经纬度搜索1000米以内店面
 
+http://192.168.0.210/LXYG/app/modifyProductNum?info={"s_uid":"48957caade98442b",p_id:1,p_num:123} 修改库存
+http://192.168.0.210/LXYG/app/checkProductNum?info={"s_uid":"48957caade98442b",brand_id:4,p_id:0,is_low=0} 查看库存
 
 
 

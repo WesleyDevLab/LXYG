@@ -2,11 +2,17 @@ package com.lxyg.app.customer.platform.controller;
 
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.model.Goods;
+import com.lxyg.app.customer.platform.model.Shop;
 import com.lxyg.app.customer.platform.util.ConfigUtils;
+import com.lxyg.app.customer.platform.util.IConstant;
 import com.lxyg.app.customer.platform.util.QiniuImgUtil;
 import com.qiniu.util.Auth;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 public class PageController extends Controller {
 //	private Column columnService = new Column();
@@ -109,10 +115,41 @@ public class PageController extends Controller {
 	public void toFinance(){
 		render("/finance/consume.jsp");
 	}
+
+
 	public void toConsume(){
+		int page=1;
+		if(isParaExists("pg")){
+			page=getParaToInt("pg");
+		}
+		Page<Shop> shops=Shop.dao.paginate(page,IConstant.PAGE_DATA,"select s.name,s.link_man,s.phone,s.full_address,sbl.in_come","from kk_shop s left join kk_shop_balance_log sbl on s.uuid=sbl.s_uid");
+
 		render("/finance/flist.jsp");
 	}
-	
+
+	public void addInfo(){
+		System.out.println(getPara("name"));
+		try {
+			String str=URLEncoder.encode(getPara("name"),"utf-8");
+			System.out.println(str);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		String userName=getPara("name");
+		String phone=getPara("phone");
+		String content=getPara("content");
+		String address="";
+		if(isParaExists("address")){
+			address=getPara("address");
+		}
+		int i=Db.update("insert into kk_join_info(name,phone,content,address) values(?,?,?,?)",userName,phone,content,address);
+		if(i<=0){
+			renderJson("code","10001");
+			return;
+		}
+		renderText("code=10002");
+	}
+
 //
 //	/**
 //	 * 添加栏目

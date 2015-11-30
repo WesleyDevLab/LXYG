@@ -3,9 +3,13 @@
 <!DOCTYPE HTML >
 <html>
   <head>
-       
 	<jsp:include page="/metro.jsp"></jsp:include>
+
  <script type="text/javascript">
+     console.info("${forms}");
+     console.info("${code}");
+     console.info("${message}");
+
  	function init(){
 		initRow();			
 	}
@@ -15,6 +19,22 @@
  	function toUrl2(val){
  		location.href="${path}/forum/list?parId="+val;
  	}
+     function loadInfo(page){
+         var totalPage=${forms.totalPage};
+         if(page==0){
+             page=${forms.pageNumber}-1;
+         }
+         if(page==-1){
+             page=${forms.pageNumber}+1;
+         }
+         if(page>totalPage || page<=0){
+             alert("已经是最后一页");
+             return;
+         }
+         location.href="${path}/app/user/v2/listForm/listForm?pg="+page+"&type=web"
+     }
+
+
  	function delRecord(fid) {
 		var forumId = "";
 		var ids = document.getElementsByName("ids");
@@ -43,7 +63,7 @@
  </script>
 </head>
 <%@ include file="../common/top.jsp"%>
-<body onload="init();">
+<body >
 <!-- <form name="form2" id="form2" method="post">
 	<div class="right_con">
 		<div class="caozuo">
@@ -52,7 +72,7 @@
 			<input name="" type="button" value="反选" onclick="unselectAll(document.form2);" class="caozuo_input f_l" />
 			<input name="" type="button" value="删除" onclick="delRecord();" class="caozuo_input f_l" />
 			<input type="button" value="添加" onclick="toUrl('${path }/forum/preAdd');"
-				class="caozuo_input f_l" /> 
+				class="caozuo_input f_l" />
 			<input name="input" type="button" value="返回" onclick="javascript:history.back()" class="caozuo_input f_l" />
 			  <select  class="caozuo_input f_l" onchange="toUrl2(this.value);">
 				<c:forEach items="${faList }" var="fa">
@@ -139,38 +159,39 @@
                                 <thead>
                                     <tr>
                                         <th>序号</th>
-                                        <th>分类名称</th>
-                                        <th>Url</th>
-                                        <th>描述</th>
+                                        <th>内容</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                	<c:forEach items="${pageBean.list}" var="forum" varStatus="loopStatus">
+                                	<c:forEach items="${forms.list}" var="forum" varStatus="loopStatus">
                                     <tr>
                                         <td>
                                             ${loopStatus.count }
                                         </td>
-                                        <td>${forum.fname}</td>
-                                        <td class="center">${forum.url }
-                                        </td>
                                         <td class="center">${forum.content }
                                         </td>
                                         <td class="center">
-                                            <button type="button" class="btn btn-primary" onclick="update('${forum.fid}')">修改</button>
-                                            <button type="button" class="btn"  onclick="delRecord('${forum.fid}');">删除</button>
+                                           <!-- <button type="button" class="btn btn-primary" onclick="update('${forum.form_id}')">修改</button>-->
+                                            <button type="button" class="btn btn-danger"  onclick="delRecord('${forum.form_id}');">删除</button>
+                                            <button type="button" class="btn btn-info" onclick="moreInfo('${forum.form_id}')">详情</button>
                                         </td>
                                     </tr></c:forEach>
                                 </tbody>
                             </table>
                             <div class="pagination pagination-centered">
                               <div class="bg">
-									<div class="r_page">
-										<script type="text/javascript">
-											var url = location.href;
-											var pageOne = new PageObject(url, '${pg}', '${pageBean.totalPage}', '${pageBean.totalRow}', 'pageOne');
-										</script>
-									</div>
+                                  <div class="r_page">
+                                      <li id="page"></li>
+                                      <li><a onclick="loadInfo(1)">首页</a></li>
+                                      <li><a class="active" onclick="loadInfo(0)">上一页</a></li>
+                                      <li><a class="active"  onclick="loadInfo(-1)">下一页</a></li>
+                                      <li><a onclick="loadInfo(${forms.totalPage})">末页</a></li>
+                                      跳转到第
+                                      <input id="toPage" style="width:20px;ime-mode:disabled;" size="4">
+                                      页
+                                      <a class="label label-success"  onclick="loadInfo($(this).prev('input').val())">跳转</a>
+                                  </div>
 									<div class="clear"></div>
 								</div>
 								</div>
@@ -179,11 +200,8 @@
                     <!--/span-->
                 </div>
                 <!--/row-->
-
-
             </div>
             <!-- end: Content -->
-
         </div>
         <!--/fluid-row-->
         <!--/row-->

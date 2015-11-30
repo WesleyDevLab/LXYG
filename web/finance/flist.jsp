@@ -80,7 +80,7 @@ function compareTime(startDate, endDate) {
                 <div class="row-fluid">
                     <div class="box span12">
                         <div class="box-header">
-                            <h2><i class="icon-align-justify"></i><span class="break"></span>消费统计</h2>
+                            <h2><i class="icon-align-justify"></i><span class="break"></span>收入统计</h2>
                         </div>
                         <div class="box-content">
 							<div style="margin:10px 0;">						
@@ -117,16 +117,9 @@ function compareTime(startDate, endDate) {
                                 <thead>
                                     <tr>
                                         <th>序号</th>
-                                        <th>分类</th>
                                         <th>店铺名称</th>
                                         <th>联系电话</th>
-                                        <th>订单号</th>
-                                        <th>消费总额</th>
-                                        <th>产品名称</th>
-										<th>数量</th>
-										<th>付款方式</th>
-										<th>结算状态</th>
-										<th>消费时间</th>
+                                        <th>收入总额</th>
                                     </tr>
                                 </thead>
                                 <tbody>

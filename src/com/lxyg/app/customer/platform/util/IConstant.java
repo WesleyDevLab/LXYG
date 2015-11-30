@@ -1,5 +1,7 @@
 package com.lxyg.app.customer.platform.util;
 
+import com.lxyg.app.customer.platform.Queue.orderQueue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +9,8 @@ import java.util.Map;
  * 常量类
  */
 public interface IConstant {
+
+	static orderQueue orderQueue=new orderQueue();
 
 	/**
 	 * 空格
@@ -280,5 +284,10 @@ public interface IConstant {
 	 String content_order_Touser_finish="交易完成";
 	 String content_order_ToreturnCommission="您有一笔新的返佣金额：";
 	 String PUSH_ONE="alias_one";
+
+
+	int low=10;
+
+
 
 }
