@@ -26,7 +26,7 @@ public class Goods extends Model<Goods> {
 	public Goods findById(int productId){
 		Goods gs=new Goods().findFirst("select id as productId,name,title,price," +
 				"p_type_id,p_brand_id,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +
-				"hide,index_show,server_id,server_name,payment,create_time,cash_pay,market_price from kk_product p where p.id=? ",new Object[]{productId});
+				"hide,index_show,server_id,server_name,payment,create_time,cash_pay,market_price,code from kk_product p where p.id=? ",new Object[]{productId});
 	    gs.put("productImgs", gs.getProductImgs());
 	    return gs;
 	}
@@ -119,11 +119,11 @@ public class Goods extends Model<Goods> {
 
 		if(type==IConstant.quanbu){
 			String select="SELECT p.id as productId,p.name,p.title,p.price,p.cover_img";
-			String  sql="FROM kk_product p WHERE p.id NOT IN ( SELECT ps.product_id FROM kk_shop_product ps WHERE ps.shop_id = ? ) "+str;
+			String  sql="FROM kk_product p  WHERE p.id NOT IN ( SELECT ps.product_id FROM kk_shop_product ps WHERE ps.shop_id = ? ) "+str;
 			goods=new Goods().paginate(page, IConstant.PAGE_DATA, select, sql, new Object[]{shopId,typeId});
 		}
 		if(type==IConstant.youhuo){
-			String select="select p.id as productId,p.name,p.title,p.price,p.cover_img,ps.status";
+			String select="select p.id as productId,p.name,p.title,p.price,p.cover_img,ps.status,ps.product_number";
 			String sql="from kk_product p left join kk_shop_product ps on p.id=ps.product_id where ps.shop_id=?  and ps.status=1 "+str;
 			goods=new Goods().paginate(page, IConstant.PAGE_DATA, select, sql,new Object[]{shopId,typeId});
 		}

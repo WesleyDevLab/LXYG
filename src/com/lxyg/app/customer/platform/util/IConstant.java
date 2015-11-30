@@ -287,6 +287,7 @@ public interface IConstant {
 
 
 	int low=10;
+	int login_integral=10;
 
 
 

@@ -22,10 +22,10 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-
 /**
  * Created by 秦帅 on 2015/11/10.
  */
+
 @Before(loginInterceptor.class)
 public class FormController extends Controller {
     private static final Logger log= Logger.getLogger(FormController.class);

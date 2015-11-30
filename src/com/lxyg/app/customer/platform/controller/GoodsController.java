@@ -180,6 +180,7 @@ public class GoodsController extends Controller {
 			goods.set("server_name", getPara("serverName"));
 			goods.set("payment", getPara("payment"));
 			goods.set("create_time", DateTools.createTime());
+			goods.set("code",getPara("code"));
 			goods.save();
 			boolean flag=goodsService.save(goods, getPara("imgs"));
 			if(flag){
@@ -225,6 +226,7 @@ public class GoodsController extends Controller {
 			goods.set("server_name", getPara("serverName"));
 			goods.set("payment", getPara("payment"));
 			goods.set("modify_time", DateTools.createTime());
+			goods.set("code",getPara("code"));
 			boolean flag=false;
 			if(getPara("imgs")!=null&&!getPara("imgs").equals("")){
 				flag=goodsService.save(goods, getPara("imgs"));
@@ -253,6 +255,7 @@ public class GoodsController extends Controller {
 	public void deleteByGoodsId() {
 		int goodsId = getParaToInt("goodsId");
 		if (Db.deleteById("kk_product", "id", goodsId)) {
+			Db.update("delete from kk_product_img where product_id=?",goodsId);
 			setAttr("code", 10010);
 			setAttr("message", "删除成功");
 			renderJson();

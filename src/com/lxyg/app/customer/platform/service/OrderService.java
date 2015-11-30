@@ -321,6 +321,11 @@ public class OrderService {
 		shopDao.updateBalance(shopId,allPrice,1);
 		shopDao.createBalanceLog(shopId,allPrice,0,IConstant.balanceType.getType(o.getInt("pay_type")),orderId);
 
+		/**
+		 * 积分
+		 * */
+		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"));
+
 //		int allPay = allPrice-allCash;
 //		int shopAccount = 0;
 //		int shopCommission = 0;
@@ -705,6 +710,7 @@ public class OrderService {
 				o.set("finish_time", new Date());
 				//new JPush(IConstant.Title, IConstant.content_order_Touser_finish, userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"),IConstant.OrderStatus.order_status_ywc)).start();
 				new OrderService().recordfinshOrder(o);
+
 			}
 		}
 		o.set("order_status", o.getInt("order_status")+1);

@@ -213,6 +213,7 @@ function checkForm() {
 	var price=$("#price").val();
 	var market_price=$("#market_price").val();
 	var cash_pay=$("#cash_pay").val();
+	var code=$("#market_code").val();
 	
 	var typeText=$("#column_type").find("option:selected").text();
 	var typeValue=$("#column_type").val();
@@ -226,8 +227,8 @@ function checkForm() {
 	
 	var serverText=$("#column_server").find("option:selected").text();
 	var serverValue=$("#column_server").val();
-	
-	
+
+
 	var key=new Array();
 	var value=new Array();
 	$("input[name='payType']").each(function(j){
@@ -299,7 +300,7 @@ function checkForm() {
 	}
 	
 	$.post("${path}/goods/add",{"name":name,"title":title,"price":price,"marketPrice":market_price,
-	           "typeId":typeValue,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
+	           "typeId":typeValue,"code":code,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
 	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail},
 	function(result){
@@ -371,6 +372,15 @@ function checkForm() {
 								<p class="help-block">该产品可以使用的电子现金打折券</p>
 							</div>
 						</div>
+
+						<div class="control-group">
+							<label class="control-label">条形码：</label>
+							<div class="controls">
+								<input type="text" name="market_code" id="market_code" onkeyup="this.value=this.value.substring(0,50)" class="span6 typeahead" />
+								<p class="help-block">*请填写产品条形码</p>
+							</div>
+						</div>
+
 						<div class="control-group">
 							<label class="control-label" >产品类型：</label>
 							<div class="controls">
@@ -410,7 +420,7 @@ function checkForm() {
 							<div class="controls" id="column_payType">
 							</div>
 						</div>
-						
+
 						
 						<%--<div class="control-group">--%>
 							<%--<label class="control-label" >产品图片：</label>--%>

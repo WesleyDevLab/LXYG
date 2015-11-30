@@ -705,6 +705,8 @@ public class AppControllerV2 extends Controller {
                 str+="总价:"+o.getInt("price")/100+"元";
                 SdkMessage.sendUser(shop.getStr("phone"),str);
             }
+
+
 //            o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){

@@ -666,6 +666,10 @@ public class AppController extends Controller {
 			return;
 		}
 		JSONObject obj = JSONObject.fromObject(getPara("info"));
+		int product_number=0;
+		if(obj.containsKey("product_number")){
+			product_number=obj.getInt("product_number");
+		}
 		String pids = obj.getString("pids");
 		int type=obj.getInt("type");
 		String[] str = pids.split(",");
@@ -675,7 +679,7 @@ public class AppController extends Controller {
 			switch (type) {
 			case 1:
 				if (r.getLong("num") == 0) {
-					Db.update("insert into kk_shop_product(product_id,shop_id,status,create_time,product_number) values(?,?,?,?,?)", new Object[]{pid, sid, 1, new Date(), 0});
+					Db.update("insert into kk_shop_product(product_id,shop_id,status,create_time,product_number) values(?,?,?,?,?)", new Object[]{pid, sid, 1, new Date(), product_number});
 					Goods goods=Goods.dao.findById(pid);
 					int type_id=goods.getInt("p_type_id");
 					Record record=Db.findFirst("SELECT * from kk_shop_type st where st.s_id=?",sid);

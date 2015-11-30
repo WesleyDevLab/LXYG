@@ -118,6 +118,7 @@ public class User extends Model<User> {
 	public void addLoginLog(String u_uid){
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
 		Date d=new Date();
+
 		Record r=Db.findFirst("select count(id) as cc from kk_login_log where u_uid=? and create_time like ? ",u_uid, "%"+sdf.format(d)+"%");
 		if(r.getLong("cc") > 0){
 			return;
@@ -126,6 +127,7 @@ public class User extends Model<User> {
 		r.set("u_uid",u_uid);
 		r.set("create_time",d);
 		Db.save("kk_login_log", r);
+		addIntegral(IConstant.login_integral,u_uid);
 
 		Record record=Db.findFirst("select * from kk_login_sign where u_uid=?",u_uid);
 		if(record==null){
@@ -140,5 +142,12 @@ public class User extends Model<User> {
 			record.set("create_time",new Date());
 			Db.update("kk_login_sign",record);
 		}
+	}
+	public  void addIntegral(int integral,String u_uid){
+		Record record=new Record();
+		record.set("u_uid",u_uid);
+		record.set("integral",integral);
+		record.set("create_time",new Date());
+		Db.save("kk_integral",record);
 	}
 }

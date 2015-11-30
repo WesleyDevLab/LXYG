@@ -391,6 +391,14 @@ function deleteImg(el){
 								<p class="help-block">该产品可以使用的电子现金打折券</p>
 							</div>
 						</div>
+
+						<div class="control-group">
+							<label class="control-label">条形码：</label>
+							<div class="controls">
+								<input type="text" name="market_code" id="market_code" value="${goods.code}" onkeyup="this.value=this.value.substring(0,50)" class="span6 typeahead" />
+								<p class="help-block">*请填写产品条形码</p>
+							</div>
+						</div>
 						<div class="control-group">
 							<label class="control-label" >产品类型：</label>
 							<div class="controls">

@@ -76,3 +76,13 @@ CREATE TABLE if NOT EXISTS kk_join_info(
 
 ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0;
 ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0;
+ALTER TABLE kk_product add code VARCHAR (50) DEFAULT NULL ;
+
+DROP  TABLE if EXISTS kk_integral;
+CREATE TABLE if not EXISTS kk_integral(
+ id int(11) not null AUTO_INCREMENT,
+ u_uid VARCHAR (17) CHARACTER SET utf8 NOT NULL,
+ integral int(11) not null DEFAULT 0,
+ create_time DATETIME NOT NULL,
+ PRIMARY KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
