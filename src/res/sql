@@ -46,7 +46,9 @@ CREATE TABLE IF NOT EXISTS kk_form_zan(
    u_uid VARCHAR (17) CHARACTER SET utf8 NOT NULL,
    PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
+/**
+登录签到 记录
+*/
 DROP TABLE if EXISTS kk_login_log;
 CREATE TABLE if NOT EXISTS kk_login_log(
  id INT(11) NOT NULL AUTO_INCREMENT,
@@ -54,7 +56,9 @@ CREATE TABLE if NOT EXISTS kk_login_log(
  create_time DATETIME NOT NULL,
  PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-
+/**
+登录签到 次数
+*/
 DROP TABLE if EXISTS kk_login_sign;
 CREATE TABLE if NOT EXISTS kk_login_sign(
  id INT(11) NOT NULL AUTO_INCREMENT,
@@ -64,6 +68,9 @@ CREATE TABLE if NOT EXISTS kk_login_sign(
  PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+/**
+联系我们记录
+*/
 DROP  TABLE if EXISTS kk_join_info;
 CREATE TABLE if NOT EXISTS kk_join_info(
   id INT(11) NOT NULL AUTO_INCREMENT,
@@ -74,10 +81,12 @@ CREATE TABLE if NOT EXISTS kk_join_info(
    PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0;
-ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0;
-ALTER TABLE kk_product add code VARCHAR (50) DEFAULT NULL ;
-
+ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0; //限购数量
+ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0; //剩余数量
+ALTER TABLE kk_product add code VARCHAR (50) DEFAULT NULL ; //产品条形码
+/**
+用户积分
+*/
 DROP  TABLE if EXISTS kk_integral;
 CREATE TABLE if not EXISTS kk_integral(
  id int(11) not null AUTO_INCREMENT,
@@ -86,3 +95,17 @@ CREATE TABLE if not EXISTS kk_integral(
  create_time DATETIME NOT NULL,
  PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE kk_shop_activity add activity_id int not null DEFAULT 0; //活动类型(新手/抢购/团购/预售)
+
+DROP TABLE if EXISTS kk_activity;
+CREATE TABLE if not EXISTS kk_activity(
+ id int(11) not null AUTO_INCREMENT,
+ name varchar(100) CHARACTER SET utf8 not null,
+ PRIMARY  KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE kk_product_activity add p_type_id int not null DEFAULT 0,
+ add p_type_name VARCHAR(100) CHARACTER set utf8 not null,
+ add p_brand_id int not null DEFAULT 0,
+ add p_brand_name VARCHAR(100) CHARACTER set utf8 not null

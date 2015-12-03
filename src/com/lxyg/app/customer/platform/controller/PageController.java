@@ -13,6 +13,7 @@ import com.qiniu.util.Auth;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 public class PageController extends Controller {
 //	private Column columnService = new Column();
@@ -80,6 +81,10 @@ public class PageController extends Controller {
 		render("/play/playList.jsp");
 	}
 
+	public void toActiviey(){
+		render("/activity/activityList.jsp");
+	}
+
 	public void updateProduct(){
 		int id=getParaToInt("productId");
 		String index=getPara("index_search");
@@ -128,10 +133,8 @@ public class PageController extends Controller {
 	}
 
 	public void addInfo(){
-		System.out.println(getPara("name"));
 		try {
 			String str=URLEncoder.encode(getPara("name"),"utf-8");
-			System.out.println(str);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -148,6 +151,20 @@ public class PageController extends Controller {
 			return;
 		}
 		renderText("code=10002");
+	}
+
+	public void toAddAct(){
+		int shopId=getParaToInt("shop_id");
+		int page=1;
+		if(isParaExists("pg")){
+			page=getParaToInt("pg");
+		}
+		List<Goods> goods=Goods.dao.find("SELECT p.id,p.name,p.price,p.cover_img,p.p_type_id,p.p_type_name,p.p_brand_id,p.p_brand_name " +
+				"from kk_shop_product ps LEFT JOIN kk_product p on ps.product_id=p.id where ps.shop_id=? ",shopId);
+		setAttr("goods",goods);
+		render("/activity/addActivity.jsp");
+//		Page<Goods> goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,);
+
 	}
 
 //

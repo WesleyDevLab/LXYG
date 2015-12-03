@@ -93,7 +93,9 @@ function exit(){
                             <c:if test="${res.resid==8}">
                             <i class="icon-picture"></i>
                             </c:if>
-                            
+                            <c:if test="${res.resid==101}">
+                                <i class="icon-picture"></i>
+                            </c:if>
                             <span class="hidden-tablet">${res.resname }</span>
                             </a>
                             <ul>

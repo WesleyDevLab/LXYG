@@ -246,7 +246,7 @@ public class SdkMessage {
 	}
 	public static boolean send(String phone,String content){
 		try {
-			String res=HttpSender.batchSend(url,account,pswd,phone,"蜂趣提醒你，你的验证码:"+content,needstatus,product,extno);
+			String res=HttpSender.batchSend(url,account,pswd,phone,"蜂域提醒你，你的验证码:"+content,needstatus,product,extno);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

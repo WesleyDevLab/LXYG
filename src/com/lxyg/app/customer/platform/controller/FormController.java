@@ -109,6 +109,18 @@ public class FormController extends Controller {
         }
     }
 
+    @ActionKey("app/user/v2/adminDelForm")
+    @ClearInterceptor
+    public void delForm(){
+        int formId=getParaToInt("formId");
+        boolean b=Form.dao.delForm(formId);
+        if(b){
+            renderSuccess("删除成功",null);
+            return;
+        }
+        renderFaile("异常");
+    }
+
     /**
      * 帖子列表
      * */

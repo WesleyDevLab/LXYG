@@ -91,7 +91,6 @@ public class ResController extends Controller {
 		String sk= ConfigUtils.getProperty("kaka.qiniu.sk");
 		Auth auth = Auth.create(ak, sk);
 		String token=auth.uploadToken("lxyg");
-		System.out.println(token);
 		setAttr("token", token);
 		setAttr("code", 10010);
 		renderJson();

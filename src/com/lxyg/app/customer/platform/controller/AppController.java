@@ -1242,7 +1242,7 @@ public class AppController extends Controller {
 		r.set("u_uid", uid);
 		r.set("content", content);
 		r.set("create_time",new Date());
-		Db.save("KK_feed_back", r);
+		Db.save("kk_feed_back", r);
 		renderSuccess("成功", null);
 	}
 	/**
@@ -2579,6 +2579,14 @@ public class AppController extends Controller {
 				"cash_pay,cover_img,p_unit_name,payment,create_time,order_no from kk_product_activity pa where pa.activity_id=?", aid);
 		renderSuccess("获取成功",records);
 	}
+	@ActionKey("app/user/activityProduct")
+	public void activityProduct(){
+		JSONObject json= JSONObject.fromObject(getPara("info"));
+		int s_uid=json.getInt("s_uid");
+		List<Record> records= Db.find("SELECT pa.id AS paId, pa.activity_id, pa. NAME, pa.title, pa.price, pa.cash_pay, pa.cover_img, pa.p_unit_name, pa.payment, pa.create_time, pa.order_no " +
+				"FROM kk_product_activity pa LEFT JOIN kk_shop_activity sa ON pa.activity_id = sa.id WHERE sa.shop_id = ?", s_uid);
+		renderSuccess("获取成功",records);
+	}
 
 
 	@ActionKey("app/user/addActivityOrder")
@@ -2624,7 +2632,6 @@ public class AppController extends Controller {
 		 * */
 
 		IConstant.orderQueue.insert(r);//放入队列中
-
 		while(!IConstant.orderQueue.isEmpty()){
 			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
 			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
@@ -2647,7 +2654,6 @@ public class AppController extends Controller {
 						Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
 										"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
 								pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
-
 						/**
 						 * 减少库存数量
 						 * */
@@ -2689,6 +2695,8 @@ public class AppController extends Controller {
 		orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), orderId, 2);
 		renderSuccess("成功",null);
 	}
+
+
 
 
 }

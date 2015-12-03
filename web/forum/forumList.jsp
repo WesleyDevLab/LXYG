@@ -6,9 +6,6 @@
 	<jsp:include page="/metro.jsp"></jsp:include>
 
  <script type="text/javascript">
-     console.info("${forms}");
-     console.info("${code}");
-     console.info("${message}");
 
  	function init(){
 		initRow();			
@@ -36,26 +33,13 @@
 
 
  	function delRecord(fid) {
-		var forumId = "";
-		var ids = document.getElementsByName("ids");
-		for ( var i = 0; i < ids.length; i++) {
-			if (ids[i].type == "checkbox" && ids[i].checked) {
-				alert(ids[i].value);
-				forumId += ids[i].value + ",";
-				alert(forumId);
-			}
-		}
-		$.post("${path }/forum/del", {
-			"forumId" : fid
-		}, function(data) {
-			if (data == '0') {
-				alert("删除成功！");
-				location.href = "${path }/forum/list?parentId=${parentId}";
-			} else {
-				alert("删除失败！");
-			}
-		});
-
+        console.info(fid);
+        $.post("${path}/app/user/v2/adminDelForm",{"formId":fid},function(result){
+            if(result.code==10002){
+                alert("删除成功");
+                location.reload();
+            }
+        })
 	}
 	function update(forumId) {
 		location.href = "${path}/forum/preEdit?forumId=" + forumId;
@@ -182,7 +166,10 @@
                             <div class="pagination pagination-centered">
                               <div class="bg">
                                   <div class="r_page">
-                                      <li id="page"></li>
+                                      <li id="page">
+                                          第${forms.pageNumber}/${forms.totalPage}页    共${forms.totalRow}条
+                                      </li>
+
                                       <li><a onclick="loadInfo(1)">首页</a></li>
                                       <li><a class="active" onclick="loadInfo(0)">上一页</a></li>
                                       <li><a class="active"  onclick="loadInfo(-1)">下一页</a></li>
@@ -208,7 +195,7 @@
 
     </div>
     <!--/fluid-row-->
-    <div class="modal hide fade" id="myModal">
+    <!--<div class="modal hide fade" id="myModal">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">×</button>
             <h3>删除操作</h3>
@@ -276,7 +263,7 @@
             <a href="#" class="btn" data-dismiss="modal">关闭</a>
         </div>
     </div>
-
+-->
     <div class="clearfix"></div>
     <footer>
         <p>

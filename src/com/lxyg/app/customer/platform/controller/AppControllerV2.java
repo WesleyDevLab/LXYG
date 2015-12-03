@@ -1,7 +1,9 @@
 package com.lxyg.app.customer.platform.controller;
 
+        import cn.jpush.api.report.UsersResult;
         import com.alibaba.fastjson.JSON;
         import com.alibaba.fastjson.JSONArray;
+        import com.google.gson.JsonArray;
         import com.jfinal.aop.Before;
         import com.jfinal.core.ActionKey;
         import com.jfinal.core.Controller;
@@ -17,6 +19,7 @@ package com.lxyg.app.customer.platform.controller;
         import net.sf.json.JSONObject;
         import org.apache.log4j.Logger;
 
+        import java.text.SimpleDateFormat;
         import java.util.*;
 
 /**
@@ -27,7 +30,7 @@ public class AppControllerV2 extends Controller {
     private static final Logger log= Logger.getLogger(AppControllerV2.class);
     public GoodsService goodsService=new GoodsService();
     public OrderService orderService=new OrderService();
-    public void renderSuccess(String value,Object o){
+    public void renderSuccess(String value,Object o ){
         setAttr("code", 10002);
         setAttr("msg", value);
         if(o==null){
@@ -859,13 +862,21 @@ public class AppControllerV2 extends Controller {
     @ActionKey("/app/user/v2/searchName")
     public void searchName(){
         JSONObject json=JSONObject.fromObject(getPara("info"));
-        String name=json.getString("p_name");
         String s_uid=json.getString("s_uid");
+        if(!json.containsKey("s_uid")){
+            renderFaile("异常");
+        }
         int pg=1;
+        Page<Goods> products=null;
         if(json.containsKey("pg")){
             pg=json.getInt("pg");
         }
-        Page<Goods> products=Goods.dao.findByName(s_uid,name,pg);
+        if(json.containsKey("txm_code")&&!json.getString("txm_code").equals("")){
+            products=Goods.dao.findByTxm(s_uid, json.getString("txm_code"), pg);
+        }
+        if(json.containsKey("p_name")&&!json.getString("p_name").equals("")){
+            products=Goods.dao.findByName(s_uid,json.getString("p_name"),pg);
+        }
         renderSuccess("获取成功",products);
     }
 
@@ -938,11 +949,57 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功",shops);
     }
 
-    @ActionKey("/app/user/v2/sign")
-    public void sign(){
-        log.info("sign");
-        Record record=Db.findFirst("SELECT * from kk_login_sign where create_time BETWEEN ? and ? and num>=? ORDER BY rand()");
+    /**
+     * @author M
+     * 意见反馈接口
+     *
+     * */
+    @ActionKey("/app/user/v2/feedBack")
+    public void feedBack(){
+        log.info("feedBack");
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        String uid="";
+        if(obj.containsKey("uid")){
+            uid=obj.getString("uid");
+        }
+        String content=obj.getString("content");
+        Record r=new Record();
+        r.set("u_uid", uid);
+        r.set("content", content);
+        r.set("create_time",new Date());
+        Db.save("kk_feed_back", r);
+        renderSuccess("成功", null);
     }
 
+    @ActionKey("/app/user/v2/addSign")
+    public void sign(){
+        log.info("addSign");
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        if(!obj.containsKey("uid")){
+            renderFaile("异常");
+            return;
+        }
+        new User().dao.addLoginLog(obj.getString("uid"));
+        renderSuccess("签到成功",null);
+    }
 
+    @ActionKey("/app/user/v2/signLog")
+    public void signLog(){
+        log.info("signLog");
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        if(!obj.containsKey("uid")){
+            renderFaile("异常");
+            return;
+        }
+        List<Record> records=Db.find("select create_time from kk_login_log ll where ll.u_uid=?",obj.getString("uid"));
+        Record record=Db.findFirst("SELECT IFNULL(( SELECT ls.num FROM kk_login_sign ls WHERE ls.u_uid = ? ), 0 ) AS lxqd_num, " +
+                "IFNULL(( SELECT i.integral FROM kk_integral i WHERE i.u_uid = ? ), 0 ) AS jf_num, " +
+                "IFNULL(( SELECT COUNT(*) FROM kk_login_log ll WHERE ll.u_uid = ? ), 0 ) AS zqd_num",obj.getString("uid"),obj.getString("uid"),obj.getString("uid"));
+        Map<Object,Object> map=new HashMap<>();
+        map.put("times",records);
+        map.put("record",record);
+        map.put("date",sdf.format(new Date()));
+        renderSuccess("获取成功", map);
+    }
 }

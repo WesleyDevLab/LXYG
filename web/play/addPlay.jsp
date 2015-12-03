@@ -408,12 +408,13 @@ function checkForm() {
 						
 						<div class="control-group">
 							<label class="control-label" >产品来源：</label>
-
 							<div class="controls">
 								<select name="play.columnid" id="column_server">
 								</select>
 							</div>
 						</div>
+
+
 						
 						<div class="control-group">
 							<label class="control-label" >支付方式：</label>

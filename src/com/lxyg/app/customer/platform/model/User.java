@@ -143,8 +143,14 @@ public class User extends Model<User> {
 			Db.update("kk_login_sign",record);
 		}
 	}
+//添加积分
 	public  void addIntegral(int integral,String u_uid){
-		Record record=new Record();
+		Record record=Db.findFirst("select * from kk_integral where u_uid=?",u_uid);
+		if(record!=null){
+			record.set("integral",record.getInt("integral")+integral);
+			Db.update("kk_integral",record);
+			return;
+		}
 		record.set("u_uid",u_uid);
 		record.set("integral",integral);
 		record.set("create_time",new Date());

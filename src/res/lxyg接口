@@ -31,6 +31,8 @@ http://192.168.0.210/LXYG/app/user/v2/getShopsByLatLng?info={lat:"113.4",lng:"34
 http://192.168.0.210/LXYG/app/modifyProductNum?info={"s_uid":"48957caade98442b",p_id:1,p_num:123} 修改库存
 http://192.168.0.210/LXYG/app/checkProductNum?info={"s_uid":"48957caade98442b",brand_id:4,p_id:0,is_low=0} 查看库存
 
+http://192.168.0.210/LXYG/app/user/v2/signLog?info={"uid":"b4f8f2652073400b"} 签到记录
+http://192.168.0.210/LXYG/app/user/v2/addSign?info={"uid":"b4f8f2652073400b"} 签到
 
 
 
