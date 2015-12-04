@@ -17,12 +17,16 @@ import java.util.*;
 public class Goods extends Model<Goods> {
 	private static final long serialVersionUID = 103L;
 	public static final Goods dao = new Goods();
+
+
 	/**
 	 * 根据ID查询商品详情
 	 * 
 	 * @param
 	 *
 	 */
+
+
 	public Goods findById(int productId){
 		Goods gs=new Goods().findFirst("select id as productId,name,title,price," +
 				"p_type_id,p_brand_id,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +

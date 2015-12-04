@@ -87,8 +87,9 @@ public class activityController extends Controller{
         record.set("shop_id",shop_id);
         record.set("limit_e",limt);
         Db.save("kk_shop_activity",record);
-
-        renderJson("code",10002);
+        setAttr("activity",record);
+        setAttr("code",10002);
+        renderJson();
     }
 
 }

@@ -85,6 +85,20 @@ public class PageController extends Controller {
 		render("/activity/activityList.jsp");
 	}
 
+	public void toAddActPros(){
+		int sa_id=getParaToInt("sa_id");
+		int page=1;
+		if(isParaExists("pg")){
+			page=getParaToInt("pg");
+		}
+		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. NAME, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name " ,
+				"FROM kk_shop_activity sa LEFT JOIN kk_shop_product ps ON sa.shop_id = ps.shop_id LEFT JOIN kk_product p ON p.id = ps.product_id WHERE sa.id = ?", sa_id);
+
+		setAttr("sa_id",getParaToInt("sa_id"));
+		setAttr("products",records);
+		render("/activity/addActivityPros.jsp");
+	}
+
 	public void updateProduct(){
 		int id=getParaToInt("productId");
 		String index=getPara("index_search");

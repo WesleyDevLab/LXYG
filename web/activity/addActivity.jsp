@@ -12,7 +12,6 @@
 <head>
     <title>添加店面活动</title>
   <script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js"></script>
-
   <jsp:include page="/metro.jsp"></jsp:include>
 </head>
 <%@ include file="../common/top.jsp"%>
@@ -60,8 +59,9 @@
     }
     $.post("${path}/activity/addActivity",{"shop_id":shopId,"act_id":act_id,"title":title,
       "start_time":start_time,"end_time":end_time,"limit":limit},function(result){
+      console.info(result);
       if(result.code==10002){
-        alert("添加成功");
+        window.location.href="${path}/pageTo/toAddActPros?sa_id="+result.activity.id;
       }
     });
   }
