@@ -1524,7 +1524,7 @@ public class AppController extends Controller {
 		/**
 		 * 登陆自动签到
 		 **/
-		new User().dao.addLoginLog(u.getStr("uuid"));
+		//new User().dao.addLoginLog(u.getStr("uuid"));
 
 		renderSuccess("登陆成功", u);
 	}
@@ -2326,7 +2326,7 @@ public class AppController extends Controller {
 			u.set("login_" + version, 1);
 			u.update();
 		}
-		new User().dao.addLoginLog(u.getStr("uuid"));
+		//new User().dao.addLoginLog(u.getStr("uuid"));
 		renderSuccess("登陆成功", u);
 	}
 

@@ -93,8 +93,10 @@ public class PageController extends Controller {
 		}
 		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. NAME, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name " ,
 				"FROM kk_shop_activity sa LEFT JOIN kk_shop_product ps ON sa.shop_id = ps.shop_id LEFT JOIN kk_product p ON p.id = ps.product_id WHERE sa.id = ?", sa_id);
-
 		setAttr("sa_id",getParaToInt("sa_id"));
+		if(records.getList().size()==0){
+			records=null;
+		}
 		setAttr("products",records);
 		render("/activity/addActivityPros.jsp");
 	}
@@ -178,7 +180,18 @@ public class PageController extends Controller {
 		setAttr("goods",goods);
 		render("/activity/addActivity.jsp");
 //		Page<Goods> goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,);
+	}
 
+	public void activityPros(){
+		int act_id=getParaToInt("sa_id");
+		int page=1;
+		if(isParaExists("pg")){
+			page=getParaToInt("page");
+		}
+		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select * ","from kk_product_activity pa where pa.activity_id=?",act_id);
+		setAttr("products",recordPage);
+		setAttr("sa_id",act_id);
+		render("/activity/activityPros.jsp");
 	}
 
 //

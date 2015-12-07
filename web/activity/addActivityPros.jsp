@@ -31,37 +31,50 @@
         }
     </style>
     <script>
-        function openTable(Goods) {
-            console.info(Goods);
-            console.info(Goods.id);
-            var str1=product.substring(product.indexOf("{"),product.length);
-            var str= JSON.stringify(str1.name);
-            console.info(str);
-            var str= $.parseJSON(str1);
-
-//           console.info(str);
-//            $("#p_name").val(product.NAME);
-//            $("#p_price").val(product.price);
-//            $("#p_title").val(product.title);
-//            $("#p_num").val(0);
-//
-//            $("#proInfo").show();
+        function openTable(pid) {
+            $.post("${path}/activity/loadProInfo",{"p_id":pid},function(result){
+                if(result.code==10002){
+                    $("#p_id").val(result.data.productId);
+                    $("#p_name").val(result.data.name);
+                    $("#p_price").val((result.data.price/100).toFixed(2));
+                    $("#p_title").val(result.data.title);
+                    $("#p_num").val(1);
+                    $("#proInfo").show();
+                }
+            });
         }
 
         function closeTable(){
             $("#proInfo").hide();
         }
+
+        function addActivityPros(){
+            var title=$("#p_title").val();
+            var p_id=$("#p_id").val();
+            var act_price=$("#p_price").val()*100;
+            var limit_num=$("#p_num").val();
+            $.post("${path}/activity/addActivityPros",{"act_id":${sa_id},"title":title,"p_id":p_id,"act_price":act_price,"limit_num":limit_num},function(result){
+                if(result.code==10002){
+                    alert("添加成功");
+                    $("#proInfo").hide();
+                }
+            });
+        }
+
+        function page(num){
+
+        }
     </script>
 </head>
 <%@ include file="../common/top.jsp" %>
 <body>
-
     <div class="box-content" id="proInfo">
         <div class="form-horizontal">
             <fieldset >
                 <div class="control-group">
                     <label class="control-label">产品名字：</label>
                     <div class="controls">
+                        <input style="display: none" id="p_id">
                         <input class="span5 " disabled id="p_name">
                     </div>
                 </div>
@@ -69,7 +82,7 @@
                 <div class="control-group">
                     <label class="control-label">活动价格：</label>
                     <div class="controls">
-                        <input class="span5 " id="p_price" type="text">
+                        <input class="span5 " id="p_price" type="text"><p class="help-block red" >* 单位元</p>
                     </div>
                 </div>
 
@@ -83,12 +96,11 @@
                 <div class="control-group">
                     <label class="control-label">活动产品限购数量：</label>
                     <div class="controls">
-                        <input class="span5 " id="p_num" type="number">
+                        <input class="span5 " id="p_num" type="number"><p class="help-block red" >* 活动 产品数量 不能为0</p>
                     </div>
                 </div>
-
                 <div class="form-actions" >
-                    <button class="btn btn-info" onclick="">保存</button>
+                    <button class="btn btn-info" onclick="addActivityPros()">保存</button>
                     <button class="btn btn-danger" onclick="closeTable();">关闭</button>
                 </div>
             </fieldset>
@@ -102,44 +114,56 @@
                 <h2 id="plat_name1"><i class="icon-align-justify"></i><span class="break"></span>添加活动产品</h2>
 
                 <div class="box-icon">
-
+                    <a href="${path}/pageTo/activityPros?sa_id=${sa_id}"    class="btn-add">
+                        <i class="icon-edit" style="width:60px">返回</i>
+                    </a>
                 </div>
             </div>
             <div class="box-content" style="min-height: 800px ">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped "
-                           style="font-size: 14px;font-style: normal">
-                        <thead>
-                        <tr>
-                            <th width="40%">产品</th>
-                            <th width="10%">产品图片</th>
-                            <th>价格</th>
-                            <th>分类</th>
-                            <th>品牌</th>
-                            <th>选择</th>
-                        </tr>
-                        </thead>
-                        <tbody id="dateBody">
-                        <c:forEach items="${products.list}" var="product" varStatus="loopStatus">
-                            <tr>
-                                <td>${product.NAME}</td>
-                                <td><img src="${product.cover_img}" width="40px" height="40px">
 
-                                </td>
-                                <td>￥ ${product.price} </td>
-                                <td>${product.p_type_name}</td>
-                                <td>${product.p_brand_name}</td>
-                                <td>
-                                    <button class="btn btn-info" onclick="openTable('<json:json goods="${product}"/>') ">选择</button>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                        </tbody>
-                    </table>
+                    <table class="table table-bordered table-striped "
+                                    style="font-size: 14px;font-style: normal">
+                    <thead>
+                    <tr>
+                        <th width="40%">产品</th>
+                        <th width="10%">产品图片</th>
+                        <th>价格</th>
+                        <th>分类</th>
+                        <th>品牌</th>
+                        <th>选择</th>
+                    </tr>
+                    </thead>
+                    <tbody id="dateBody">
+                    <c:forEach items="${products.list}" var="product" varStatus="loopStatus">
+                        <c:choose>
+                            <c:when test="${product.id==null}">
+                               <div class="box-content">
+                                    <h1 class="red ">该店暂无上货</h1>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <tr>
+                                    <td>${product.NAME}</td>
+                                    <td><img src="${product.cover_img}" width="40px" height="40px">
+                                    </td>
+                                    <td>￥
+                                        <fmt:parseNumber var="i" type="number" value="${product.price}" />
+                                        <fmt:formatNumber value="${i/100}" maxFractionDigits="2" pattern="0.00"/>
+                                    </td>
+                                    <td>${product.p_type_name}</td>
+                                    <td>${product.p_brand_name}</td>
+                                    <td>
+                                        <button class="btn btn-info" onclick="openTable(${product.id})">选择</button>
+                                    </td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:forEach>
+                    </tbody>
+                </table>
 
                 </div>
-
-
                 <div class="pagination pagination-centered">
                     <div class="bg">
                         <div class="r_page">

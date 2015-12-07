@@ -57,21 +57,23 @@
                 totalRows=result.data.totalRow;
                 for(var i=0;i<result.data.list.length;i++){
                     var obj=result.data.list[i];
-                    innerHtml+="<tr><th>"+obj.name+"</th>"+
-                            "<th>"+obj.cover_img+"</th>"+
-                            "<th>"+obj.price+"</th>"+
-                            "<th>"+obj.title+"</th>"+
-                            "<th>"+obj.act_name+"</th>"+
+                    innerHtml+="<tr><th>"+obj.sname+"</th>"+
+                            "<th>"+obj.label_cn+"</th>"+
+                            "<th>"+obj.aname+"</th>"+
                             "<th>"+obj.start_time+"</th>"+
                             "<th>"+obj.end_time+"</th>"+
                             "<th>"+obj.limit_num+"</th>"+
-                            "<th>"+obj.surplus_num+"</th></tr>"
+                            "<th><button class='btn btn-info' onclick='checkPros("+obj.id+")'>活动产品</button> <button class='btn btn-danger' onclick='delActivity("+obj.id+");'>删除</button></th></tr>"
                 }
                 $("#dateBody").append(innerHtml);
                 $("#page").append("第"+curPage+"/"+totalPage+"页    共"+totalRows+"条");
             }
         });
     }
+    function checkPros(sa_id){
+        window.location.href="${path}/pageTo/activityPros?sa_id="+sa_id;
+    }
+
     function page(temp){
         if(temp==1){
             curPage=1
@@ -99,6 +101,16 @@
     function addActPros(){
         var shopId=$("#shops").val();
         window.location.href="${path}/pageTo/toAddAct?shop_id="+shopId;
+    }
+    function delActivity(act_id){
+        if(confirm("是否确认要删除该活动？")){
+            $.post("${path}/activity/delActivity",{"act_id":act_id},function(result){
+                if(result.code==10002){
+                    alert("删除成功");
+                    loadActPros(curPage);
+                }
+            });
+        }
     }
 </script>
 <body onload="init()">
@@ -134,15 +146,13 @@
                 <table class="table table-bordered table-striped table-condensed" style="font-size: 14px;font-style: normal">
                     <thead>
                         <tr>
-                            <th>产品</th>
-                            <th>产品图片</th>
-                            <th>价格</th>
-                            <th>文字描述</th>
+                            <th>店名</th>
+                            <th>活动主题</th>
                             <th>活动类型</th>
                             <th>开始时间</th>
                             <th>结束时间</th>
-                            <th>初始数量</th>
-                            <th>剩余数量</th>
+                            <th>限购数量</th>
+                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="dateBody">

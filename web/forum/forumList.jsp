@@ -33,13 +33,14 @@
 
 
  	function delRecord(fid) {
-        console.info(fid);
-        $.post("${path}/app/user/v2/adminDelForm",{"formId":fid},function(result){
-            if(result.code==10002){
-                alert("删除成功");
-                location.reload();
-            }
-        })
+        if(confirm("确定要删除嘛？")){
+            $.post("${path}/app/user/v2/adminDelForm",{"formId":fid},function(result){
+                if(result.code==10002){
+                    alert("删除成功");
+                    location.reload();
+                }
+            })
+        }
 	}
 	function update(forumId) {
 		location.href = "${path}/forum/preEdit?forumId=" + forumId;

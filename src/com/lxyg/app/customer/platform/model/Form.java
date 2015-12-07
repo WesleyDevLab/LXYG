@@ -98,6 +98,7 @@ public class Form extends Model<Form>{
         }
         return zans;
     }
+
     public boolean isZan(String u_uid,int form_id) {
         if(u_uid==null||u_uid.equals("")){
             return false;
