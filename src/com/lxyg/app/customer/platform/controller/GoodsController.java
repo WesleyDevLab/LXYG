@@ -211,27 +211,25 @@ public class GoodsController extends Controller {
 			}
 			goods.set("name", getPara("name"));
 			goods.set("title", getPara("title"));
-			goods.set("price", getPara("price"));
-			goods.set("market_price", getPara("marketPrice"));
-			goods.set("cash_pay", getPara("cashPay"));
-			goods.set("p_type_id", getPara("typeId"));
-			goods.set("p_brand_id", getPara("brandId"));
+			goods.set("price", getParaToInt("price"));
+			goods.set("market_price", getParaToInt("marketPrice"));
+			goods.set("cash_pay", getParaToInt("cashPay"));
+			goods.set("p_type_id", getParaToInt("typeId"));
+			goods.set("p_brand_id", getParaToInt("brandId"));
 			goods.set("p_type_name", getPara("typeName"));
 			goods.set("p_brand_name", getPara("brandName"));
-			goods.set("p_unit_id", getPara("unitId"));
+			goods.set("p_unit_id", getParaToInt("unitId"));
 			goods.set("p_unit_name", getPara("unitName"));
 			goods.set("descripation", getPara("descripation"));
-			goods.set("index_show", getPara("isShow"));
-			goods.set("server_id", getPara("serverId"));
+			goods.set("index_show", getParaToInt("isShow"));
+			goods.set("server_id", getParaToInt("serverId"));
 			goods.set("server_name", getPara("serverName"));
 			goods.set("payment", getPara("payment"));
 			goods.set("modify_time", DateTools.createTime());
 			goods.set("code",getPara("code"));
-			boolean flag=false;
-			if(getPara("imgs")!=null&&!getPara("imgs").equals("")){
+			boolean flag=goods.update();
+			if(flag&&getPara("imgs")!=null&&!getPara("imgs").equals("")){
 				flag=goodsService.save(goods, getPara("imgs"));
-			}else{
-				flag=goods.update();
 			}
 			if(flag){
 				setAttr("code", 10010);

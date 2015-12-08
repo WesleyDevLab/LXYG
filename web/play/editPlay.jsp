@@ -27,7 +27,7 @@ $(document).ready(function(){
 	var server="<option value=0> 请选择... </option>";
     var url="${path}/goods/loadGoodsAttribute";
     $.get(url,function(result){
-       if(result.code==10010){
+		if(result.code==10010){
 	       for(var i=0;i<result.type.length;i++){
 	           if("${goods.p_type_id}"==result.type[i].id){
 	                type+="<option selected='selected'  value="+result.type[i].id+" > "+result.type[i].name+" </option>"
@@ -59,7 +59,7 @@ $(document).ready(function(){
 	       $("#column_server").append(server);
 	       $("#column_payType").append(payType);
 	       $("#imgs").append("<img key='${goods.cover_img}' src='${goods.cover_img}' onclick='deleteImg($(this));'  style='width:100px;height:100px;padding:5px' />");
-		  // editor.html(${goods.descripation});
+		  <%--// editor.html(${goods.descripation});--%>
        }
     });  
 });
@@ -236,43 +236,8 @@ function checkForm() {
 	
 	var serverText=$("#column_server").find("option:selected").text();
 	var serverValue=$("#column_server").val();
+	var code=$("#market_code").val();
 
-
-	$("#imgss").children().each(function(i){
-		var obj=$(this).context.currentSrc;
-		if(obj.indexOf("data:image/jpeg;base64")!=-1){
-			return true;
-		}else{
-			imgs[imgs.length+i]=obj;
-		}
-	});
-	console.info(imgs);
-
-	var key=new Array();
-	var value=new Array();
-	$("input[name='payType']").each(function(j){
-	    if($(this).is(":checked")){
-	      key[j]=this.value;
-	      value[j]= $(this).next("span").text(); 
-	    }
-	});
-	
-	var payType="[";
-	for(var k=0;k<key.length;k++){
-	   payType+="{payId:"+key[k]+",payName:"+value[k]+"},"
-	}	
-	payType=payType.substring(0, payType.length-1)+"]";
-	
-	var imgDetail="";
-	if(imgs.length!=0){
-	    imgDetail+="[";
-		for(var k=0;k<imgs.length;k++){
-		   imgDetail+="\""+imgs[k]+"\",";
-		}
-		imgDetail=imgDetail.substr(0,imgDetail.length-1)+"]";
-	}
-
-	console.info(imgCover);
 	if (name == "") {
 		alert("产品名字！");
 		return false;
@@ -316,10 +281,45 @@ function checkForm() {
 	   alert("选择产品单位 ！");
 	   return false;
 	}
-	$.post("${path}/goods/updateGoods",{"goodsId":"${goods.productId}","name":name,"title":title,"price":price,"marketPrice":market_price,
+
+
+	$("#imgss").children().each(function(i){
+		var obj=$(this).context.currentSrc;
+		if(obj.indexOf("data:image/jpeg;base64")!=-1){
+			return true;
+		}else{
+			imgs[imgs.length+i]=obj;
+		}
+	});
+	var key=new Array();
+	var value=new Array();
+	$("input[name='payType']").each(function(j){
+		if($(this).is(":checked")){
+			key[j]=this.value;
+			value[j]= $(this).next("span").text();
+		}
+	});
+
+	var payType="[";
+	for(var k=0;k<key.length;k++){
+		payType+="{payId:"+key[k]+",payName:"+value[k]+"},"
+	}
+	payType=payType.substring(0, payType.length-1)+"]";
+
+	var imgDetail="";
+	if(imgs.length!=0){
+		imgDetail+="[";
+		for(var k=0;k<imgs.length;k++){
+			imgDetail+="\""+imgs[k]+"\",";
+		}
+		imgDetail=imgDetail.substr(0,imgDetail.length-1)+"]";
+	}
+
+
+	$.post("${path}/goods/updateGoods",{"goodsId":${goods.productId},"name":name,"title":title,"price":price*100,"marketPrice":market_price*100,
 	           "typeId":typeValue,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
-	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail},
+	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail,"code":code},
 	function(result){
 	   if(result.code==10010){
 	      alert(result.message);
@@ -373,14 +373,14 @@ function deleteImg(el){
 						<div class="control-group">
 							<label class="control-label" >乐享云购价格：</label>
 							<div class="controls">
-								<input type="text" name="price" value="${goods.price}" id="price" onkeyup="this.value=this.value.substring(0,50)" class="input-xlarge" />
+								<input type="text" name="price" value="<fmt:parseNumber var="i" type="number" value="${goods.price}"/><fmt:formatNumber value="${i/100} " maxFractionDigits="2" pattern="0.00"/>" id="price" onkeyup="this.value=this.value.substring(0,50)" class="input-xlarge" />
 								<p class="help-block">*请填写乐享云购价格，该价格为交易价格</p>
 							</div>
 						</div>
 						<div class="control-group">
 							<label class="control-label" >市场价格：</label>
 							<div class="controls">
-								<input type="text" name="markey_price" value="${goods.market_price}" id="market_price" onkeyup="this.value=this.value.substring(0,50)" class="span6 typeahead" />
+								<input type="text" name="markey_price" value="<fmt:parseNumber var="i" type="number" value="${goods.market_price}"/><fmt:formatNumber value="${i/100}" maxFractionDigits="2" pattern="0.00"/>" id="market_price" onkeyup="this.value=this.value.substring(0,50)" class="span6 typeahead" />
 								<p class="help-block">*请填写市场价格</p>
 							</div>
 						</div>

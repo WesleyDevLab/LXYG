@@ -89,14 +89,14 @@ function loadData(page,brandId,typeId,proName){
              var p=goods[i];
               if(index_search=="fbz"){
                   innerHtml+="<tr><td>"+p.name+"</td><td><img src="+p.cover_img+" style='width:100px;height:50px'></td><td class='center'>"+p.create_time+"</td>"+
-                          "<td class='center'>"+p.price+"</td><td class='center'>"+p.market_price+"</td>"+
+                          "<td class='center'>"+(p.price/100).toFixed(2)+"</td><td class='center'>"+(p.market_price/100).toFixed(2)+"</td>"+
                           "<td class='center'>"+p.cash_pay+"</td>"+
                           "<td class='center'>"+
                           "<button type='button' class='btn btn-primary' value='"+p.id+"' onclick='JavaScript:updateRecord($(this));'>修改</button>"+
                           "<button type='button' class='btn' value='"+p.id+"' onclick='JavaScript:delRecord($(this));'>删除</button></td><tr>";
               }else{
                   innerHtml+="<tr><td>"+p.name+"</td><td><img src="+p.cover_img+" style='width:100px;height:50px'></td><td class='center'>"+p.create_time+"</td>"+
-                          "<td class='center'>"+p.price+"</td><td class='center'>"+p.market_price+"</td>"+
+                          "<td class='center'>"+(p.price/100).toFixed(2)+"</td><td class='center'>"+(p.market_price/100).toFixed(2)+"</td>"+
                           "<td class='center'>"+p.cash_pay+"</td><td class='center'>"+p.server_name+"</td>"+
                           "<td class='center'>"+p.p_brand_name+"</td><td class='center'>"+
                           "<button type='button' class='btn btn-primary' value='"+p.id+"' onclick='JavaScript:updateRecord($(this));'>修改</button>"+

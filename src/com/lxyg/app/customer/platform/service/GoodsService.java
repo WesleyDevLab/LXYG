@@ -25,7 +25,10 @@ public class GoodsService{
 				JSONArray array = new JSONArray(imgs);
 				for (int i = 0; i < array.length(); i++) {
 					String img = array.getString(i);
-					flag = new Goods().insertImgDetail(productId, ConfigUtils.getProperty("kaka.qiniu.server")+img,"");
+					if(img.equals("undefined")){
+						continue;
+					}
+					flag = new Goods().insertImgDetail(productId, img,"");
 				}
 			} catch (JSONException e) {
 				log.info("json 解析错误", e);

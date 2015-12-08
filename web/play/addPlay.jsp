@@ -299,7 +299,7 @@ function checkForm() {
 	   return false;
 	}
 	
-	$.post("${path}/goods/add",{"name":name,"title":title,"price":price,"marketPrice":market_price,
+	$.post("${path}/goods/add",{"name":name,"title":title,"price":price*100,"marketPrice":market_price*100,
 	           "typeId":typeValue,"code":code,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
 	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail},

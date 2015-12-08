@@ -186,7 +186,7 @@ public class PageController extends Controller {
 		int act_id=getParaToInt("sa_id");
 		int page=1;
 		if(isParaExists("pg")){
-			page=getParaToInt("page");
+			page=getParaToInt("pg");
 		}
 		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select * ","from kk_product_activity pa where pa.activity_id=?",act_id);
 		setAttr("products",recordPage);

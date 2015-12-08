@@ -973,7 +973,6 @@ public class AppControllerV2 extends Controller {
 
     @ActionKey("/app/user/v2/addSign")
     public void sign(){
-        log.info("addSign");
         JSONObject obj= JSONObject.fromObject(getPara("info"));
         if(!obj.containsKey("uid")){
             renderFaile("异常");

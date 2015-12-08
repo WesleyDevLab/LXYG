@@ -123,10 +123,10 @@ public class User extends Model<User> {
 		if(r.getLong("cc") > 0){
 			return;
 		}
-		r.clear();
-		r.set("u_uid",u_uid);
-		r.set("create_time",d);
-		Db.save("kk_login_log", r);
+		Record r1=new Record();
+		r1.set("u_uid",u_uid);
+		r1.set("create_time",d);
+		Db.save("kk_login_log", r1);
 		addIntegral(IConstant.login_integral,u_uid);
 
 		Record record=Db.findFirst("select * from kk_login_sign where u_uid=?",u_uid);

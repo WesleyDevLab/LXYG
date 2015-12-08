@@ -2108,11 +2108,8 @@ public class AppController extends Controller {
 				return;
 			}
 		}
-
 		map.put("cash_pay", json.getInt("cashPay"));
-
 		boolean f=orderService.splice2Create_1(orderId, items,json.getInt("cashPay"));
-
 		if(f){
 			Order o=new Order();
 			o.setAttrs(map);

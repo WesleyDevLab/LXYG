@@ -127,12 +127,24 @@
                })
            }
         }
-        function delPro() {
+        function delPro(ap_id) {
             if(confirm("确定要删出嘛？")){
+                $.post("${path}/activity/delAPro",{"ap_id":ap_id},function(result){
 
+                });
             }
         }
-
+        function page(num){
+            if(num<1){
+                alert("已经是第一页了");
+                return;
+            }
+            if(num>${products.totalPage}){
+                alert("已经是最后一页了");
+                return;
+            }
+            window.location.href="${path}/pageTo/activityPros?sa_id=${sa_id}&pg="+num;
+        }
 
     </script>
 </head>
@@ -257,11 +269,12 @@
                     <div class="bg">
                         <div class="r_page">
                             <li id="page">
+                                第${products.pageNumber}/${products.totalPage}页 共${products.totalRow}条
                             </li>
                             <li><a onclick="page(1)">首页</a></li>
-                            <li><a class="active" onclick="page(2)">上一页</a></li>
-                            <li><a class="active" onclick="page(3)">下一页</a></li>
-                            <li><a onclick="page(4)">末页</a></li>
+                            <li><a class="active" onclick="page('${products.pageNumber-1}')">上一页</a></li>
+                            <li><a class="active" onclick="page('${products.pageNumber+1}')">下一页</a></li>
+                            <li><a onclick="page('${products.totalPage}')">末页</a></li>
                             跳转到第
                             <input id="toPage" style="width:20px;ime-mode:disabled;" size="4">
                             页
