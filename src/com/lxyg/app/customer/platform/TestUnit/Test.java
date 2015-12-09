@@ -6,10 +6,8 @@ import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.lxyg.app.customer.platform.model.Form;
-import com.lxyg.app.customer.platform.model.FormImg;
+import com.lxyg.app.customer.platform.model.*;
 
-import com.lxyg.app.customer.platform.model.User;
 import com.lxyg.app.customer.platform.util.JsonUtils;
 import com.lxyg.app.customer.platform.util.UpYun;
 import com.lxyg.app.customer.platform.util.loadUUID;
@@ -245,12 +243,21 @@ public class Test extends TestBefore {
         date.setTime(date.getTime()-7*1000*60*60*24);
         System.out.println(sdf.format(date));
     }
-    @org.junit.Test
     public void test1(){
         Record activity=Db.findById("kk_shop_activity", 1);
         if(activity.getInt("limit_e")==null){
         }
         Db.update("update kk_product_activity set surplus_num=surplus_num-? where activity_id=?", activity.getInt("limit_e"), 1);
+    }
+
+    @org.junit.Test
+    public void category(){
+        List<Record> pList=Db.find("select * from kk_area where father_id=0 ");
+//        List<GoodCategory> categories=GoodCategory.dao.find("select * from kk_product_category ");
+//        for(GoodCategory category:categories){
+//            category.getGoodTypes(category.getInt("id"));
+//        }
+//        System.out.println(categories);
     }
 
 }

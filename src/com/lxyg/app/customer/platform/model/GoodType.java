@@ -8,4 +8,5 @@ import com.jfinal.plugin.activerecord.Model;
 public class GoodType extends Model<GoodType> {
     private static final long serialVersionUID=105L;
     public static final GoodType dao=new GoodType();
+
 }

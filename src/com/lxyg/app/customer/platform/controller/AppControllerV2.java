@@ -364,6 +364,7 @@ public class AppControllerV2 extends Controller {
         }
         renderSuccess("获取成功",records);
     }
+
     @ActionKey("app/v2/searchProduct")
     public void search(){
         JSONObject obj= JSONObject.fromObject(getPara("info"));
@@ -1000,5 +1001,14 @@ public class AppControllerV2 extends Controller {
         map.put("record",record);
         map.put("date",sdf.format(new Date()));
         renderSuccess("获取成功", map);
+    }
+    @ActionKey("/app/user/v2/categorys")
+    public void categorys(){
+        log.info("categorys");
+        List<GoodCategory> goodCategories=GoodCategory.dao.find("select * from kk_product_category");
+        for(GoodCategory goodCategory:goodCategories){
+            goodCategory.put("types",goodCategory.getGoodTypes(goodCategory.getInt("id")));
+        }
+        renderSuccess("获取成功",goodCategories);
     }
 }

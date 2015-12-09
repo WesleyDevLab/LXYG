@@ -109,3 +109,21 @@ ALTER TABLE kk_product_activity add p_type_id int not null DEFAULT 0,
  add p_type_name VARCHAR(100) CHARACTER set utf8 not null,
  add p_brand_id int not null DEFAULT 0,
  add p_brand_name VARCHAR(100) CHARACTER set utf8 not null
+
+
+/**
+*2015-12-8 节点
+*/
+alter TABLE kk_product add p_number int not null DEFAULT 0,add supplier_price DECIMAL;
+
+DROP TABLE if EXISTS kk_product_log;
+CREATE TABLE if NOT EXISTS kk_product_log(
+ id int(11) not null AUTO_INCREMENT,
+ p_id int(11) not null,
+ price DECIMAL,
+ market_price DECIMAL ,
+ supplier_price DECIMAL,
+ p_number int not null DEFAULT 0,
+ create_time DATETIME NOT NULL,
+ PRIMARY  KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

@@ -182,6 +182,8 @@ public class GoodsController extends Controller {
 			goods.set("create_time", DateTools.createTime());
 			goods.set("code",getPara("code"));
 			goods.save();
+			Db.update("insert into kk_product_log(p_id,price,market_price,supplier_price,p_number,create_time) values(?,?,?,?,?,?)",goods.getInt("id")
+					,getPara("price"),getPara("marketPrice"),getPara("supplier_price"),getParaToInt("p_number'"),new Date());
 			boolean flag=goodsService.save(goods, getPara("imgs"));
 			if(flag){
 				setAttr("code", 10010);
@@ -234,6 +236,8 @@ public class GoodsController extends Controller {
 			if(flag){
 				setAttr("code", 10010);
 				setAttr("message", "修改成功");
+				Db.update("insert into kk_product_log(p_id,price,market_price,supplier_price,p_number,create_time) values(?,?,?,?,?,?)",getPara("goodsId")
+						,getParaToInt("price"),getParaToInt("marketPrice"),getParaToInt("supplier_price"),getParaToInt("p_number'"),new Date());
 				renderJson();
 				return;
 			}else{
@@ -401,7 +405,6 @@ public class GoodsController extends Controller {
 
 	public void addFBPro(){
 		log.info("addNonormPros");
-
 		double price=Double.parseDouble(getPara("price"));
 		double market=Double.parseDouble(getPara("marketPrice"));
 		double cashPay=Double.parseDouble(getPara("cash_pay"));
