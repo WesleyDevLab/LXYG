@@ -262,7 +262,6 @@ public class Test extends TestBefore {
         System.out.println(rS);
     }
 
-    @org.junit.Test
     public void readExcel(){
         String path = "D://kk_product_new.xls";
         File file = new File(path);
@@ -361,9 +360,21 @@ public class Test extends TestBefore {
         }
     }
 
+    @org.junit.Test
     public void insert(){
+      // Db.findFirst("select group_concat(fb.id) as pids,fb.* from kk_product_fb fb where fb.s_uid=1 and fb.id in (1) and fb.hide=0");
 
-
+       List<Record> records= Db.find("SELECT group_concat(p.p_type_id) as types,p.p_brand_id from kk_product p GROUP BY p.p_brand_id");
+        for(Record record:records){
+            int p_brand_id=record.getInt("p_brand_id");
+            String types=record.getStr("types");
+            int type=Integer.parseInt(types.split(",")[0]);
+            Record record1=new Record();
+            record1.set("id",p_brand_id);
+            record1.set("p_type_id",type);
+            Db.update("kk_product_brand_copy",record1);
+            System.out.println(p_brand_id+"   "+type);
+        }
     }
 
 }
