@@ -1002,6 +1002,7 @@ public class AppControllerV2 extends Controller {
         map.put("date",sdf.format(new Date()));
         renderSuccess("获取成功", map);
     }
+
     @ActionKey("/app/user/v2/categorys")
     public void categorys(){
         log.info("categorys");

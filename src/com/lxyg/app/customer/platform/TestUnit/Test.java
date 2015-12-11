@@ -13,6 +13,11 @@ import com.lxyg.app.customer.platform.util.UpYun;
 import com.lxyg.app.customer.platform.util.loadUUID;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.json.JSONException;
 import sun.misc.BASE64Decoder;
 
@@ -20,6 +25,7 @@ import javax.imageio.stream.FileImageInputStream;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -250,14 +256,114 @@ public class Test extends TestBefore {
         Db.update("update kk_product_activity set surplus_num=surplus_num-? where activity_id=?", activity.getInt("limit_e"), 1);
     }
 
-    @org.junit.Test
     public void category(){
-        List<Record> pList=Db.find("select * from kk_area where father_id=0 ");
-//        List<GoodCategory> categories=GoodCategory.dao.find("select * from kk_product_category ");
-//        for(GoodCategory category:categories){
-//            category.getGoodTypes(category.getInt("id"));
-//        }
-//        System.out.println(categories);
+       Record rS=Db.findFirst("SELECT ( SELECT  pc.id FROM kk_product_category pc WHERE pc. NAME LIKE ? LIMIT 0,1 ) AS cid, " +
+               "( SELECT pt.id FROM kk_product_type pt WHERE pt.NAME LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. NAME LIKE ? LIMIT 0,1) AS bid", "%粮油调味%", "%方便速食%", "%双汇%");
+        System.out.println(rS);
+    }
+
+    @org.junit.Test
+    public void readExcel(){
+        String path = "D://kk_product_new.xls";
+        File file = new File(path);
+        if (!file.exists()) {
+            System.out.println("文件不存在");
+            return;
+        }
+        try {
+            POIFSFileSystem poifsFileSystem = new POIFSFileSystem(new FileInputStream(file));
+            HSSFWorkbook hssfWorkbook =  new HSSFWorkbook(poifsFileSystem);
+            HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(0);
+            int rowstart = hssfSheet.getFirstRowNum();
+            int rowEnd = hssfSheet.getLastRowNum();
+            for(int i=2;i<=rowEnd;i++){
+                HSSFRow row = hssfSheet.getRow(i);
+                if(null == row){
+                    continue;
+                }
+                int cellStart = row.getFirstCellNum();
+                int cellEnd = row.getLastCellNum();
+                Object[] objects=new Object[cellEnd];
+                for(int k=cellStart;k<=cellEnd;k++)
+                {
+                    HSSFCell cell = row.getCell(k);
+                    if(null==cell) continue;
+                    Object value = null;
+
+                    switch (cell.getCellType())
+                    {
+                        case HSSFCell.CELL_TYPE_NUMERIC:
+                            Double d;
+                            if(k==9){
+                                d=cell.getNumericCellValue()*100;
+                            }else{
+                                d=cell.getNumericCellValue();
+                            }
+                            value=d.intValue();
+
+                            break;
+                        case HSSFCell.CELL_TYPE_STRING:
+                            value=cell.getStringCellValue();
+                            break;
+                        case HSSFCell.CELL_TYPE_FORMULA:
+                            String v1;
+                            try{
+                                v1= String.valueOf(cell.getNumericCellValue());
+                            }catch (IllegalStateException  e){
+                                v1= String.valueOf(cell.getCellFormula());
+                            }
+                            Double d1=Double.parseDouble(v1);
+                            value=d1.intValue();
+                            break;
+                        case HSSFCell.CELL_TYPE_BLANK:
+                            value=0;
+                            break;
+                        case HSSFCell.CELL_TYPE_ERROR:
+                            break;
+                        default:
+                            break;
+                    }
+                    objects[k]=value;
+                }
+                for(Object object:objects){
+                    System.out.print(object.toString() + "   ");
+                }
+                Record record=new Record();
+                record.set("p_category_name",objects[0]);
+                record.set("p_type_name",objects[1]);
+                record.set("p_brand_name",objects[2]);
+
+                Record r=Db.findFirst("SELECT ( SELECT pc.id FROM kk_product_category pc WHERE pc. NAME LIKE ? LIMIT 0,1) AS cid, " +
+                        "( SELECT pt.id FROM kk_product_type pt WHERE pt.NAME LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. NAME LIKE ? LIMIT 0,1) AS bid", "%" + objects[0] + "%", "%" + objects[1] + "%", "%" + objects[2] + "%");
+                record.set("p_category_id",r.getInt("cid"));
+                record.set("p_type_id",r.getInt("tid"));
+                record.set("p_brand_id",r.getInt("bid"));
+
+                record.set("name",objects[3]);
+                record.set("txm_code",objects[4]);
+                record.set("p_unit_name",objects[5]);
+                record.set("p_unit_num",objects[6]);
+                record.set("min_stock_all",objects[7]);
+                record.set("min_stock_shop",objects[8]);
+                record.set("supplier_price",objects[9]);
+                record.set("box_specification",objects[10]);
+                record.set("min_quantity",objects[11]);
+                record.set("quantity",objects[12]);
+                record.set("p_desc",objects[13]);
+                Db.save("kk_product_data",record);
+//               Db.update("insert into kk_product_data(p_category_name,p_type_name,p_brand_name,name,txm_code,p_unit_name,p_unit_num" +
+//                      "min_stock_all,min_stock_shop,supplier_price,box_specification,min_quantity,quantity,p_desc) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", objects);
+//                Db.update("insert into kk_product_data(p_type_name) values(?)", objects);
+                System.out.print("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insert(){
+
+
     }
 
 }

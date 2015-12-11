@@ -181,6 +181,12 @@ public class GoodsController extends Controller {
 			goods.set("payment", getPara("payment"));
 			goods.set("create_time", DateTools.createTime());
 			goods.set("code",getPara("code"));
+			if(isParaExists("supplier_price")){
+				goods.set("supplier_price",getPara("supplier_price"));
+			}
+			if(isParaExists("p_number")){
+				goods.set("p_number",getPara("p_number"));
+			}
 			goods.save();
 			Db.update("insert into kk_product_log(p_id,price,market_price,supplier_price,p_number,create_time) values(?,?,?,?,?,?)",goods.getInt("id")
 					,getPara("price"),getPara("marketPrice"),getPara("supplier_price"),getParaToInt("p_number'"),new Date());
@@ -347,8 +353,7 @@ public class GoodsController extends Controller {
 				setAttr("message", "删除失败");
 				renderJson();
 			}
-			
-		}else{
+ 		}else{
 			render("/login.jsp");
 		}
 		
@@ -561,5 +566,7 @@ public class GoodsController extends Controller {
 //		}
 //	}
 //	
+
+
 
 }

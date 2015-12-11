@@ -350,7 +350,13 @@ function checkForm() {
 								<p class="help-block">请填写产品介绍，不要超过20个字</p>
 							</div>
 						</div>
-						
+						<div class="control-group">
+							<label class="control-label" >供货商价格：</label>
+							<div class="controls">
+								<input type="text" name="price" id="supplier_price" onkeyup="this.value=this.value.substring(0,50)" class="input-xlarge" />
+								<p class="help-block">*请填写乐享云购价格，该价格为供货商</p>
+							</div>
+						</div>
 						<div class="control-group">
 							<label class="control-label" >乐享云购价格：</label>
 							<div class="controls">
@@ -372,6 +378,7 @@ function checkForm() {
 								<p class="help-block">该产品可以使用的电子现金打折券</p>
 							</div>
 						</div>
+
 
 						<div class="control-group">
 							<label class="control-label">条形码：</label>
