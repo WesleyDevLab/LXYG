@@ -17,7 +17,12 @@ public class Shop extends Model<Shop> {
 	public static final Shop dao = new Shop();
 	
 	public List<Record> getActivity(){
-		return Db.find("select id as activityId,img_url,alt,label_cn,shop_id,type,end_time,start_time,limit_e from kk_shop_activity where shop_id=1");
+		return Db.find("select id as activityId,img_url,alt,label_cn,shop_id,type,end_time,start_time,limit_e from kk_shop_activity where shop_id=0");
+	}
+
+
+	public List<Record> getActivity(int shopId){
+		return Db.find("SELECT sa.id AS activityId, img_url, alt, label_cn, shop_id, type, end_time, start_time, limit_e, activity_type, a. name FROM kk_shop_activity sa LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE shop_id = ?",shopId);
 	}
 	
 	public Shop findBysuid(String suid){
@@ -47,7 +52,7 @@ public class Shop extends Model<Shop> {
 		}
 		str=str.substring(0, str.length()-1);
 		
-		String sql="SELECT distance(?,?,s.lng,s.lat) as dis, s.id AS shopId, s. NAME, s.uuid, s.cover_img, s.phone, ps.product_id, " +
+		String sql="SELECT distance(?,?,s.lng,s.lat) as dis, s.id AS shopId, s. name, s.uuid, s.cover_img, s.phone, ps.product_id, " +
 				"COUNT(ps.product_id) as num FROM kk_shop s LEFT JOIN kk_shop_product ps ON s.id = ps.shop_id WHERE ps.product_id IN ("+str+") and distance(?,?,s.lng,s.lat) <=3000 " +
 				"GROUP BY shop_id  ORDER BY dis asc LIMIT 0, 10";
 		
@@ -68,7 +73,7 @@ public class Shop extends Model<Shop> {
 			str+=""+goods.get(i)+",";
 		}
 		str=str.substring(0, str.length()-1);
-		String sql="SELECT distance(?,?,s.lng,s.lat) as dis, s.id AS shopId, s. NAME, s.uuid, s.cover_img, s.phone, ps.product_id, " +
+		String sql="SELECT distance(?,?,s.lng,s.lat) as dis, s.id AS shopId, s. name, s.uuid, s.cover_img, s.phone, ps.product_id, " +
 				"COUNT(ps.product_id) as num FROM kk_shop s LEFT JOIN kk_shop_product ps ON s.id = ps.shop_id WHERE ps.product_id IN ("+str+") and distance(?,?,s.lng,s.lat) <=3000 GROUP BY shop_id  " +
 						"ORDER BY dis asc LIMIT 0, 10";
 		List<Shop> shops=dao.find(sql,new Object[] { lng, lat,lng, lat });

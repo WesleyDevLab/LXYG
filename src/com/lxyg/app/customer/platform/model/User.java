@@ -72,6 +72,17 @@ public class User extends Model<User> {
 		Db.save("kk_user_cash", r);
 		dao.createCashLog(userUUID, r.getLong("id").intValue(), IConstant.cashLog.cash_log_type_add, cash);
 	}
+
+	public void reduceCash(String userUUID,int reduce){
+		Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? ", new Object[]{userUUID});
+		int b=r.getBigDecimal("cash").intValue();
+		b=b-reduce;
+		r.set("cash", b);
+		r.set("u_uuid", userUUID);
+		r.set("create_time", new Date());
+		Db.update("kk_user_cash", r);
+		dao.createCashLog(userUUID, r.getInt("id"), IConstant.cashLog.cash_log_type_del,b);
+	}
 	
 	public void delCash(int cashId,String userUUID,int cash){
 		Record r= Db.findById("select * from kk_user_cash where u_uuid=? and id=? ", new Object[]{userUUID, cashId});
@@ -105,6 +116,7 @@ public class User extends Model<User> {
 		record.set("is_send",1);
 		Db.save("kk_exception_message", record);
 	}
+
 	public boolean isExistsException(String order_id,String phone){
 		List<Record> res= Db.find("select * from kk_exception_message em where em.order_id=? and em.phone=?", order_id, phone);
 		if(res.size()==0){

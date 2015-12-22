@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import sun.awt.GlobalCursorManager;
 
+import java.awt.geom.Point2D;
 import java.io.*;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -247,9 +248,13 @@ public class M {
 		return 2;
 	}
 
+
+
+
     public static void main(String[] args){
-		String str="1,2,3,4,5,6";
-		System.out.println(str.contains("6"));
+
+//		String str="1,2,3,4,5,6";
+//		System.out.println(str.contains("6"));
 
 //		log.info("info");
 //		log.error("error");

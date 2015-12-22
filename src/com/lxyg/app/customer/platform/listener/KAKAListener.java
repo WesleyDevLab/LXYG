@@ -10,6 +10,8 @@ public class KAKAListener  implements ServletContextListener {
 	}
 
 	public void contextInitialized(ServletContextEvent arg0) {
+		pushTimerTask.begin();
+
 		
 //		letOrderGoListener.begin();
 //		pushManagerListener.begin();

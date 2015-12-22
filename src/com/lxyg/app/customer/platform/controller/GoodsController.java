@@ -242,8 +242,8 @@ public class GoodsController extends Controller {
 			if(flag){
 				setAttr("code", 10010);
 				setAttr("message", "修改成功");
-				Db.update("insert into kk_product_log(p_id,price,market_price,supplier_price,p_number,create_time) values(?,?,?,?,?,?)",getPara("goodsId")
-						,getParaToInt("price"),getParaToInt("marketPrice"),getParaToInt("supplier_price"),getParaToInt("p_number'"),new Date());
+//				Db.update("insert into kk_product_log(p_id,price,market_price,supplier_price,p_number,create_time) values(?,?,?,?,?,?)",getPara("goodsId")
+//						,getParaToInt("price"),getParaToInt("marketPrice"),getParaToInt("supplier_price"),getParaToInt("p_number'"),new Date());
 				renderJson();
 				return;
 			}else{

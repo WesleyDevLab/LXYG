@@ -209,7 +209,7 @@ function updateRecord(obj){
                                 </c:if>
                             </div>
                         </div>
-                        <div class="box-content" style="min-height: 600px">
+                        <div class="box-content" style="min-height: 100%">
                         	<div style="margin:10px 0;" class="form-inline">
                                 <div class="form-group">
                                     <button type="button"  class="btn btn-primary" id="plat_name" >乐享云购平台产品管理</button>

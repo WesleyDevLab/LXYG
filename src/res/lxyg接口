@@ -34,23 +34,10 @@ http://192.168.0.210/LXYG/app/checkProductNum?info={"s_uid":"48957caade98442b",b
 http://192.168.0.210/LXYG/app/user/v2/signLog?info={"uid":"b4f8f2652073400b"} 签到记录
 http://192.168.0.210/LXYG/app/user/v2/addSign?info={"uid":"b4f8f2652073400b"} 签到
 
+http://127.0.0.1/LXYG/app/user/v2/categorys?info={'s_uid':'48957caade98442b'}
+http://127.0.0.1/LXYG/app/user/activityPros?info={'s_uid':'48957caade98442b','activityId':2}
 
+http://127.0.0.1/LXYG/app/user/addActivityOrder?info={'uid':'8a1a9f99fbc54896','activity_id':2,'s_uid':'48957caade98442b','pay_type':2,'price':1000,address_id:2,,'orderItems':[{'productId':10,productNum:2}]}
 
+http://127.0.0.1/LXYG/app/user/addActivityOrder?info={'uid':'0babeadc447141c3','activity_id':2,'s_uid':'93fcddb387984e94','pay_type':3,'price':1000,address_id:23,'orderItems':[{'productId':2,productNum:1}]}
 
-
-外网地址:rds8kj837u31d9uq95f9o.mysql.rds.aliyuncs.com
-内网地址:rds8kj837u31d9uq95f9.mysql.rds.aliyuncs.com
-数据库账户：myroot
-数据库密码：yungou1030
-数据库名：myapp
-
-www.lexiangyungou.cn 
-
-阿里云--APP
-系统：Ubuntu
-人人赚：4核8G6M200G
-用  户：root
-密  码：KFmaomao8899
-密  码：249095bc
-公网IP：121.41.19.76
-管理终端连接密码：970707

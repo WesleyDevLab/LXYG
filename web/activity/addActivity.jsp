@@ -12,10 +12,16 @@
 <head>
     <title>添加店面活动</title>
   <script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js"></script>
+  <script type="text/javascript" src="${path}/upYun/lib/spark-md5.js"></script>
+  <script type="text/javascript" src="${path}/upYun/lib/upyun-mu.js"></script>
+  <script type="text/javascript" src="${path}/upYun/lib/uuid.js"></script>
+  <script type="text/javascript" src="${path}/upYun/lib/async.js"></script>
   <jsp:include page="/metro.jsp"></jsp:include>
 </head>
 <%@ include file="../common/top.jsp"%>
 <script>
+
+  var imgCover="";
 
   function init(){
     var activities;
@@ -38,7 +44,65 @@
     });
   }
 
+  function showImg(type){
+    if(type==1){
+      var files=document.getElementById('coverFile').files;
+      for(var i=0;i<files.length;i++){
+        var file=files[i];
+        var fileReader=new FileReader();
+        fileReader.onloadend=function(e){
+          $("#imgs").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+        }
+        fileReader.readAsDataURL(file);
+      }
+      imgCover=selectFile(files)[0];
+    }
+    if(type==2){
+      var files=document.getElementById('coverFiles').files;
+      for(var i=0;i<files.length;i++){
+        var file=files[i];
+        var fileReader=new FileReader();
+        fileReader.onloadend=function(e){
+          $("#imgss").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+        }
+        fileReader.readAsDataURL(file);
+      }
+    }
+  }
+
+  function selectFile(files){
+    var img_urls=new Array();
+    for(var i=0;i<files.length;i++){
+      var ext = '.' +files[i].name.split('.').pop();
+      var path='/activity/' + Math.uuid(16,"")+ext;
+      uploadImg(path,files[i])
+      img_urls[i]=path;
+    }
+    return img_urls;
+  }
+
+  function uploadImg(path,file){
+    var config={
+      bucket:'lxyg8',
+      expiration: parseInt((new Date().getTime() + 3600000) / 1000),
+      form_api_secret: 'Jcrn4om4KRTt6FTvMb04r72P4XU=',
+      fix_width_or_height:600
+    };
+    var instance=new Sand(config);
+    var options = {
+      'notify_url': 'http://upyun.com',
+    };
+    instance.setOptions(options);
+    instance.upload(path,file);
+  };
+
+
+
+
+
+
   function addActivity(){
+    console.info(imgCover);
     var act_id=$("#act").val();
     var shopId=$("#shops").val();
     var title=$("#title").val();
@@ -58,7 +122,7 @@
       return;
     }
     $.post("${path}/activity/addActivity",{"shop_id":shopId,"act_id":act_id,"title":title,
-      "start_time":start_time,"end_time":end_time,"limit":limit},function(result){
+      "start_time":start_time,"end_time":end_time,"limit":limit,"img_url":imgCover},function(result){
       console.info(result);
       if(result.code==10002){
         window.location.href="${path}/pageTo/toAddActPros?sa_id="+result.activity.id;
@@ -109,6 +173,15 @@
               <div class="controls">
                 <input type="text" class="span2 typeahead" id="limit_e" name="limit">
                 <p class="help-block" style="color:red">* 不限制  填写0</p>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">活动图片：</label>
+              <div class="controls">
+                <input type="file" name="file" type="file" id="coverFile" onchange="showImg(1)"/><br>
+                <div style="border: 10px"  id="imgs">
+
+                </div>
               </div>
             </div>
 

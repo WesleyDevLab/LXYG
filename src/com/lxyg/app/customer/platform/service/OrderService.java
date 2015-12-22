@@ -46,31 +46,25 @@ public class OrderService {
 								orderId, productId, productNum, price, cash,
 								productPay, new Date(), is_norm});
 			}
-
+		}else {
+			return false;
 		}
 		return true;
 	}
 
 
-	public boolean splice2Create_fbz(String orderId, String items,int cashPay) {
-		int allPrice=0;
+	public boolean splice2Create(String orderId, String items,int cashPay) {
 		JSONArray array = JSONArray.fromObject(items);
 		if (array.size() > 0) {
 			for (int i = 0; i < array.size(); i++) {
 				JSONObject o = array.getJSONObject(i);
-				int is_norm=o.getInt("is_norm");
 				int productId = o.getInt("productId");
 				int productNum = o.getInt("productNum");
 				Goods g = new Goods().findById(productId);
 				BigDecimal price = g.getBigDecimal("price");
 				BigDecimal cash = g.getBigDecimal("cash_pay");
-				int productPay=0;
-				if(cashPay!=0){
-					productPay = g.getBigDecimal("price").intValue()
-							- g.getBigDecimal("cash_pay").intValue();
-				}else{
-					productPay=g.getBigDecimal("price").intValue();
-				}
+				int productPay=g.getBigDecimal("price").intValue();
+
 				Db.update(
 						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
 								+ "values(?,?,?,?,?,?,?,?)", new Object[]{
@@ -717,4 +711,40 @@ public class OrderService {
 		return  o.update();
 
 	}
+
+	public int getReduceCash(int shop_id,int allPrice){
+		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop_id);
+		int reduce=0;
+		net.sf.json.JSONObject o = net.sf.json.JSONObject.fromObject(record.getStr("price_rule"));
+		net.sf.json.JSONArray array = o.getJSONArray("rule");
+		for(int i=0;i<array.size();i++){
+			net.sf.json.JSONObject object= (net.sf.json.JSONObject) array.get(i);
+			if(object.getInt("limit_price")*100>allPrice){
+				if(i==0){
+					if(object.getInt("limit_price")*100==allPrice){
+						reduce=object.getInt("reduce");
+					}
+					break;
+				}
+				object= (net.sf.json.JSONObject) array.get(i-1);
+				reduce=object.getInt("reduce");
+				break;
+			}else {
+				reduce= object.getInt("reduce");
+			}
+		}
+		return reduce*100;
+	}
+
+	public Page<OrderActivity> getActivityOrders(int status,String uid,int page){
+		String select="SELECT oa.id AS orderId, oa.order_no, oa.order_id, oa.order_status, oa.create_time, oa.modify_time, oa.finish_time, oa.price, oa.cash_pay,  oa.u_uuid, oa.s_uid AS shop_id, oa.address_id,  oa.pay_type, oa.pay_name, oa.address, oa.send_goods_time as send_time, oa.receive_code,  oa.refuse_time, oa.refuse_cause, ua.province_name, ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng, ua. NAME, ua.phone, u. NAME AS user_name, u.phone AS user_phone, s.phone AS shop_phone";
+		String from="from kk_order_activity oa LEFT JOIN kk_user_address ua ON oa.address_id = ua.id left join kk_user u on oa.u_uuid=u.uuid " +
+				"left join kk_shop s on oa.s_uid=s.uuid where 1=1 and oa.u_uuid=? and order_status=?";
+		Page<OrderActivity> orderActivityPage= OrderActivity.dao.paginate(page,IConstant.PAGE_DATA,select,from,uid,status);
+		for(OrderActivity orderActivity:orderActivityPage.getList()){
+			orderActivity.put("orderActivityItems",OrderActivity.dao.getActivityOrderItem(orderActivity.getStr("order_id")));
+		}
+		return orderActivityPage;
+	}
+
 }

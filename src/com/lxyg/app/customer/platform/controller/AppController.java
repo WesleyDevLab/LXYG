@@ -19,6 +19,7 @@ import com.lxyg.app.customer.platform.util.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -388,7 +389,6 @@ public class AppController extends Controller {
 			}else{
 				coverImg=obj.getString("cover_img");
 			}
-
 			m.put("cover_img", coverImg);
 		}
 		if(obj.containsKey("mId")){
@@ -398,6 +398,10 @@ public class AppController extends Controller {
 		if(obj.containsKey("districtId")){
 			m.put("district_id",obj.getInt("districtId"));
 		}
+		if(obj.containsKey("scope")){
+			String str=obj.getString("scope");
+			m.put("scope",str);
+		}
 
 //		Shop shop=new Shop().findFirst("select * from kk_shop where phone like ?", new Object[]{phone});
 //		if(shop!=null){
@@ -406,6 +410,7 @@ public class AppController extends Controller {
 //			renderJson();
 //			return;
 //		}
+
 		m.put("create_time", new Date());
 		m.put("q_verifi", -1);
 		UUID UID=UUID.randomUUID();
@@ -749,7 +754,7 @@ public class AppController extends Controller {
 			page=obj.getInt("page");
 		}
 		Page<Goods> goodsPage=null;
-		String select="SELECT p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price, ps.product_number";
+		String select="SELECT p.id AS productId, p. name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price, ps.product_number";
 		String left="FROM kk_product p LEFT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s on ps.shop_id=s.id ";
 		if(obj.containsKey("p_id")&&obj.getInt("p_id")!=0){
 			goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,select,
@@ -997,7 +1002,6 @@ public class AppController extends Controller {
 			str+=""+rs.get(i).getInt("product_id")+",";
 		}
 		str=str.substring(0, str.length()-1);
-		
 		o.set("id", o.getInt("orderId"));
 		o.set("s_uuid", uid);
 		o.set("is_rob", 2);
@@ -1494,10 +1498,8 @@ public class AppController extends Controller {
 			return;
 		}
 		List<User> us= User.dao.find("select id,uuid,name,password,shop_id,cash_pay,create_time,cash_pay,score,phone from kk_user u where u.phone=?", new Object[]{phone});
-
 		if(us.size()!=0){
 			u=us.get(0);
-			u.update();
 		}else{
 			Shop s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
 			Map<String,Object> m=new HashMap<String,Object>();
@@ -1508,15 +1510,15 @@ public class AppController extends Controller {
 			m.put("create_time", new Date());
 			u.setAttrs(m);
 			u.save();
-			
 		}
-		Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 7});
+		Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 2});
 		if(r==null){
-			User.dao.getCash(u.getStr("uuid"),7);
+			User.dao.getCash(u.getStr("uuid"),2);
 		}
 		if(json.containsKey("version")){
 			String version=json.getString("version");
 			if(version!=null || version.equals("")){
+				Db.update("update kk_user u set login_ios_inhouse=0,login_ios_inapp=0,login_android_in_test=0,login_android_pub=0 where u.uuid=?",u.getStr("uuid"));
 				u.set("login_"+version,1);
 				u.update();
 			}
@@ -1525,7 +1527,6 @@ public class AppController extends Controller {
 		 * 登陆自动签到
 		 **/
 		//new User().dao.addLoginLog(u.getStr("uuid"));
-
 		renderSuccess("登陆成功", u);
 	}
 	/**
@@ -1726,14 +1727,13 @@ public class AppController extends Controller {
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
 					"where p.p_type_id=? group by p.id order by p.cash_pay desc",new Object[]{typeId});
 		}
-		if(json.containsKey("brandId")&&json.getInt("brandId")>0){
+		if(json.containsKey("brandId")&&json.getInt("brandId")>1){
 			int brandId=json.getInt("brandId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
 					"where p.p_brand_id=? group by p.id order by p.cash_pay desc",new Object[]{brandId});
 		}
 		renderSuccess("load成功", gs);
 	}
-
 	/**
 	 * @author M
 	 * c端 首页展示 产品详情页
@@ -1994,7 +1994,6 @@ public class AppController extends Controller {
 		re.set("addressId", re.get("id"));
 		renderSuccess("修改成功", re);
 	}
-	
 	/**
 	 * @author M
 	 * 模拟添加订单
@@ -2070,6 +2069,7 @@ public class AppController extends Controller {
 		String receive_code= RegularUtil.gen();
 		map.put("receive_code", receive_code);
 		String items=json.getString("orderItems");
+
 		if(json.getInt("cashPay")!=0){
 			Record r= Db.findFirst("select sum(cash) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
 					"where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
@@ -2095,30 +2095,36 @@ public class AppController extends Controller {
 			}
 		}
 
-		allPrice=allPrice-json.getInt("cashPay");
-		if(allPrice!=price){
-			renderFaile("总金额异常");
-			return;
-		}
 
-		if(json.getInt("cashPay")!=0){
-			Record cashRe= Db.findFirst("select * from kk_user_cash where u_uuid=?", uid);
-			if(cashRe.getBigDecimal("cash").intValue()<json.getInt("cashPay")){
-				renderFaile("代金券金额不足");
-				return;
-			}
-		}
+//		allPrice=allPrice-json.getInt("cashPay");
+//		if(allPrice!=price){
+//			renderFaile("总金额异常");
+//			return;
+//		}
+
+
+
+//		if(json.getInt("cashPay")!=0){
+//			Record cashRe= Db.findFirst("select * from kk_user_cash where u_uuid=?", uid);
+//			if(cashRe.getBigDecimal("cash").intValue()<json.getInt("cashPay")){
+//				renderFaile("代金券金额不足");
+//				return;
+//			}
+//		}
 		map.put("cash_pay", json.getInt("cashPay"));
+		System.out.println(items);
 		boolean f=orderService.splice2Create_1(orderId, items,json.getInt("cashPay"));
 		if(f){
 			Order o=new Order();
 			o.setAttrs(map);
 			boolean s=o.save();
+			/**cashPay**/
 //			if(json.getInt("cashPay")!=0){
 //				Order.dao.updateCash(uid,json.getInt("cashPay"),orderId);
 //			}
 			o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 			if(s){
+				/**分单**/
 //				if(payType==3){
 //					Map<String,Object> res=orderService.splice2Create_2(o.getStr("order_id"));
 //					log.error(res);
@@ -2165,14 +2171,23 @@ public class AppController extends Controller {
 		int page=json.getInt("pg");
 		int status=json.getInt("status");
 		Page<Order> o = null;
+		Page<OrderActivity> recordPage=null;
 		if(status==1){
 			o=orderService.userLoadOrderByStatus(IConstant.OrderStatus.order_status_chushi,uid,page);
+			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_chushi,uid,page);
 		}else if(status== IConstant.OrderStatus.order_status_js){
 			o=orderService.userLoadOrderByStatus(IConstant.OrderStatus.order_status_js,uid,page);
+			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_js,uid,page);
 		}else{
 			 o=orderService.userLoadOrderByStatus(status,uid,page);
+			recordPage=orderService.getActivityOrders(status,uid,page);
 		}
-		renderSuccess("获取成功", o);
+
+
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("order",o);
+		map.put("orderActivity",recordPage);
+		renderSuccess("获取成功", map);
 	}
 	/**
 	 * @author M
@@ -2294,12 +2309,10 @@ public class AppController extends Controller {
 		}
 		User u= User.dao.findFirst("select * from kk_user where wechat_id=?", new Object[]{wechat_id});
 		if(u!=null){
-			Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 7});
+			Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 2});
 			if(r==null){
-				User.dao.getCash(u.getStr("uuid"),7);
+				User.dao.getCash(u.getStr("uuid"),2);
 			}
-			u.update();
-			renderSuccess("登录成功", u);
 		}else{
 			Shop s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
 			u=new User();
@@ -2314,12 +2327,9 @@ public class AppController extends Controller {
 			u.set("phone", "");
 			u.save();
 		}
-		Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 7});
-		if(r==null){
-			User.dao.getCash(u.getStr("uuid"), 7);
-		}
 		if(json.containsKey("version")){
 			String version=json.getString("version");
+			Db.update("update kk_user u set login_ios_inhouse=0,login_ios_inapp=0,login_android_in_test=0,login_android_pub=0 where u.uuid=?",u.getStr("uuid"));
 			u.set("login_" + version, 1);
 			u.update();
 		}
@@ -2507,11 +2517,9 @@ public class AppController extends Controller {
 			renderFaile("请登录！");
 			return;
 		}
-
-		Record r= Db.findFirst("select sum(cash) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
+		Record r= Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
 		renderSuccess("获取成功", r);
 	}
-
 	@ActionKey("app/user/loadCashs")
 	public void loadCashs(){
 		log.info("loadCashs");
@@ -2525,7 +2533,6 @@ public class AppController extends Controller {
 		List<Record> rs= Db.find("select uc.cash,uc.u_uuid,c.cash_title,c.create_time,c.end_time,c.cash_status from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
 		renderSuccess("获取成功", rs);
 	}
-
 	/**
 	 * @author M
 	 * 拒收*
@@ -2580,18 +2587,28 @@ public class AppController extends Controller {
 	public void activityProduct(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		int s_uid=json.getInt("s_uid");
-		List<Record> records= Db.find("SELECT pa.id AS paId, pa.activity_id, pa. NAME, pa.title, pa.price, pa.cash_pay, pa.cover_img, pa.p_unit_name, pa.payment, pa.create_time, pa.order_no " +
+		List<Record> records= Db.find("SELECT pa.id AS paId, pa.activity_id, pa. name, pa.title, pa.price, pa.cash_pay, pa.cover_img, pa.p_unit_name, pa.payment, pa.create_time, pa.order_no " +
 				"FROM kk_product_activity pa LEFT JOIN kk_shop_activity sa ON pa.activity_id = sa.id WHERE sa.shop_id = ?", s_uid);
 		renderSuccess("获取成功",records);
 	}
-
 
 	@ActionKey("app/user/addActivityOrder")
 	@Before(Tx.class)
 	public void addActivityOrder(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String uid=json.getString("uid");
+		String s_uid=json.getString("s_uid");
 		int activityId=json.getInt("activity_id");
+		JSONObject obj=checkActivity(activityId, uid);
+		if(obj.containsKey("code")&&obj.getInt("code")==10001){
+			renderFaile(obj.getString("msg"));
+			return;
+		}
+		Shop s=Shop.dao.findBysuid(s_uid);
+		if(s==null){
+			renderFaile("异常");
+			return;
+		}
 		boolean b=new User().isLogin(uid);
 		if(!b){
 			renderFaile("请登录！");
@@ -2612,18 +2629,17 @@ public class AppController extends Controller {
 		if(json.getInt("pay_type")==3){
 			order_status= IConstant.OrderStatus.order_status_dfh;
 		}
-
 		r.set("order_status",order_status);
 		r.set("create_time",new Date());
 		r.set("price",json.getInt("price"));
 		r.set("u_uuid",uid);
+		r.set("s_uid",json.getString("s_uid"));
 		r.set("address_id",json.getInt("address_id"));
 		r.set("pay_type",json.getInt("pay_type"));
 		Record ra= Db.findById("kk_user_address", json.getInt("address_id"));
 		r.set("address", ra.get("full_address"));
 		Record rp= Db.findById("kk_pay_type", json.getInt("pay_type"));
 		r.set("pay_name", rp.getStr("pay_type_name"));
-
 		/**
 		 * 队列
 		 * */
@@ -2631,13 +2647,13 @@ public class AppController extends Controller {
 		IConstant.orderQueue.insert(r);//放入队列中
 		while(!IConstant.orderQueue.isEmpty()){
 			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
-			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
-			if(r1!=null){
-				if(r1.getInt("surplus_num")<=0){
-					renderFaile("已经购买完");
-					return;
-				}
-			}
+//			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
+//			if(r1!=null){
+//				if(r1.getInt("surplus_num")<=0){
+//					renderFaile("已经购买完");
+//					return;
+//				}
+//			}
 			/**下单*/
 			boolean save=Db.save("kk_order_activity", record);
 			if(save){
@@ -2659,17 +2675,47 @@ public class AppController extends Controller {
 							productNum=activity.getInt("limit_e");
 						}
 						Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
-
 					}
 				}
-				if(r.getInt("pay_type")==3){
-					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
-				}
+//				if(r.getInt("pay_type")==3){
+//					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
+//				}
 				IConstant.orderQueue.remove();//从队列移除第一个项目
 			}
 		}
 		renderSuccess("购买成功", r);
 	}
+	public JSONObject checkActivity(int activity_id,String uid){
+		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activity_id);
+		JSONObject obj=new JSONObject();
+		if(record==null){
+			obj.put("msg","活动不存在");
+			obj.put("code",10001);
+			return obj;
+		}
+		switch (record.getInt("activity_type")){
+			case 2:
+				Date now=new Date();
+				Date start=record.getDate("start_time");Date end=record.getDate("end_time");
+				if(start.before(now)&&end.after(now)){
+					obj.put("msg","");
+					obj.put("code",10002);
+				}else{
+					obj.put("msg","活动未开始或已过期");
+					obj.put("code",10001);
+				}
+				break;
+			case 4:
+				Record record1=Db.findFirst("select count(*) as count from kk_order o,kk_order_activity oa where o.u_uuid =? or oa.u_uuid=?",uid,uid);
+				if(record1.getLong("count")>0){
+					obj.put("msg","您不是新用户");
+					obj.put("code",10001);
+				}
+				break;
+		}
+		return obj;
+	}
+
 	@ActionKey("app/user/activityOrderPay")
 	public void activityOrderPay(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
@@ -2692,8 +2738,21 @@ public class AppController extends Controller {
 		orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), orderId, 2);
 		renderSuccess("成功",null);
 	}
-
-
-
-
+	@ActionKey("app/user/activityPros")
+	public void activityPros(){
+		JSONObject json= JSONObject.fromObject(getPara("info"));
+//		String s_uid=json.getString("s_uid");
+//		Shop s=Shop.dao.findBysuid(s_uid);
+//		if(s==null){
+//			renderFaile("信息异常");
+//			return;
+//		}
+		int page=1;
+		if(isParaExists("pg")){
+			page=getParaToInt("pg");
+		}
+		int actType_id = json.getInt("activityId");
+		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select id as productId,name,title,price,cash_pay,cover_img,p_unit_name,create_time,limit_num,surplus_num,p_type_id,p_type_name,p_brand_id,p_brand_name","from kk_product_activity pa where pa.activity_id=?",actType_id);
+		renderSuccess("获取成功",recordPage);
+	}
 }

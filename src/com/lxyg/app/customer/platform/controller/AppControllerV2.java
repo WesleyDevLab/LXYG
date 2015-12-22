@@ -501,9 +501,9 @@ public class AppControllerV2 extends Controller {
 
     @ActionKey("app/user/v2/homePage")
     public void  homePage_1(){
-        if(M.loadInfo()!=1){
-            return;
-        }
+//        if(M.loadInfo()!=1){
+//            return;
+//        }
         JSONObject json= JSONObject.fromObject(getPara("info"));
         if (!json.containsKey("s_uid")){
             renderFaile("店铺id");
@@ -517,10 +517,8 @@ public class AppControllerV2 extends Controller {
         }
         if(s.getActivity()!=null){
             s.put("shopActivits", s.getActivity());
-        }else{
-            s.put("shopActivits", null);
+            s.put("activitys",s.getActivity(s.getInt("shopId")));
         }
-
         List<Map<String,Object>> maps=new ArrayList<Map<String, Object>>();
         List<Map<String,Object>> types=new ArrayList<Map<String,Object>>();
         List<Goods> recommGoods=new ArrayList<Goods>();
@@ -532,7 +530,7 @@ public class AppControllerV2 extends Controller {
             renderSuccess("暂无上货",s);
             return;
         }
-         recommGoods= Goods.dao.find("SELECT  p.id AS productId, p.NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid " +
+         recommGoods= Goods.dao.find("SELECT  p.id AS productId, p.name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid " +
                 "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND s.uuid=? GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6",s.getStr("uuid"));
         s.put("recommGoods", recommGoods);
         String [] sorts=s.getStr("sort").split(",");
@@ -550,7 +548,9 @@ public class AppControllerV2 extends Controller {
             List<Goods> g=new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  " +
                     "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
                     "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=?  GROUP BY p.id order by cash_pay desc, is_recomm desc LIMIT 0,6", new Object[]{sorts[i],s.getStr("uuid")});
-            if(g.size()!=0){m.put("products", g);maps.add(m);}
+            if(g.size()!=0){
+                m.put("products", g);maps.add(m);
+            }
         }
         s.put("types",maps);
         s.put("shopCount",1);
@@ -608,13 +608,20 @@ public class AppControllerV2 extends Controller {
         map.put("order_id", orderId);
         map.put("order_status", orderStatus);
         map.put("create_time", new Date());
-        map.put("price", price);
+       // map.put("price", price);
         map.put("order_no", orderNo);
         map.put("order_type", 1);
         map.put("u_uuid", uid);
         map.put("s_uuid", shopId);
         map.put("address_id", addressId);
+        map.put("send_type", sendType);
+        map.put("send_name", IConstant.sendType.get(sendType));
+        map.put("send_id", sendId);
+        map.put("is_rob", 1);
         Shop shop=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
+
+
+        /**配送**/
         if(addressId!=0 && !shopId.equals("")){
             Record r= Db.findById("kk_user_address", addressId);
             map.put("address", r.get("full_address"));
@@ -622,35 +629,33 @@ public class AppControllerV2 extends Controller {
             /**
              * 配送距离超过1000米 不让下单
              * */
-            Record dis=Db.findFirst("select distance(?,?,?,?) as dis",r.getDouble("lng"),r.getDouble("lat"),shop.getDouble("lng"),shop.getDouble("lat"));
-            if(dis.getDouble("dis")>1000){
-                renderFaile("太远了！！送不到啊 亲~");
-                return;
-            }
-        }
+//            Record dis=Db.findFirst("select distance(?,?,?,?) as dis",r.getDouble("lng"),r.getDouble("lat"),shop.getDouble("lng"),shop.getDouble("lat"));
+//            if(dis.getDouble("dis")>1000){
+//                renderFaile("太远了！！送不到啊 亲~");
+//                return;
+//            }
+            /**
+             * 是否在配送区域内
+             * */
 
-        map.put("send_type", sendType);
-        map.put("send_name", IConstant.sendType.get(sendType));
-        map.put("send_id", sendId);
-        map.put("is_rob", 1);
-        if(!json.containsKey("cashPay")){
-            renderFaile("代金券有异常");
-            return;
-        }
-        String receive_code= RegularUtil.gen();
-        map.put("receive_code", receive_code);
-        String items=json.getString("orderItems");
-        if(json.getInt("cashPay")!=0){
-            Record r= Db.findFirst("select sum(cash) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
-                    "where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
-            if(r!=null){
-                int cash=r.getBigDecimal("cash").intValue();
-                if(cash<json.getInt("cashPay")){
-                    renderFaile("cashPay异常");
+            if(shop.getStr("scope")!=null){
+                List objs=JsonUtils.json2list(shop.getStr("scope"));
+                Point [] points=Point.list2point(objs);
+                Point p=new Point(r.getDouble("lat"),r.getDouble("lng"));
+                boolean flag=Point.inPolygon(p,points);
+                if(!flag){
+                    renderFaile("超过指定区域,暂时无法下单");
                     return;
                 }
             }
         }
+
+
+        String receive_code= RegularUtil.gen();
+        map.put("receive_code", receive_code);
+        String items=json.getString("orderItems");
+
+        /***价格总额**/
         int allPrice=0;
         net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
         if (array.size() > 0) {
@@ -661,43 +666,40 @@ public class AppControllerV2 extends Controller {
                 Goods g = new Goods().findById(productId);
                 int pric=g.getBigDecimal("price").intValue();
                 allPrice+=pric*productNum;
-//                if(is_norm==1){
-//                    Goods g = new Goods().findById(productId);
-//                    int pric=g.getBigDecimal("price").intValue();
-//                    allPrice+=pric*productNum;
-//                }
-//                if(is_norm==2){
-//                    FBGoods g = FBGoods.dao.findById(productId);
-//                    int pric=g.getBigDecimal("price").intValue();
-//                    allPrice+=pric*productNum;
-//                }
             }
         }
-        allPrice=allPrice-json.getInt("cashPay");
+        /***代金劵
+         * 抵扣**/
+        if(json.containsKey("cashPay")&&json.getInt("cashPay")!=0&&payType!=3){
+            Record r= Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
+                    "where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
+            if(r.getBigDecimal("cash").intValue()!=0){
+                int cash=r.getBigDecimal("cash").intValue();
+                Record record=Db.findFirst("select count(*) as count from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop.getInt("id"));
+                if(record.getLong("count")>0){
+                   int reduce= orderService.getReduceCash(shop.getInt("id"), allPrice);
+                    allPrice=allPrice-reduce;
+                    /***
+                     * 总价减去活动区间红包可优惠代金券
+                     * */
+                    new User().dao.reduceCash(uid,reduce);
+                }
+            }
+        }
         if(allPrice!=price){
             renderFaile("总金额异常");
             return;
         }
-//        if(json.getInt("cashPay")!=0){
-//            Record cashRe= Db.findFirst("select * from kk_user_cash where u_uuid=?", uid);
-//            if(cashRe.getBigDecimal("cash").intValue()<json.getInt("cashPay")){
-//                renderFaile("代金券金额不足");
-//                return;
-//            }
-//        }
+        map.put("price",allPrice);
         map.put("cash_pay", json.getInt("cashPay"));
         Order o=new Order();
-        boolean f=orderService.splice2Create_fbz(orderId, items, json.getInt("cashPay"));
+        o.setAttrs(map);
+        boolean f=orderService.splice2Create(orderId, items, json.getInt("cashPay"));
         if(f){
-            map.put("is_norm",1);
-            o.setAttrs(map);
-            boolean s=o.save();
-            if(!s){
-                renderFaile("异常");
-            }
+           boolean s= o.save();
+            /**下单后推送**/
             if(s&&payType==3){
-                String str="";
-                str=",收货人:"+o.getStr("name");
+                String str=",收货人:"+o.getStr("name");
                 str+=",联系电话："+o.getStr("phone");
                 str+=",收获地址:"+o.getStr("address");
                 str+=",支付方式："+o.getStr("pay_name");
@@ -707,10 +709,8 @@ public class AppControllerV2 extends Controller {
                 }
                 str+="】";
                 str+="总价:"+o.getInt("price")/100+"元";
-                SdkMessage.sendUser(shop.getStr("phone"),str);
+               SdkMessage.sendUser(shop.getStr("phone"),str);
             }
-
-
 //            o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){
@@ -719,11 +719,12 @@ public class AppControllerV2 extends Controller {
 //                }
 //            }
         }else{
-            renderFaile("异常");
+            renderFaile("购买出现异常");
             return;
         }
         renderSuccess("下单成功",o);
     }
+
 
     /***
      * C端 fb产品信息
@@ -819,7 +820,7 @@ public class AppControllerV2 extends Controller {
         }
         String lat=obj.getString("lat");
         String lng=obj.getString("lng");
-        Page<Goods> recommGoods= Goods.dao.paginate(pg, IConstant.PAGE_DATA, "SELECT p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time","FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 GROUP BY p.id ORDER BY is_recomm DESC, distance ( ?, ?, s.lng, s.lat ) ASC", lng, lat);
+        Page<Goods> recommGoods= Goods.dao.paginate(pg, IConstant.PAGE_DATA, "SELECT p.id AS productId, p. name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time","FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 GROUP BY p.id ORDER BY is_recomm DESC, distance ( ?, ?, s.lng, s.lat ) ASC", lng, lat);
         renderSuccess("获取成功",recommGoods);
     }
 
@@ -926,7 +927,7 @@ public class AppControllerV2 extends Controller {
         }
         String lng=json.getString("lng");
         String lat=json.getString("lat");
-        List<Shop> s=Shop.dao.find("select  name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng,lat);
+        List<Shop> s=Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng,lat);
         renderSuccess("获取成功",s);
     }
     @ActionKey("/app/user/v2/shopList")
@@ -1006,10 +1007,56 @@ public class AppControllerV2 extends Controller {
     @ActionKey("/app/user/v2/categorys")
     public void categorys(){
         log.info("categorys");
-        List<GoodCategory> goodCategories=GoodCategory.dao.find("select * from kk_product_category");
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+//        String s_uid=obj.getString("s_uid");
+//        Shop s=Shop.dao.findBysuid(s_uid);
+//        if(s==null){
+//            renderFaile("异常");
+//            return;
+//        }
+        List<GoodCategory> goodCategories=GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
         for(GoodCategory goodCategory:goodCategories){
             goodCategory.put("types",goodCategory.getGoodTypes(goodCategory.getInt("id")));
         }
         renderSuccess("获取成功",goodCategories);
     }
+
+    @ActionKey("/app/user/v2/homeCategory")
+    public void homeCategory(){
+        List<GoodCategory> goodCategories=GoodCategory.dao.find("select id,name,img from kk_product_category order by sort_id asc");
+        renderSuccess("获取成功", goodCategories);
+    }
+    /**
+     * 红包减免规则
+     * */
+    @ActionKey("/app/user/v2/hb")
+    public void reductHB(){
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        String s_uid=obj.getString("s_uid");
+        Shop shop=Shop.dao.findBysuid(s_uid);
+        if(shop==null){
+            renderFaile("异常");
+            return;
+        }
+        Record record=Db.findFirst("select * from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop.getInt("id"));
+        if(record!=null){
+            JSONObject o= JSONObject.fromObject(record.getStr("price_rule"));
+            renderSuccess("price_rule",o);
+            return;
+        }
+        renderFaile("异常");
+    }
+//    @ActionKey("app/user/v2/shopActivtys")
+//    public void shopActivitys(){
+//        log.info("shopActivitys");
+//        JSONObject obj= JSONObject.fromObject(getPara("info"));
+//        String s_uid=obj.getString("s_uid");
+//        Shop shop=Shop.dao.findBysuid(s_uid);
+//        if(shop!=null){
+//
+//        }
+//
+//    }
+
+
 }

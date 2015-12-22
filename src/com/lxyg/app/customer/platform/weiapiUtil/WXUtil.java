@@ -29,7 +29,7 @@ public class WXUtil {
 	public static final String APPID = "wx2d2b54b6349d8ef7";
 	private static final String SECRET="d4624c36b6795d1d99dcf0547af5443d";
 	public static final String KEY="d4624c36b6795d1lxygcf0547af5443d";
-	private static final String body="fengqushangcheng";
+	private static final String body="fengyu";
 	public static final String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+ WXUtil.APPID+"&secret="+ WXUtil.SECRET;
 	private static final String pay_order_url="https://api.mch.weixin.qq.com/pay/unifiedorder";
 	private static final String notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
@@ -92,7 +92,6 @@ public class WXUtil {
 		params.put("total_fee", total);
 		params.put("trade_type", conf.getStr("port"));
 		params.put("spbill_create_ip", ip);
-
 		String sign= Signature.getSign(params, conf.getStr("key"));
 		params.put("sign", sign);
 		String postData= M.mapToXML(params);

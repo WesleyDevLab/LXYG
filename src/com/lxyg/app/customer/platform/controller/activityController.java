@@ -69,7 +69,7 @@ public class activityController extends Controller{
 //        }
 //        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT pa.*,sa.start_time,sa.end_time,a.name as act_name","FROM kk_product_activity pa LEFT JOIN kk_shop_activity sa " +
 //                "ON pa.activity_id = sa.id LEFT JOIN kk_activity a on sa.activity_type=a.id WHERE sa.shop_id =? "+b,objs);
-        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT s. NAME AS sname,sa.id, sa.label_cn, a. NAME AS aname, sa.start_time, sa.end_time, IFNULL(sa.limit_e, 0) AS limit_num",
+        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT s. name AS sname,sa.id, sa.label_cn, a. name AS aname, sa.start_time, sa.end_time, IFNULL(sa.limit_e, 0) AS limit_num",
                 "FROM kk_shop_activity sa LEFT JOIN kk_shop s ON sa.shop_id = s.id LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE sa.shop_id = ?"+b,objs);
 
         renderSuccess("获取成功",recordPage);
@@ -82,6 +82,7 @@ public class activityController extends Controller{
         int act_typeId=getParaToInt("act_id");
         int shop_id=getParaToInt("shop_id");
         int limt=getParaToInt("limit");
+        String img_url=getPara("img_url");
 
         Record record=new Record();
         record.set("label_cn",title);
@@ -91,6 +92,7 @@ public class activityController extends Controller{
         record.set("activity_type",act_typeId);
         record.set("shop_id",shop_id);
         record.set("limit_e",limt);
+        record.set("img_url",img_url);
         Db.save("kk_shop_activity",record);
         setAttr("activity",record);
         setAttr("code",10002);

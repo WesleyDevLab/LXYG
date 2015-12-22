@@ -220,10 +220,11 @@ function checkForm() {
 	var name=$("#name").val();
 	var content=editor.html();
 	var title=$("#title").val();
-	var price=$("#price").val();
-	var market_price=$("#market_price").val();
+	var price=new Number($("#price").val());
+	var market_price=new Number($("#market_price").val());
 	var cash_pay=$("#cash_pay").val();
-	
+	price=(price*100).toFixed(0);
+	market_price=(market_price*100).toFixed(0);
 	var typeText=$("#column_type").find("option:selected").text();
 	var typeValue=$("#column_type").val();
 	
@@ -316,7 +317,7 @@ function checkForm() {
 	}
 
 
-	$.post("${path}/goods/updateGoods",{"goodsId":${goods.productId},"name":name,"title":title,"price":price*100,"marketPrice":market_price*100,
+	$.post("${path}/goods/updateGoods",{"goodsId":${goods.productId},"name":name,"title":title,"price":price,"marketPrice":market_price,
 	           "typeId":typeValue,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
 	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail,"code":code},

@@ -150,3 +150,8 @@ DROP TABLE if EXISTS kk_product_data;
   gross_profit int(11)  DEFAULT 0,
   PRIMARY  KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE  kk_order_activity add s_uid VARCHAR (17) not null
+ALTER TABLE kk_shop add scope VARCHAR(17) DEFAULT null;
+
+ALTER TABLE kk_shop_activity add price_rule VARCHAR (255) DEFAULT null;

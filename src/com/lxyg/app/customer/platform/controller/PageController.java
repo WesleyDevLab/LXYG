@@ -10,6 +10,7 @@ import com.lxyg.app.customer.platform.util.ConfigUtils;
 import com.lxyg.app.customer.platform.util.IConstant;
 import com.lxyg.app.customer.platform.util.QiniuImgUtil;
 import com.qiniu.util.Auth;
+import net.sf.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -91,7 +92,7 @@ public class PageController extends Controller {
 		if(isParaExists("pg")){
 			page=getParaToInt("pg");
 		}
-		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. NAME, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name " ,
+		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. name, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name " ,
 				"FROM kk_shop_activity sa LEFT JOIN kk_shop_product ps ON sa.shop_id = ps.shop_id LEFT JOIN kk_product p ON p.id = ps.product_id WHERE sa.id = ?", sa_id);
 		setAttr("sa_id",getParaToInt("sa_id"));
 		if(records.getList().size()==0){
@@ -192,6 +193,22 @@ public class PageController extends Controller {
 		setAttr("products",recordPage);
 		setAttr("sa_id",act_id);
 		render("/activity/activityPros.jsp");
+	}
+
+		public void reduceJsp(){
+//		JSONObject json= JSONObject.fromObject(getPara("info"));
+
+		String s_uid=getPara("s_uid");
+		int activityId=getParaToInt("activity_id");
+		Shop s=Shop.dao.findBysuid(s_uid);
+		Record record=Db.findFirst("select * from kk_shop_activity where shop_id=? and id=?",s.getInt("id"),activityId);
+		if(record.getInt("activity_type")==7){
+			render("/home/reduce.jsp");
+		}
+		if(record.getInt("activity_type")==5){
+			render("/home/hongbao.jsp");
+		}
+
 	}
 
 //

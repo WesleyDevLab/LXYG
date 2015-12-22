@@ -82,7 +82,6 @@ public class UserController extends Controller {
 			render("/login.jsp");
 		}
 	}
-	
 	/**
 	 * 分发电子代金券
 	 */

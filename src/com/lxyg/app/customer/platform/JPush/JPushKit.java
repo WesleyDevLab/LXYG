@@ -53,12 +53,9 @@ public class JPushKit {
 		if(plat.equals("user")){
 			r= Db.findFirst("select * from kk_user s where s.phone like ? or s.wechat_id like ?", new Object[]{alias, alias});
 		}
-
-
 		//如果不为空
 		if(r!=null){
 			//如果ios是正式版 或者是android版本 则使用正式的可key推送数据
-
 			if(r.getInt("login_android_in_test") ==1 || r.getInt("login_android_pub") ==1){
 				if(plat.equals("shop")){
 					send_alias(masterSecretB,aB,alias,objs,content,Title);
@@ -68,7 +65,6 @@ public class JPushKit {
 					send_alias(masterSecretC,aC,alias,objs,content,Title);
 				}
 			}
-
 			if(r.getInt("login_ios_inapp")==1 ){
 				//如果是商家  则使用商家的key
 				if(plat.equals("shop")){
@@ -77,7 +73,6 @@ public class JPushKit {
 				if(plat.equals("user")){
 					send_alias(masterSecretC,aC,alias,objs,content,Title);
 				}
-
 			}
 			//如果是内测版 则使用ios内测版给ios设备推送
 			if(r.getInt("login_ios_inhouse")==1){
@@ -97,13 +92,15 @@ public class JPushKit {
 
 
 	public static PushPayload buildPushObject_all_all_alert(String content) {
-
-		return PushPayload.alertAll(content);
+		PushPayload pushPayload= PushPayload.alertAll(content);
+		return pushPayload;
 	}
-	
-	/*public static void  send_all(String content){
+
+
+
+	public static void send_all(String content){
 		log.info("send_alias_array");
-		JPushClient jpushClient = new JPushClient(masterSecret.trim(), appkey.trim(),3);
+		JPushClient jpushClient = new JPushClient(masterSecretC, aC.trim(),3);
         PushPayload payload = buildPushObject_all_all_alert(content);
         try {
             PushResult result = jpushClient.sendPush(payload);
@@ -118,7 +115,7 @@ public class JPushKit {
         	log.info("Error Code: " + e.getErrorCode());
         	log.info("Error Message: " + e.getErrorMessage());
         }
-	}*/
+	}
 
 
 	public static PushPayload buildPushObject(String alias,Map<String,Object> extr,String content,String Title) {
@@ -223,11 +220,13 @@ public class JPushKit {
 
 
 	public static void main(String[] args) {
-		String alias_android="18837145615";
-		Map<String,Object> map=new HashMap<String, Object>();
-		map.put("orderId", "2e7f037ec8fe4cd1");
-		map.put("type", IConstant.OrderStatus.order_status_kqd);
-		send_alias(masterSecretC,aC,alias_android,map,"tetetetetet","test");
+//		buildPushObject_all_all_alert("下午茶时间到了，你要喝点什么？");
+		send_all("下午茶时间到了，你要喝点什么？");
+//		String alias_android="18837145615";
+//		Map<String,Object> map=new HashMap<String, Object>();
+//		map.put("orderId", "2e7f037ec8fe4cd1");
+//		map.put("type", IConstant.OrderStatus.order_status_kqd);
+//		send_alias(masterSecretC,aC,alias_android,map,"tetetetetet","test");
 	}
 
 }

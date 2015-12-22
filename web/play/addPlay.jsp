@@ -100,7 +100,6 @@ function uploadImg(path,file){
 	};
 	instance.setOptions(options);
 	instance.upload(path,file);
-
 };
 
 

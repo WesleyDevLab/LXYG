@@ -153,7 +153,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td>${product.NAME}</td>
+                                    <td>${product.name}</td>
                                     <td><img src="${product.cover_img}" width="40px" height="40px">
                                     </td>
                                     <td>￥

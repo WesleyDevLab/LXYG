@@ -229,7 +229,7 @@
                     'expiration': _config.expiration,
                     'file_blocks': chunkInfo.chunksNum,
                     'file_size': chunkInfo.file_size,
-                    'file_hash': chunkInfo.entire
+                    'file_hash': chunkInfo.entire,
                 };
                 var signature;
                 //_extend(options, self.options);
@@ -286,7 +286,7 @@
                         'save_token': res.save_token,
                         'expiration': _config.expiration,
                         'block_index': idx,
-                        'block_hash': chunkInfo.chunksHash[idx]
+                        'block_hash': chunkInfo.chunksHash[idx],
                     };
 
                     var signature = calcSign(options, res.token_secret);
@@ -296,7 +296,6 @@
                     formDataPart.append('policy', policy);
                     formDataPart.append('signature', signature);
                     formDataPart.append('file', packet);
-
                     var request = new XMLHttpRequest();
                     request.onreadystatechange = function(e) {
                         if (e.currentTarget.readyState === 4 && e.currentTarget.status == 200) {
@@ -387,7 +386,6 @@
         this.upload = upload;
     }
 
-    // bind the construct fn. to global
     this.Sand = Sand;
 
 }).call(this);

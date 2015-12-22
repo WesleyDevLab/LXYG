@@ -2,23 +2,12 @@ package com.lxyg.app.customer.platform.config;
 
 import com.jfinal.config.*;
 import com.jfinal.ext.interceptor.SessionInViewInterceptor;
-import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
 import com.lxyg.app.customer.platform.interceptor.visitInterceptor;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.plugin.JPush;
-import com.lxyg.app.customer.platform.util.ConfigUtils;
-import com.lxyg.app.customer.platform.util.M;
-import org.json.JSONException;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * API引导式配
@@ -44,7 +33,7 @@ public class Config extends JFinalConfig {
 	 * 配置插件
 	 */
 	public void configPlugin(Plugins me) {
-		if(M.loadInfo()==1){
+//		if(M.loadInfo()==1){
 			C3p0Plugin c3 = new C3p0Plugin(getProperty("url"), getProperty("username"), getProperty("password").trim());
 			c3.setDriverClass(getProperty("driverClassName"));
 			me.add(c3);
@@ -66,6 +55,7 @@ public class Config extends JFinalConfig {
 			arp.addMapping("kk_form_replay",FormReplay.class);
 			arp.addMapping("kk_form_zan",FormZan.class);
 			arp.addMapping("kk_product_category",GoodCategory.class);
+		    arp.addMapping("kk_order_activity",OrderActivity.class);
 			arp.setShowSql(false);
 			me.add(arp);
 			// 配置极光推送插件
@@ -74,7 +64,7 @@ public class Config extends JFinalConfig {
 		}
 		// 配置C3p0数据库连接池插件
 
-	}
+//	}
 	
 	/**
 	 * 配置全局拦截?

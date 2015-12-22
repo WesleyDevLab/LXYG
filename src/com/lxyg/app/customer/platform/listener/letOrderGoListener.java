@@ -73,8 +73,6 @@ public class letOrderGoListener extends TimerTask{
 				}
 				Order.dao.createListener(o,error_msg);
 			}
-
-
 		}
 
 //		String sqlA="select * from kk_order o where o.order_status  in ("+IConstant.OrderStatus.unusual+") and now()- o.create_time > "+timeInterval;

@@ -9,6 +9,7 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.model.*;
 
 import com.lxyg.app.customer.platform.util.JsonUtils;
+import com.lxyg.app.customer.platform.util.Point;
 import com.lxyg.app.customer.platform.util.UpYun;
 import com.lxyg.app.customer.platform.util.loadUUID;
 import net.minidev.json.JSONObject;
@@ -23,6 +24,7 @@ import sun.misc.BASE64Decoder;
 
 import javax.imageio.stream.FileImageInputStream;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.DecimalFormat;
@@ -257,8 +259,8 @@ public class Test extends TestBefore {
     }
 
     public void category(){
-       Record rS=Db.findFirst("SELECT ( SELECT  pc.id FROM kk_product_category pc WHERE pc. NAME LIKE ? LIMIT 0,1 ) AS cid, " +
-               "( SELECT pt.id FROM kk_product_type pt WHERE pt.NAME LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. NAME LIKE ? LIMIT 0,1) AS bid", "%粮油调味%", "%方便速食%", "%双汇%");
+       Record rS=Db.findFirst("SELECT ( SELECT  pc.id FROM kk_product_category pc WHERE pc. name LIKE ? LIMIT 0,1 ) AS cid, " +
+               "( SELECT pt.id FROM kk_product_type pt WHERE pt.name LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. name LIKE ? LIMIT 0,1) AS bid", "%粮油调味%", "%方便速食%", "%双汇%");
         System.out.println(rS);
     }
 
@@ -332,8 +334,8 @@ public class Test extends TestBefore {
                 record.set("p_type_name",objects[1]);
                 record.set("p_brand_name",objects[2]);
 
-                Record r=Db.findFirst("SELECT ( SELECT pc.id FROM kk_product_category pc WHERE pc. NAME LIKE ? LIMIT 0,1) AS cid, " +
-                        "( SELECT pt.id FROM kk_product_type pt WHERE pt.NAME LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. NAME LIKE ? LIMIT 0,1) AS bid", "%" + objects[0] + "%", "%" + objects[1] + "%", "%" + objects[2] + "%");
+                Record r=Db.findFirst("SELECT ( SELECT pc.id FROM kk_product_category pc WHERE pc. name LIKE ? LIMIT 0,1) AS cid, " +
+                        "( SELECT pt.id FROM kk_product_type pt WHERE pt.name LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. name LIKE ? LIMIT 0,1) AS bid", "%" + objects[0] + "%", "%" + objects[1] + "%", "%" + objects[2] + "%");
                 record.set("p_category_id",r.getInt("cid"));
                 record.set("p_type_id",r.getInt("tid"));
                 record.set("p_brand_id",r.getInt("bid"));
@@ -360,10 +362,8 @@ public class Test extends TestBefore {
         }
     }
 
-    @org.junit.Test
     public void insert(){
       // Db.findFirst("select group_concat(fb.id) as pids,fb.* from kk_product_fb fb where fb.s_uid=1 and fb.id in (1) and fb.hide=0");
-
        List<Record> records= Db.find("SELECT group_concat(p.p_type_id) as types,p.p_brand_id from kk_product p GROUP BY p.p_brand_id");
         for(Record record:records){
             int p_brand_id=record.getInt("p_brand_id");
@@ -377,4 +377,30 @@ public class Test extends TestBefore {
         }
     }
 
+    @org.junit.Test
+    public void Test(){
+        BigDecimal allPrice=new BigDecimal(73);
+        Record record=Db.findFirst("select * from kk_shop_activity sa where sa.shop_id=? and activity_type=5",6);
+        String rule=record.getStr("price_rule");
+        int reduce=0;
+        net.sf.json.JSONObject o = net.sf.json.JSONObject.fromObject(rule);
+        net.sf.json.JSONArray array = o.getJSONArray("rule");
+        for(int i=0;i<array.size();i++){
+            net.sf.json.JSONObject object= (net.sf.json.JSONObject) array.get(i);
+            if(object.getInt("limit_price")>allPrice.intValue()){
+                if(i==0){
+                    if(object.getInt("limit_price")==allPrice.intValue()){
+                        reduce=object.getInt("reduce");
+                    }
+                    break;
+                }
+                object= (net.sf.json.JSONObject) array.get(i-1);
+                reduce=object.getInt("reduce");
+                break;
+            }else {
+                reduce= object.getInt("reduce");
+            }
+        }
+        System.out.println(reduce);
+    }
 }

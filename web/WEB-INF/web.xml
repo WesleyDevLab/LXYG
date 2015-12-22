@@ -11,6 +11,9 @@
             <param-value>com.lxyg.app.customer.platform.config.Config</param-value>
         </init-param>
     </filter>
+    <listener>
+        <listener-class>com.lxyg.app.customer.platform.listener.KAKAListener</listener-class>
+    </listener>
     <filter-mapping>
         <filter-name>jfinal</filter-name>
         <url-pattern>/*</url-pattern>
