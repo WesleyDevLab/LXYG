@@ -42,6 +42,7 @@ public class JPush implements IPlugin {
 		this.pushType=pushType;
 	}
 	public boolean stop() {
+
 		return true;
 	}
 

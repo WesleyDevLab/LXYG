@@ -377,7 +377,6 @@ public class Test extends TestBefore {
         }
     }
 
-    @org.junit.Test
     public void Test(){
         BigDecimal allPrice=new BigDecimal(73);
         Record record=Db.findFirst("select * from kk_shop_activity sa where sa.shop_id=? and activity_type=5",6);
@@ -402,5 +401,15 @@ public class Test extends TestBefore {
             }
         }
         System.out.println(reduce);
+    }
+
+    @org.junit.Test
+    public void copyActivityPros(){
+        List<Record> records=Db.find("select * from kk_product_activity pa where activity_id=?",10);
+        for(Record record:records){
+            record.set("id",null);
+            record.set("activity_id",18);
+            Db.save("kk_product_activity",record);
+        }
     }
 }

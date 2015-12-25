@@ -87,58 +87,6 @@ public class JPushKit {
 		}
 	}
 
-
-
-
-
-	public static PushPayload buildPushObject_all_all_alert(String content) {
-		PushPayload pushPayload= PushPayload.alertAll(content);
-		return pushPayload;
-	}
-
-
-
-	public static void send_all(String content){
-		log.info("send_alias_array");
-		JPushClient jpushClient = new JPushClient(masterSecretC, aC.trim(),3);
-        PushPayload payload = buildPushObject_all_all_alert(content);
-        try {
-            PushResult result = jpushClient.sendPush(payload);
-            log.info("Got result - " + result);
-
-        } catch (APIConnectionException e) {
-        	log.error("Connection error, should retry later", e);
-
-        } catch (APIRequestException e) {
-        	log.error("Should review the error, and fix the request", e);
-        	log.info("HTTP Status: " + e.getStatus());
-        	log.info("Error Code: " + e.getErrorCode());
-        	log.info("Error Message: " + e.getErrorMessage());
-        }
-	}
-
-
-	public static PushPayload buildPushObject(String alias,Map<String,Object> extr,String content,String Title) {
-
-		return PushPayload.newBuilder()
-				.setPlatform(Platform.all())
-				.setAudience(Audience.alias(alias))
-				.setMessage(buildMessage(extr, content, Title))
-				.build();
-	}
-
-	public static Message buildMessage(Map<String,Object> extr,String content,String Title){
-		Message.Builder array= Message.newBuilder();
-		Iterator iter = extr.entrySet().iterator();
-		while(iter.hasNext()){
-			Map.Entry entry = (Map.Entry) iter.next();
-			String key=entry.getKey().toString();
-			String val=entry.getValue().toString();
-			array.addExtra(key, val);
-		}
-		return array.setMsgContent(content).setTitle(Title).build();
-	}
-
 	public static PushPayload buildPushObject_all_alias_alert(String alias,String Title,String content){
 		return PushPayload.newBuilder()
 				.setPlatform(Platform.all())
@@ -148,41 +96,9 @@ public class JPushKit {
 				.setNotification(Notification.alert(content)).build();
 	}
 
-
-	public static PushPayload buildPushObject_all_alias_alert() {
-		return PushPayload.newBuilder()
-				.setPlatform(Platform.all())
-				.setAudience(Audience.alias("15010751363"))
-				.setNotification(Notification.ios_incr_badge(3)).setOptions(Options.newBuilder()
-						.setApnsProduction(true)
-						.build())
-				.build();
-
-
-//		return PushPayload.newBuilder()
-//				.setPlatform(Platform.ios())
-//				.setAudience(Audience.tag_and("tag1", "tag_all"))
-//				.setNotification(Notification.newBuilder()
-//						.addPlatformNotification(IosNotification.newBuilder()
-//								.setAlert(ALERT)
-//								.setBadge(5)
-//								.setSound("happy.caf")
-//								.addExtra("from", "JPush")
-//								.build())
-//						.build())
-//				.setMessage(Message.content(MSG_CONTENT))
-//				.setOptions(Options.newBuilder()
-//						.setApnsProduction(true)
-//						.build())
-//				.build();
-	}
-
-
 	public static void  send_alias(String Secret,String app,String alias,Map<String, Object> extr,String content,String Title){
 		log.error("send_alias_one");
 		JPushClient jpushClient = new JPushClient(Secret.trim(),app.trim(),3);
-		//PushPayload payload = buildPushObject(alias,extr,content,Title);
-		//PushPayload payload = buildPushObject_all_alias_alert();
 		 PushPayload payload = buildPushObject_all_alias_alert(alias, Title, content);
 		try {
 			PushResult result = jpushClient.sendPush(payload);
@@ -196,37 +112,9 @@ public class JPushKit {
 			log.info("Error Message: " + e.getErrorMessage());
 		}
 	}
-	
-	/*public static void  send_alias_array(String alias[],Map<String,Object> extr,String content,String Title){
-		JPushClient jpushClient = new JPushClient(masterSecret.trim(), appkey.trim(),3);
-		for(String str:alias){
-			PushPayload payload = buildPushObject(str,extr,content,Title);
-			try {
-				PushResult result = jpushClient.sendPush(payload);
-				if(!result.isResultOK()){
-					continue;
-				}
-				log.info("Got result - " + result);
-			} catch (APIConnectionException e) {
-				log.error("Connection error, should retry later", e);
-			} catch (APIRequestException e) {
-				log.error("Should review the error, and fix the request", e);
-				log.info("HTTP Status: " + e.getStatus());
-				log.info("Error Code: " + e.getErrorCode());
-				log.info("Error Message: " + e.getErrorMessage());
-			}
-		}
-	}*/
-
 
 	public static void main(String[] args) {
-//		buildPushObject_all_all_alert("下午茶时间到了，你要喝点什么？");
-		send_all("下午茶时间到了，你要喝点什么？");
-//		String alias_android="18837145615";
-//		Map<String,Object> map=new HashMap<String, Object>();
-//		map.put("orderId", "2e7f037ec8fe4cd1");
-//		map.put("type", IConstant.OrderStatus.order_status_kqd);
-//		send_alias(masterSecretC,aC,alias_android,map,"tetetetetet","test");
+
 	}
 
 }

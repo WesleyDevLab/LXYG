@@ -69,9 +69,8 @@ public class activityController extends Controller{
 //        }
 //        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT pa.*,sa.start_time,sa.end_time,a.name as act_name","FROM kk_product_activity pa LEFT JOIN kk_shop_activity sa " +
 //                "ON pa.activity_id = sa.id LEFT JOIN kk_activity a on sa.activity_type=a.id WHERE sa.shop_id =? "+b,objs);
-        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT s. name AS sname,sa.id, sa.label_cn, a. name AS aname, sa.start_time, sa.end_time, IFNULL(sa.limit_e, 0) AS limit_num",
+        Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT s. name AS sname,sa.id, sa.label_cn, a. name AS aname, sa.start_time, sa.end_time, IFNULL(sa.limit_e, 0) AS limit_num,sa.activity_type ",
                 "FROM kk_shop_activity sa LEFT JOIN kk_shop s ON sa.shop_id = s.id LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE sa.shop_id = ?"+b,objs);
-
         renderSuccess("获取成功",recordPage);
     }
 
@@ -176,7 +175,7 @@ public class activityController extends Controller{
         Record record=Db.findById("kk_product_activity","id",p_id);
         if(record!=null&&record.getInt("id")!=0){
             Db.delete("kk_product_activity",record);
-            renderSuccess("",null);
+            renderSuccess("删除成共",null);
             return;
         }
     }

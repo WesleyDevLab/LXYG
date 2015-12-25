@@ -6,6 +6,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
 import com.lxyg.app.customer.platform.interceptor.visitInterceptor;
+import com.lxyg.app.customer.platform.listener.pushTimerTask;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.plugin.JPush;
 
@@ -18,7 +19,7 @@ public class Config extends JFinalConfig {
 	 */
 	public void configConstant(Constants me) {
 		loadPropertyFile("res/jdbc.properties");
-		me.setDevMode(true);
+		me.setDevMode(false);
 		me.setViewType(ViewType.JSP); 		// 设置视图类型为Jsp，否则默认为FreeMarker
 		//me.setUploadedFileSaveDirectory(uploadedFileSaveDirectory);//修改默认保存文件路径
 	}
@@ -61,7 +62,8 @@ public class Config extends JFinalConfig {
 			// 配置极光推送插件
 			JPush jpush=new JPush();
 			me.add(jpush);
-		}
+
+	}
 		// 配置C3p0数据库连接池插件
 
 //	}
@@ -78,6 +80,11 @@ public class Config extends JFinalConfig {
 	 * 配置处理?
 	 */
 	public void configHandler(Handlers me) {
-		
 	}
+
+	public void afterJFinalStart(){
+//		pushTimerTask p=new pushTimerTask();
+//		p.begin();
+//		super.afterJFinalStart();
+	};
 }

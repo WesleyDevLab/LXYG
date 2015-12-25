@@ -191,8 +191,12 @@ public class Order extends Model<Order> {
 		return r;
 	}
 	public Record loadOrderNumU(String uuid) {
-		String sql = "SELECT ( SELECT COUNT(o2.id) FROM kk_order o2 WHERE o2.order_status = - 1 AND o2.pay_type != 3 AND o2.u_uuid = ? ) AS dfk, ( SELECT COUNT(o3.id) FROM kk_order o3 WHERE o3.order_status = 2 AND o3.u_uuid = ?) AS dfh, ( SELECT COUNT(o4.id) FROM kk_order o4 WHERE o4.order_status = 3 AND o4.u_uuid = ? ) AS dsh, ( SELECT COUNT(o5.id) FROM kk_order o5 WHERE o5.order_status = 4 AND o5.u_uuid = ? ) AS ywc";
-
+//		String sql = "SELECT ( SELECT COUNT(o2.id) FROM kk_order o2 WHERE o2.order_status = - 1 AND o2.pay_type != 3 AND o2.u_uuid = ? ) AS dfk, " +
+//				"( SELECT COUNT(o3.id) FROM kk_order o3 WHERE o3.order_status = 2 AND o3.u_uuid = ?) AS dfh, ( SELECT COUNT(o4.id) FROM kk_order o4 WHERE o4.order_status = 3 AND o4.u_uuid = ? ) AS dsh, ( SELECT COUNT(o5.id) FROM kk_order o5 WHERE o5.order_status = 4 AND o5.u_uuid = ? ) AS ywc";
+		String sql="SELECT ( SELECT COUNT(o2.id) FROM kk_order o2 LEFT JOIN kk_order_activity oa ON o2.u_uuid = oa.u_uuid WHERE o2.order_status = - 1 AND o2.pay_type != 3 AND o2.u_uuid = ? ) AS dfk, " +
+				"( SELECT COUNT(o3.id) FROM kk_order o3 LEFT JOIN kk_order_activity oa ON o3.u_uuid = oa.u_uuid WHERE o3.order_status = 2 AND o3.u_uuid = ? ) AS dfh, " +
+				"( SELECT COUNT(o4.id) FROM kk_order o4 LEFT JOIN kk_order_activity oa ON o4.u_uuid = oa.u_uuid WHERE o4.order_status = 3 AND o4.u_uuid = ? ) AS dsh, " +
+				"( SELECT COUNT(o5.id) FROM kk_order o5 LEFT JOIN kk_order_activity oa ON o5.u_uuid = oa.u_uuid WHERE o5.order_status = 4 AND o5.u_uuid = ? ) AS ywc";
 		Record r = Db.findFirst(sql, new Object[]{uuid, uuid, uuid, uuid});
 		return r;
 	}

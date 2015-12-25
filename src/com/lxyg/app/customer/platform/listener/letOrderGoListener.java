@@ -17,9 +17,7 @@ public class letOrderGoListener extends TimerTask{
 	@Override
 	public void run() {
 		log.error("run --");
-
 		String sql="select * from kk_order_cache oc where now()-oc.create_time>"+timeInterval+" and status=1";
-
 		List<OrderCache> ocs=OrderCache.dao.find(sql);
 		if(ocs!=null&&ocs.size()!=0){
 			for(OrderCache oc: ocs){
@@ -106,10 +104,12 @@ public class letOrderGoListener extends TimerTask{
 			timer = new Timer(false);
 		}
 		letOrderGoListener let=new letOrderGoListener();
-		timer.schedule(let, 1000*60,1000*60*2);
+//		timer.schedule(let, 1000*60,1000*60*2);
+		timer.schedule(let, new Date(),1000*60*2);
 	}
 
 	public static void end(){
+
 		timer.cancel();
 	}
 	public static void main(String[] args) {

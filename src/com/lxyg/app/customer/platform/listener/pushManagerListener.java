@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * Created by Administrator on 2015/9/23.
  */
 public class pushManagerListener extends TimerTask{
-    private static Logger log= Logger.getLogger(letOrderGoListener.class);
+    private static Logger log= Logger.getLogger(pushManagerListener.class);
     private static Timer timer = null;
     private static final int timeInterval=300;
     @Override
@@ -28,7 +28,7 @@ public class pushManagerListener extends TimerTask{
         List<Record> records= Db.find(sql);
         for(Record record:records){
             int status=record.getInt("order_status");
-            pushMessage(status,record.getStr("order_id"));
+            //pushMessage(status,record.getStr("order_id"));
         }
     }
 
@@ -88,7 +88,8 @@ public class pushManagerListener extends TimerTask{
             timer = new Timer(false);
         }
         pushManagerListener push=new pushManagerListener();
-        timer.schedule(push, 1000*60,1000*60*3);
+//        timer.schedule(push, 1000*60,1000*60*3);
+        timer.schedule(push, new Date(),24*60*60*1000);
     }
     public static void end(){
         timer.cancel();

@@ -150,6 +150,12 @@ public class WXUtil {
     	sb.append("</xml>");
     	return sb.toString();
     }
+
+	public void wxRefund(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("appid",APPID);
+	}
+
 //	public static void createMenu(){
 //		delMenu();
 //		String url="https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+Token.loadTokenD();

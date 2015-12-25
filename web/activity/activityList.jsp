@@ -57,13 +57,23 @@
                 totalRows=result.data.totalRow;
                 for(var i=0;i<result.data.list.length;i++){
                     var obj=result.data.list[i];
-                    innerHtml+="<tr><th>"+obj.sname+"</th>"+
-                            "<th>"+obj.label_cn+"</th>"+
-                            "<th>"+obj.aname+"</th>"+
-                            "<th>"+obj.start_time+"</th>"+
-                            "<th>"+obj.end_time+"</th>"+
-                            "<th>"+obj.limit_num+"</th>"+
-                            "<th><button class='btn btn-info' onclick='checkPros("+obj.id+")'>活动产品</button> <button class='btn btn-danger' onclick='delActivity("+obj.id+");'>删除</button></th></tr>"
+                    if(obj.activity_type!=5&&obj.activity_type!=7){
+                        innerHtml+="<tr><th>"+obj.sname+"</th>"+
+                                "<th>"+obj.label_cn+"</th>"+
+                                "<th>"+obj.aname+"</th>"+
+                                "<th>"+obj.start_time+"</th>"+
+                                "<th>"+obj.end_time+"</th>"+
+                                "<th>"+obj.limit_num+"</th>"+
+                                "<th><button class='btn btn-info' onclick='checkPros("+obj.id+")'>活动产品</button> <button class='btn btn-danger' onclick='delActivity("+obj.id+");'>删除</button></th></tr>"
+                    }else{
+                        innerHtml+="<tr><th>"+obj.sname+"</th>"+
+                                "<th>"+obj.label_cn+"</th>"+
+                                "<th>"+obj.aname+"</th>"+
+                                "<th>"+obj.start_time+"</th>"+
+                                "<th>"+obj.end_time+"</th>"+
+                                "<th>"+obj.limit_num+"</th>"+
+                                "<th><button class='btn btn-danger'  onclick='delActivity("+obj.id+");'>删除</button></th></tr>"
+                    }
                 }
                 $("#dateBody").append(innerHtml);
                 $("#page").append("第"+curPage+"/"+totalPage+"页    共"+totalRows+"条");

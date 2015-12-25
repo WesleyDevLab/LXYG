@@ -35,10 +35,11 @@
         }
     </style>
     <script>
+        console.info();
         var imgCover="";
         function openTable(ap_id){
             $.post("${path}/activity/aProduct",{"ap_id":ap_id},function(result){
-                console.info(result.data);
+                $("#img").html("");
                 if(result.code==10002){
                     $("#p_id").val(ap_id);
                     $("#p_name").val(result.data.name);
@@ -54,6 +55,7 @@
             });
         }
         function closeTable(){
+            imgCover="";
             $("#proInfo").hide();
         }
 
@@ -112,10 +114,12 @@
         };
         function updatePro() {
            if(confirm("确定要修改嘛？")){
+              var price= $("#p_price").val()
+               price=(price*100).toFixed(0);
                var postData={
                    "ap_id":$("#p_id").val(),
                    "title":$("#p_title").val(),
-                   "price":$("#p_price").val()*100,
+                   "price":price,
                    "ap_num":$("#p_num").val(),
                    "ap_cover":imgCover
                }
@@ -130,7 +134,11 @@
         function delPro(ap_id) {
             if(confirm("确定要删出嘛？")){
                 $.post("${path}/activity/delAPro",{"ap_id":ap_id},function(result){
-
+                    console.info(result.code);
+                    if(result.code==10002){
+                        alert("删除成功");
+                        location.reload();
+                    }
                 });
             }
         }
@@ -227,7 +235,7 @@
                     </a>
                 </div>
             </div>
-            <div class="box-content" style="min-height: 800px ">
+            <div class="box-content" style="">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped "
                            style="font-size: 14px;font-style: normal">
@@ -235,7 +243,7 @@
                         <tr>
                             <th>产品</th>
                             <th>产品图片</th>
-                            <th>产品标题</th>
+                            <%--<th>产品标题</th>--%>
                             <th>活动价格</th>
                             <th>类别</th>
                             <th>品牌</th>
@@ -247,7 +255,7 @@
                             <tr>
                                 <td>${product.name}</td>
                                 <td><img src="${product.cover_img}" width="40px" height="40px"></td>
-                                <td>${product.title}
+                                <%--<td>${product.title}--%>
                                 </td>
                                 <td>￥
                                     <fmt:parseNumber var="i" type="number" value="${product.price}"/>
@@ -257,13 +265,12 @@
                                 <td>${product.p_brand_name}</td>
                                 <td>
                                     <button class="btn btn-info" onclick="openTable('${product.id}');">修改</button>
-                                    <button class="btn btn-danger" onclick="delPro();">删除</button>
+                                    <button class="btn btn-danger" onclick="delPro('${product.id}');">删除</button>
                                 </td>
                             </tr>
                         </c:forEach>
                         </tbody>
                     </table>
-
                 </div>
                 <div class="pagination pagination-centered">
                     <div class="bg">
@@ -288,6 +295,8 @@
         </div>
     </div>
 </div>
+
+
 <div class="clearfix"></div>
 <footer>
     <p>

@@ -14,6 +14,7 @@ import net.sf.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PageController extends Controller {
@@ -92,12 +93,22 @@ public class PageController extends Controller {
 		if(isParaExists("pg")){
 			page=getParaToInt("pg");
 		}
-		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. name, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name " ,
-				"FROM kk_shop_activity sa LEFT JOIN kk_shop_product ps ON sa.shop_id = ps.shop_id LEFT JOIN kk_product p ON p.id = ps.product_id WHERE sa.id = ?", sa_id);
-		setAttr("sa_id",getParaToInt("sa_id"));
-		if(records.getList().size()==0){
-			records=null;
+		String where="";
+
+		Object [] objs=new Object[]{sa_id};
+		if(isParaExists("pname")){
+			String name=getPara("pname");
+			try {
+				name=new String(name.getBytes("ISO-8859-1"),"UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			where+=" and p.name like ?";
+			objs=new Object[]{sa_id,"%"+name+"%"};
 		}
+		Page<Goods> records=Goods.dao.paginate(page,IConstant.PAGE_DATA, "SELECT p.id, p. name, p.price, p.cover_img, p.p_type_id, p.p_type_name, p.p_brand_id, p.p_brand_name,sa.label_cn " ,
+				"FROM kk_shop_activity sa LEFT JOIN kk_shop_product ps ON sa.shop_id = ps.shop_id LEFT JOIN kk_product p ON p.id = ps.product_id WHERE sa.id = ? "+where, objs);
+		setAttr("sa_id",getParaToInt("sa_id"));
 		setAttr("products",records);
 		render("/activity/addActivityPros.jsp");
 	}
@@ -176,9 +187,16 @@ public class PageController extends Controller {
 		if(isParaExists("pg")){
 			page=getParaToInt("pg");
 		}
+		String where ="";
+		Object [] objs=new Object[]{shopId};
+		if(isParaExists("pname")){
+			where+=" and p.name like ?";
+			objs=new Object[]{shopId,"%"+getPara("pname")+"%"};
+		}
 		List<Goods> goods=Goods.dao.find("SELECT p.id,p.name,p.price,p.cover_img,p.p_type_id,p.p_type_name,p.p_brand_id,p.p_brand_name " +
-				"from kk_shop_product ps LEFT JOIN kk_product p on ps.product_id=p.id where ps.shop_id=? ",shopId);
+				"from kk_shop_product ps LEFT JOIN kk_product p on ps.product_id=p.id where ps.shop_id=? "+where,objs);
 		setAttr("goods",goods);
+		setAttr("shop_id",shopId);
 		render("/activity/addActivity.jsp");
 //		Page<Goods> goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,);
 	}

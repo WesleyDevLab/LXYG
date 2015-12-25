@@ -31,7 +31,7 @@
         }
     </style>
     <script>
-        console.info("${products.totalPage}");
+
         function openTable(pid) {
             $.post("${path}/activity/loadProInfo",{"p_id":pid},function(result){
                 if(result.code==10002){
@@ -54,7 +54,7 @@
             var p_id=$("#p_id").val();
             var act_price=$("#p_price").val()*100;
             var limit_num=$("#p_num").val();
-            $.post("${path}/activity/addActivityPros",{"act_id":${sa_id},"title":title,"p_id":p_id,"act_price":act_price,"limit_num":limit_num},function(result){
+            $.post("${path}/activity/addActivityPros",{"act_id":${sa_id},"title":title,"p_id":p_id,"act_price":act_price.toFixed(0),"limit_num":limit_num},function(result){
                 if(result.code==10002){
                     alert("添加成功");
                     $("#proInfo").hide();
@@ -62,16 +62,24 @@
             });
         }
 
-        function page(num){
-            if(num<1){
-                alert("已经是第一页");
+        <%--function page(num){--%>
+            <%--if(num<1){--%>
+                <%--alert("已经是第一页");--%>
+                <%--return;--%>
+            <%--}--%>
+            <%--if(num>${products.totalPage}){--%>
+                <%--alert("已经是最后一页");--%>
+                <%--return;--%>
+            <%--}--%>
+            <%--window.location.href="${path}/pageTo/toAddActPros?sa_id=${sa_id}&pg="+num;--%>
+        <%--}--%>
+        function search(){
+            var name=$("#search_pros").val();
+            if(name==null || name.trim()==""){
+                alert("搜索是空的");
                 return;
             }
-            if(num>${products.totalPage}){
-                alert("已经是最后一页");
-                return;
-            }
-            window.location.href="${path}/pageTo/toAddActPros?sa_id=${sa_id}&pg="+num;
+            window.location.href="${path}/pageTo/toAddActPros?sa_id=${sa_id}&pname="+name;
         }
     </script>
 </head>
@@ -123,12 +131,20 @@
                 <h2 id="plat_name1"><i class="icon-align-justify"></i><span class="break"></span>添加活动产品</h2>
 
                 <div class="box-icon">
-                    <a href="${path}/pageTo/activityPros?sa_id=${sa_id}"    class="btn-add">
+                    <a href="${path}/pageTo/activityPros?sa_id=${sa_id}" class="btn-add">
                         <i class="icon-edit" style="width:60px">返回</i>
                     </a>
                 </div>
             </div>
+
             <div class="box-content" style="min-height: 800px ">
+                <div style="margin:10px 0;" class="form-inline">
+                    <div class="form-group">
+                        <button type="button"  class="btn btn-primary" id="plat_name" >乐享云购选择活动产品</button>
+                        <input type="text" style="margin-left: 50px" id="search_pros" ><button style="margin-left: 5px" type="button" onclick="search()"  class="btn btn-primary">搜索产品</button>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
 
                     <table class="table table-bordered table-striped "

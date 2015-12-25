@@ -2,13 +2,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <script type="text/javascript">
 function exit(){
-
 	if(confirm("确定退出?")){
 		location.href="${path}/user/exit";
 	}
 }
 </script>
-
  <!-- start: Header -->
     <div class="navbar">
         <div class="navbar-inner">
@@ -93,7 +91,7 @@ function exit(){
                             <c:if test="${res.resid==8}">
                             <i class="icon-picture"></i>
                             </c:if>
-                            <c:if test="${res.resid==101}">
+                            <c:if test="${res.resid==102}">
                                 <i class="icon-picture"></i>
                             </c:if>
                             <span class="hidden-tablet">${res.resname }</span>

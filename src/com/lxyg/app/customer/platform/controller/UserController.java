@@ -5,6 +5,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.listener.pushTimerTask;
 import com.lxyg.app.customer.platform.model.Manager;
 import com.lxyg.app.customer.platform.util.IConstant;
 import com.lxyg.app.customer.platform.util.M;
@@ -120,6 +121,30 @@ public class UserController extends Controller {
 			setAttr("msg", "成功");
 			renderJson();
 		}
+	}
+
+	public void cancel(){
+		int id=getParaToInt("id");
+		Record record=Db.findFirst("select * from kk_push_content pc where pc.id=?",id);
+		if(isParaExists("content")){
+			record.set("content",getPara("content"));
+		}
+		if(isParaExists("time")){
+			record.set("push_time",getParaToInt("time"));
+		}
+		if(isParaExists("open")){
+			record.set("open",getParaToInt("open"));
+		}
+		Db.update("kk_push_content",record);
+		pushTimerTask pt=new pushTimerTask();
+		pt.cancel();
+		renderJson("code", "10002");
+	}
+
+	public void start(){
+		pushTimerTask pt=new pushTimerTask();
+		pt.begin();
+		renderJson("code","10002");
 	}
 
 	//

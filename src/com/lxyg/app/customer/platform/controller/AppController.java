@@ -2517,7 +2517,7 @@ public class AppController extends Controller {
 			renderFaile("请登录！");
 			return;
 		}
-		Record r= Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
+		Record r= Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid,c.create_time,c.end_time,c.cash_title,c.cash_content from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
 		renderSuccess("获取成功", r);
 	}
 	@ActionKey("app/user/loadCashs")
@@ -2647,13 +2647,13 @@ public class AppController extends Controller {
 		IConstant.orderQueue.insert(r);//放入队列中
 		while(!IConstant.orderQueue.isEmpty()){
 			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
-//			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
-//			if(r1!=null){
-//				if(r1.getInt("surplus_num")<=0){
-//					renderFaile("已经购买完");
-//					return;
-//				}
-//			}
+			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
+			if(r1!=null){
+				if(r1.getInt("surplus_num")<=0){
+					renderFaile("已经购买完");
+					return;
+				}
+			}
 			/**下单*/
 			boolean save=Db.save("kk_order_activity", record);
 			if(save){
@@ -2670,10 +2670,10 @@ public class AppController extends Controller {
 						/**
 						 * 减少库存数量
 						 * */
-						Record activity=Db.findById("kk_shop_activity",activityId);
-						if(activity.getInt("limit_e")!=null&&activity.getInt("limit_e")!=0){
-							productNum=activity.getInt("limit_e");
-						}
+//						Record activity=Db.findById("kk_shop_activity",activityId);
+//						if(activity.getInt("limit_e")!=null&&activity.getInt("limit_e")!=0){
+//							productNum=activity.getInt("limit_e");
+//						}
 						Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
 					}
 				}
@@ -2748,8 +2748,8 @@ public class AppController extends Controller {
 //			return;
 //		}
 		int page=1;
-		if(isParaExists("pg")){
-			page=getParaToInt("pg");
+		if(json.containsKey("pg")){
+			page=json.getInt("pg");
 		}
 		int actType_id = json.getInt("activityId");
 		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select id as productId,name,title,price,cash_pay,cover_img,p_unit_name,create_time,limit_num,surplus_num,p_type_id,p_type_name,p_brand_id,p_brand_name","from kk_product_activity pa where pa.activity_id=?",actType_id);

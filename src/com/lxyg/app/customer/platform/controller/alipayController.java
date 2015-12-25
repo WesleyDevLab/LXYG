@@ -2,6 +2,7 @@ package com.lxyg.app.customer.platform.controller;
 
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.alipay.util.AlipayNotify;
@@ -93,7 +94,15 @@ public class alipayController extends Controller {
 			if(map.get("result_code").toString().equals("SUCCESS")){
 				String orderId=map.get("out_trade_no").toString();
 				String wxPayNo=map.get("transaction_id").toString();
-				OrderC(orderId, wxPayNo);
+				Order o=new Order().dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
+				if(o.getLong("count")!=0){
+					OrderC(orderId, wxPayNo);
+					return;
+				}
+				Record record= Db.findFirst("select count(*) as count from kk_order_activity oa where oa.order_id=?",orderId);
+				if(record.getLong("count")!=0){
+					activtyOrder(orderId,wxPayNo);
+				}
 			}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -105,6 +114,34 @@ public class alipayController extends Controller {
 			e.printStackTrace();
 		}
 		renderText("success");
+	}
+
+	public void activtyOrder(String orderId,String payNo){
+		log.error("activtyOrder");
+		Record record=Db.findFirst("select * from kk_order_activity oa where oa.order_id=?",orderId);
+		if(record==null){
+			log.error("--异常--");
+			renderText("success");
+			return;
+		}
+		if(record.getInt("order_status")!=-1){
+			log.error("--订单状态异常--");
+			renderText("success");
+			return;
+		}
+		boolean ub=false;
+		if(record.getStr("alipay_no")==null){
+			log.error("--订单状态修改   正常状态--");
+			record.set("id", record.getInt("id"));
+			record.set("order_status", IConstant.OrderStatus.order_status_dfh);
+			record.set("alipay_no",payNo);
+			record.set("pay_time", new Date());
+			ub=Db.update("kk_order_activity",record);
+		}
+		if(ub){
+			renderText("success");
+			return;
+		}
 	}
 	
 	public void OrderC(String orderId,String payNo){
@@ -128,6 +165,10 @@ public class alipayController extends Controller {
 			o.set("alipay_no",payNo);
 			o.set("pay_time", new Date());
 			ub=o.update();
+		}
+		if(ub){
+			renderText("success");
+			return;
 		}
 		return;
 //		if(o.getBigDecimal("cash_pay").intValue()!=0){

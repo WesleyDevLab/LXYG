@@ -180,11 +180,8 @@ function updateRecord(obj){
 }
     function search(){
         var proName=$("#search_pros").val();
-        console.info(proName);
         if(proName!=null&&proName!=""){
             loadData(page,0,0,proName);
-
-
         }
     }
 
@@ -209,6 +206,7 @@ function updateRecord(obj){
                                 </c:if>
                             </div>
                         </div>
+
                         <div class="box-content" style="min-height: 100%">
                         	<div style="margin:10px 0;" class="form-inline">
                                 <div class="form-group">
