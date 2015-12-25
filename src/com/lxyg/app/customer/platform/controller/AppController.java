@@ -2767,22 +2767,26 @@ public class AppController extends Controller {
 		String order_id=obj.getString("order_id");
 		String u_id=obj.getString("u_id");
 		Record r=loadWXconfig(u_id);
-		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type，id from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
 		if(o.getLong("count")!=0){
 			if(o.getInt("pay_type")==1){
 				//微信退款
 				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
+				o.set("order_status",IConstant.OrderStatus.order_status_js);
+				o.update();
 			}
 			if(o.getInt("pay_type")==2){
 				//支付宝退款
 			}
 			return;
 		}
-		Record record= Db.findFirst("select count(*) as count,alipay_no,pay_type from kk_order_activity oa where oa.order_id=? and u_uuid=?",order_id,u_id);
+		Record record= Db.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?",order_id,u_id);
 		if(record.getLong("count")!=0){
 			if(record.getInt("pay_type")==1){
 				//微信退款
 				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
+				record.set("order_status", IConstant.OrderStatus.order_status_js);
+				Db.update("kk_order_activity",record);
 			}
 			if(record.getInt("pay_type")==2){
 				//支付宝退款

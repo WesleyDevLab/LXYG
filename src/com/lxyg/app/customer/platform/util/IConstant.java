@@ -102,6 +102,7 @@ public interface IConstant {
 	
 	//-1 初始订单 0 支付完成   1 可抢单 2 待发货 3 待收货 4 已完成 5 拒收 6 让单 7 流单;
 	 class OrderStatus {
+
 		public static int order_status_chushi = -1;
 		public static final String order_status_chushi_String = "待付款";
 		
@@ -121,7 +122,7 @@ public interface IConstant {
 		public static final String order_status_ywc_String = "已完成";
 
 		public static final int order_status_js = 5;
-		public static final String order_status_js_String = "拒收";
+		public static final String order_status_js_String = "拒收/退款";
 
 		public static final int order_status_rd = 6;
 		public static final String order_status_rd_String = "让单";
