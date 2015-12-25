@@ -180,7 +180,7 @@ public class HttpKit {
     public static String post(String url, String s) throws IOException, ExecutionException, InterruptedException {
         AsyncHttpClient http = new AsyncHttpClient();
         AsyncHttpClient.BoundRequestBuilder builder = http.preparePost(url);
-        builder.setBodyEncoding("UTF-8");
+        builder.setBodyEncoding("GBK");
         builder.setBody(s);
         Future<Response> f = builder.execute();
         String body = f.get().getResponseBody("UTF-8");

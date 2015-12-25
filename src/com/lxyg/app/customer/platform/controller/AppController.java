@@ -2755,4 +2755,39 @@ public class AppController extends Controller {
 		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select id as productId,name,title,price,cash_pay,cover_img,p_unit_name,create_time,limit_num,surplus_num,p_type_id,p_type_name,p_brand_id,p_brand_name","from kk_product_activity pa where pa.activity_id=?",actType_id);
 		renderSuccess("获取成功",recordPage);
 	}
+
+	@ActionKey("/app/user/refundOrder")
+	public void refundOrder(){
+		log.info("refundOrder");
+		JSONObject obj= JSONObject.fromObject(getPara("info"));
+		if(!obj.containsKey("u_id")||!obj.containsKey("order_id")){
+			renderFaile("退款异常");
+			return;
+		}
+		String order_id=obj.getString("order_id");
+		String u_id=obj.getString("u_id");
+		Record r=loadWXconfig(u_id);
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
+		if(o.getLong("count")!=0){
+			if(o.getInt("pay_type")==1){
+				//微信退款
+				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
+			}
+			if(o.getInt("pay_type")==2){
+				//支付宝退款
+			}
+			return;
+		}
+		Record record= Db.findFirst("select count(*) as count,alipay_no,pay_type from kk_order_activity oa where oa.order_id=? and u_uuid=?",order_id,u_id);
+		if(record.getLong("count")!=0){
+			if(record.getInt("pay_type")==1){
+				//微信退款
+				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
+			}
+			if(record.getInt("pay_type")==2){
+				//支付宝退款
+			}
+			return;
+		}
+	}
 }

@@ -48,5 +48,6 @@
     </orderEntry>
     <orderEntry type="library" name="jpush-client-3.2.5" level="project" />
     <orderEntry type="library" name="message" level="project" />
+    <orderEntry type="library" name="fluent-hc-4.3.4" level="project" />
   </component>
 </module>

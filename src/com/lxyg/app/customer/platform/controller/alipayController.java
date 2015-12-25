@@ -171,6 +171,8 @@ public class alipayController extends Controller {
 			return;
 		}
 		return;
+
+
 //		if(o.getBigDecimal("cash_pay").intValue()!=0){
 //			log.error("--订单有代金券 修改代金券--");
 //			Order.dao.updateCash(o.getStr("u_uuid"),o.getBigDecimal("cash_pay").intValue(),orderId);

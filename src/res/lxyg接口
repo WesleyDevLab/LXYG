@@ -41,3 +41,4 @@ http://127.0.0.1/LXYG/app/user/addActivityOrder?info={'uid':'8a1a9f99fbc54896','
 
 http://127.0.0.1/LXYG/app/user/addActivityOrder?info={'uid':'0babeadc447141c3','activity_id':2,'s_uid':'93fcddb387984e94','pay_type':3,'price':1000,address_id:23,'orderItems':[{'productId':2,productNum:1}]}
 
+http://192.168.0.210/LXYG/app/user/v2/shopScope?info={'s_uid':93fcddb387984e94} 获取店面配送范围

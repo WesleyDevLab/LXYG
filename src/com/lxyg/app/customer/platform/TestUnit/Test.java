@@ -268,8 +268,7 @@ public class Test extends TestBefore {
         String path = "D://kk_product_new.xls";
         File file = new File(path);
         if (!file.exists()) {
-            System.out.println("文件不存在");
-            return;
+                return;
         }
         try {
             POIFSFileSystem poifsFileSystem = new POIFSFileSystem(new FileInputStream(file));

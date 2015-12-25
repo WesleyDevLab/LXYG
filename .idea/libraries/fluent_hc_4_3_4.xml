@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="fluent-hc-4.3.4">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/SSL/fluent-hc-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/SSL/httpclient-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/SSL/httpclient-cache-4.3.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/SSL/httpcore-4.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/SSL/httpmime-4.3.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

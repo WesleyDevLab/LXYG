@@ -7,12 +7,22 @@ import com.lxyg.app.customer.tencent.common.HttpKit;
 import com.lxyg.app.customer.tencent.common.RandomStringGenerator;
 import com.lxyg.app.customer.tencent.common.Signature;
 import com.lxyg.app.customer.tencent.common.XMLParser;
+import com.sun.org.apache.xpath.internal.SourceTree;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import net.sf.json.JSONObject;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.xml.sax.SAXException;
 
+import javax.net.ssl.SSLContext;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.HashMap;
@@ -23,7 +33,7 @@ import java.util.concurrent.ExecutionException;
 
 
 public class WXUtil {
-	
+	private static String certLocatPath=new File("").getAbsoluteFile()+File.separator+"src"+File.separator+"res"+File.separator+"apiclient_cert.p12";
 	private static final String port="APP";
 	public static final String MCH_ID = "1281748701";
 	public static final String APPID = "wx2d2b54b6349d8ef7";
@@ -32,6 +42,7 @@ public class WXUtil {
 	private static final String body="fengyu";
 	public static final String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+ WXUtil.APPID+"&secret="+ WXUtil.SECRET;
 	private static final String pay_order_url="https://api.mch.weixin.qq.com/pay/unifiedorder";
+	private static final String refund_url="https://api.mch.weixin.qq.com/secapi/pay/refund";
 	private static final String notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
 
 
@@ -151,11 +162,60 @@ public class WXUtil {
     	return sb.toString();
     }
 
-	public void wxRefund(){
+	public static Map wxRefund(String transaction_id,String refund_id,Record conf){
 		Map<String,Object> map=new HashMap<String,Object>();
-		map.put("appid",APPID);
+		map.put("appid",conf.getStr("app_key"));
+		map.put("mch_id",conf.getStr("mch_id"));
+		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
+		map.put("op_user_id",MCH_ID);
+		map.put("out_refund_no",refund_id);
+		map.put("refund_fee_type","CNY");
+		map.put("total_fee",1);
+		map.put("refund_fee",1);
+		map.put("transaction_id",transaction_id);
+		String sign= Signature.getSign(map, conf.getStr("key"));
+		map.put("sign",sign);
+		String postData= M.mapToXML(map);
+		String str="";
+		try {
+			 str=new certValidate().validate(certLocatPath,MCH_ID,postData,refund_url);  //证书验证请求微信服务器
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Map res=new HashMap();
+		try {
+			 res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		return res;
 	}
 
+	public static void checkWXPay(){
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("appid",APPID);
+		map.put("mch_id",MCH_ID);
+		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
+		map.put("transaction_id","1008760584201512252297616778");
+		String sign= Signature.getSign(map, "d4624c36b6795d1lxygcf0547af5443d");
+		map.put("sign",sign);
+		String postData= M.mapToXML(map);
+		try {
+			String str = HttpKit.post("https://api.mch.weixin.qq.com/pay/orderquery", postData);
+			System.out.println(str);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+	}
 //	public static void createMenu(){
 //		delMenu();
 //		String url="https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+Token.loadTokenD();
@@ -218,8 +278,11 @@ public class WXUtil {
 //	}
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
-		loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
+		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
+//		wxRefund();
+		//checkWXPay();
 
 	}
 }

@@ -648,6 +648,7 @@ public class AppControllerV2 extends Controller {
                     return;
                 }
             }
+
         }
 
 
@@ -1046,6 +1047,22 @@ public class AppControllerV2 extends Controller {
         }
         renderFaile("异常");
     }
+    @ActionKey("/app/user/v2/shopScope")
+    public void shopScope(){
+        log.info("shopScope");
+        JSONObject obj= JSONObject.fromObject(getPara("info"));
+        String s_uid=obj.getString("s_uid");
+        Shop shop=Shop.dao.findBysuid(s_uid);
+        String scope="";
+        if(shop!=null){
+            scope=shop.getStr("scope");
+            JSONObject o= JSONObject.fromObject(scope);
+            renderSuccess("price_rule",o);
+            return;
+        }
+        renderFaile("店面异常");
+    }
+
 //    @ActionKey("app/user/v2/shopActivtys")
 //    public void shopActivitys(){
 //        log.info("shopActivitys");
