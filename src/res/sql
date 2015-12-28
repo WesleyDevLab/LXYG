@@ -164,3 +164,6 @@ content VARCHAR(255) not null ,
 push_time int(11) DEFAULT 0,
 PRIMARY  KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE kk_order add remark VARCHAR (255);
+ALTER TABLE kk_order_activity add remark VARCHAR (255);

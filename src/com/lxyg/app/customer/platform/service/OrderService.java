@@ -737,7 +737,7 @@ public class OrderService {
 	}
 
 	public Page<OrderActivity> getActivityOrders(int status,String uid,int page){
-		String select="SELECT oa.id AS orderId, oa.order_no, oa.order_id, oa.order_status, oa.create_time, oa.modify_time, oa.finish_time, oa.price, oa.cash_pay,  oa.u_uuid, oa.s_uid AS shop_id, oa.address_id,  oa.pay_type, oa.pay_name, oa.address, oa.send_goods_time as send_time, oa.receive_code,  oa.refuse_time, oa.refuse_cause, ua.province_name, ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng, ua. NAME, ua.phone, u. NAME AS user_name, u.phone AS user_phone, s.phone AS shop_phone";
+		String select="SELECT oa.id AS orderId, oa.order_no, oa.order_id, oa.order_status, oa.create_time, oa.modify_time, oa.finish_time, oa.price, oa.cash_pay,  oa.u_uuid, oa.s_uid AS shop_id, oa.address_id,  oa.pay_type, oa.pay_name, oa.address, oa.send_goods_time as send_time, oa.receive_code,  oa.refuse_time, oa.refuse_cause, oa.remark,ua.province_name, ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng, ua. NAME, ua.phone, u. NAME AS user_name, u.phone AS user_phone, s.phone AS shop_phone";
 		String from="from kk_order_activity oa LEFT JOIN kk_user_address ua ON oa.address_id = ua.id left join kk_user u on oa.u_uuid=u.uuid " +
 				"left join kk_shop s on oa.s_uid=s.uuid where 1=1 and oa.u_uuid=? and order_status=?";
 		Page<OrderActivity> orderActivityPage= OrderActivity.dao.paginate(page,IConstant.PAGE_DATA,select,from,uid,status);

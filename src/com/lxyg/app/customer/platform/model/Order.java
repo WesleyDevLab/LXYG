@@ -34,7 +34,7 @@ public class Order extends Model<Order> {
 
 	private static final String sql_all_select = "SELECT o.id AS orderId, o.order_no, o.order_id, o.order_status, o.create_time, o.modify_time, "
 			+ "o.finish_time, o.price, o.cash_pay,o.order_type, o.u_uuid, o.s_uuid AS shop_id, o.address_id, o.shop_name, o.pay_type, "
-			+ "o.pay_name, o.send_type, o.send_id, o.send_name, o.address, o.send_time,o.receive_code,o.is_rob,o.send_goods_time ,o.let_order_time,o.refuse_time,o.refuse_cause,o.original_order_id,ua.full_address, ua.province_name, "
+			+ "o.pay_name, o.send_type, o.send_id, o.send_name, o.address, o.send_time,o.receive_code,o.is_rob,o.send_goods_time ,o.let_order_time,o.refuse_time,o.refuse_cause,o.original_order_id,o.remark,ua.full_address, ua.province_name, "
 			+ "ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng ,ua.name ,ua.phone,u.name as user_name, u.phone as user_phone,s.phone as shop_phone  ";
 	private static final String sql_all_from = "FROM kk_order o LEFT JOIN kk_user_address ua ON o.address_id = ua.id left join kk_user u on o.u_uuid=u.uuid left join kk_shop s on o.s_uuid=s.uuid where 1=1 ";
 
@@ -193,10 +193,7 @@ public class Order extends Model<Order> {
 	public Record loadOrderNumU(String uuid) {
 //		String sql = "SELECT ( SELECT COUNT(o2.id) FROM kk_order o2 WHERE o2.order_status = - 1 AND o2.pay_type != 3 AND o2.u_uuid = ? ) AS dfk, " +
 //				"( SELECT COUNT(o3.id) FROM kk_order o3 WHERE o3.order_status = 2 AND o3.u_uuid = ?) AS dfh, ( SELECT COUNT(o4.id) FROM kk_order o4 WHERE o4.order_status = 3 AND o4.u_uuid = ? ) AS dsh, ( SELECT COUNT(o5.id) FROM kk_order o5 WHERE o5.order_status = 4 AND o5.u_uuid = ? ) AS ywc";
-		String sql="SELECT ( SELECT COUNT(o2.id) FROM kk_order o2 LEFT JOIN kk_order_activity oa ON o2.u_uuid = oa.u_uuid WHERE o2.order_status = - 1 AND o2.pay_type != 3 AND o2.u_uuid = ? ) AS dfk, " +
-				"( SELECT COUNT(o3.id) FROM kk_order o3 LEFT JOIN kk_order_activity oa ON o3.u_uuid = oa.u_uuid WHERE o3.order_status = 2 AND o3.u_uuid = ? ) AS dfh, " +
-				"( SELECT COUNT(o4.id) FROM kk_order o4 LEFT JOIN kk_order_activity oa ON o4.u_uuid = oa.u_uuid WHERE o4.order_status = 3 AND o4.u_uuid = ? ) AS dsh, " +
-				"( SELECT COUNT(o5.id) FROM kk_order o5 LEFT JOIN kk_order_activity oa ON o5.u_uuid = oa.u_uuid WHERE o5.order_status = 4 AND o5.u_uuid = ? ) AS ywc";
+		String sql="SELECT ( orderNum (-1, ?)) AS dfk, ( orderNum (2, ?)) AS dfh, (orderNum (3, ?)) AS dsh, ( orderNum (4,?)) AS ywc";
 		Record r = Db.findFirst(sql, new Object[]{uuid, uuid, uuid, uuid});
 		return r;
 	}

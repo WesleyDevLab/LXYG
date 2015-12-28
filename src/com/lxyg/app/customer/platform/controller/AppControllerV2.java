@@ -618,9 +618,10 @@ public class AppControllerV2 extends Controller {
         map.put("send_name", IConstant.sendType.get(sendType));
         map.put("send_id", sendId);
         map.put("is_rob", 1);
+        if(json.containsKey("remark")){
+            map.put("remark",json.getString("remark"));
+        }
         Shop shop=new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{shopId});
-
-
         /**配送**/
         if(addressId!=0 && !shopId.equals("")){
             Record r= Db.findById("kk_user_address", addressId);
@@ -637,9 +638,9 @@ public class AppControllerV2 extends Controller {
             /**
              * 是否在配送区域内
              * */
-
             if(shop.getStr("scope")!=null){
-                List objs=JsonUtils.json2list(shop.getStr("scope"));
+                JSONObject jsonObject=JSONObject.fromObject(shop.getStr("scope"));
+                List objs=JsonUtils.json2list(jsonObject.getString("scope"));
                 Point [] points=Point.list2point(objs);
                 Point p=new Point(r.getDouble("lat"),r.getDouble("lng"));
                 boolean flag=Point.inPolygon(p,points);
@@ -650,8 +651,6 @@ public class AppControllerV2 extends Controller {
             }
 
         }
-
-
         String receive_code= RegularUtil.gen();
         map.put("receive_code", receive_code);
         String items=json.getString("orderItems");

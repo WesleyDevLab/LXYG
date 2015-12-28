@@ -14,6 +14,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import javax.net.ssl.SSLContext;
@@ -33,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 
 
 public class WXUtil {
+	private static final Logger log=Logger.getLogger(WXUtil.class);
 	private static String certLocatPath=new File("").getAbsoluteFile()+File.separator+"src"+File.separator+"res"+File.separator+"apiclient_cert.p12";
 	private static final String port="APP";
 	public static final String MCH_ID = "1281748701";
@@ -175,7 +177,10 @@ public class WXUtil {
 		map.put("transaction_id",transaction_id);
 		String sign= Signature.getSign(map, conf.getStr("key"));
 		map.put("sign",sign);
+		System.out.println(map);
 		String postData= M.mapToXML(map);
+		log.info("postData:"+postData);
+		System.out.println(postData);
 		String str="";
 		try {
 			 str=new certValidate().validate(certLocatPath,MCH_ID,postData,refund_url);  //证书验证请求微信服务器
@@ -278,6 +283,9 @@ public class WXUtil {
 //	}
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+
+		File f=new File(certLocatPath);
+		System.out.println(f.exists());
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
 		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");

@@ -19,7 +19,7 @@ public class Config extends JFinalConfig {
 	 */
 	public void configConstant(Constants me) {
 		loadPropertyFile("res/jdbc.properties");
-		me.setDevMode(false);
+		me.setDevMode(true);
 		me.setViewType(ViewType.JSP); 		// 设置视图类型为Jsp，否则默认为FreeMarker
 		//me.setUploadedFileSaveDirectory(uploadedFileSaveDirectory);//修改默认保存文件路径
 	}

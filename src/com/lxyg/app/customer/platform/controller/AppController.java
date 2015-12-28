@@ -2247,6 +2247,7 @@ public class AppController extends Controller {
 		}
 		String orderId=json.getString("orderId");
 		Order o= Order.dao.findByStatus(orderId, IConstant.OrderStatus.order_status_psz);
+		System.out.println(o);
 		String userPhone=o.getStr("phone");
 		o.set("id", o.getInt("orderId"));
 		o.set("order_status", o.getInt("order_status")+1);
@@ -2486,16 +2487,20 @@ public class AppController extends Controller {
 		}
 		String orderId=json.getString("orderId");
 		Order order= Order.dao.findById(true,orderId);
-		if(order==null){
-			renderFaile("异常！");
+		if(order!=null){
+			boolean flag=orderService.delOrder(order);
+			if(flag){
+				renderSuccess("删除成功",null);
+			}
 			return;
 		}
-		boolean flag=orderService.delOrder(order);
-		if(flag){
-			renderSuccess("删除成功",null);
-			return;
-		}else{
-			renderFaile("异常");
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select * from kk_order_activity oa where oa.order_id=?",orderId);
+		if(orderActivity!=null){
+			orderActivity.delActivityOrderItem(orderId);
+			boolean flag=orderActivity.delete();
+			if(flag){
+				renderSuccess("删除成功",null);
+			}
 			return;
 		}
 	}
@@ -2629,6 +2634,9 @@ public class AppController extends Controller {
 		if(json.getInt("pay_type")==3){
 			order_status= IConstant.OrderStatus.order_status_dfh;
 		}
+        if(json.containsKey("remark")){
+            r.set("remark",json.getString("remark"));
+        }
 		r.set("order_status",order_status);
 		r.set("create_time",new Date());
 		r.set("price",json.getInt("price"));
@@ -2767,7 +2775,8 @@ public class AppController extends Controller {
 		String order_id=obj.getString("order_id");
 		String u_id=obj.getString("u_id");
 		Record r=loadWXconfig(u_id);
-		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type，id from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
+		System.out.println(o);
 		if(o.getLong("count")!=0){
 			if(o.getInt("pay_type")==1){
 				//微信退款
@@ -2775,22 +2784,31 @@ public class AppController extends Controller {
 				o.set("order_status",IConstant.OrderStatus.order_status_js);
 				o.update();
 			}
-			if(o.getInt("pay_type")==2){
+			else if(o.getInt("pay_type")==2){
 				//支付宝退款
-			}
+			}else{
+                renderFaile("货到付款不支持退款");
+                return;
+            }
+			renderSuccess("退款成功",null);
 			return;
 		}
-		Record record= Db.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?",order_id,u_id);
-		if(record.getLong("count")!=0){
-			if(record.getInt("pay_type")==1){
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?", order_id, u_id);
+		System.out.println(orderActivity);
+		if(orderActivity.getLong("count")!=0){
+			if(orderActivity.getInt("pay_type")==1){
 				//微信退款
-				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
-				record.set("order_status", IConstant.OrderStatus.order_status_js);
-				Db.update("kk_order_activity",record);
+				WXUtil.wxRefund(orderActivity.getStr("alipay_no"),order_id,r);
+                orderActivity.set("order_status", IConstant.OrderStatus.order_status_js);
+                orderActivity.update();
 			}
-			if(record.getInt("pay_type")==2){
+			else if(orderActivity.getInt("pay_type")==2){
 				//支付宝退款
-			}
+			}else{
+                renderFaile("货到付款不支持退款");
+                return;
+            }
+			renderSuccess("退款成功",null);
 			return;
 		}
 	}

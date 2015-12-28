@@ -163,6 +163,7 @@ public class User extends Model<User> {
 			Db.update("kk_integral",record);
 			return;
 		}
+		record=new Record();
 		record.set("u_uid",u_uid);
 		record.set("integral",integral);
 		record.set("create_time",new Date());

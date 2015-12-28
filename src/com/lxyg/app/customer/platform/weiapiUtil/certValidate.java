@@ -67,4 +67,9 @@ public class certValidate {
         }
         return  text;
     }
+
+    public static void main(String[] args) {
+        String str="<xml><sign>F6B046E002CE6C47767A2F1558D7D742</sign><refund_fee>1</refund_fee><mch_id>1281748701</mch_id><refund_fee_type>CNY</refund_fee_type><total_fee>1</total_fee><op_user_id>1281748701</op_user_id><appid>wx2d2b54b6349d8ef7</appid><out_refund_no>07d630da1ab24176</out_refund_no><nonce_str>2kc11ivvjpbgwy5lini5tzz58p62jb80</nonce_str><transaction_id>1008760584201512282365239423</transaction_id></xml>";
+        //validate();
+    }
 }
