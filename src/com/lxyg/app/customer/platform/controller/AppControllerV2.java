@@ -501,9 +501,9 @@ public class AppControllerV2 extends Controller {
 
     @ActionKey("app/user/v2/homePage")
     public void  homePage_1(){
-//        if(M.loadInfo()!=1){
-//            return;
-//        }
+        if(M.loadInfo()!=1){
+           return;
+        }
         JSONObject json= JSONObject.fromObject(getPara("info"));
         if (!json.containsKey("s_uid")){
             renderFaile("店铺id");
@@ -649,7 +649,6 @@ public class AppControllerV2 extends Controller {
                     return;
                 }
             }
-
         }
         String receive_code= RegularUtil.gen();
         map.put("receive_code", receive_code);
@@ -663,6 +662,11 @@ public class AppControllerV2 extends Controller {
                 JSONObject o = array.getJSONObject(i);
                 int productId = o.getInt("productId");
                 int productNum = o.getInt("productNum");
+                boolean flag=goodsService.isProEnough(productId,productNum,shop.getInt("id"));
+                if(!flag){
+                    renderFaile("库存不够");
+                    return;
+                }
                 Goods g = new Goods().findById(productId);
                 int pric=g.getBigDecimal("price").intValue();
                 allPrice+=pric*productNum;
@@ -696,21 +700,33 @@ public class AppControllerV2 extends Controller {
         o.setAttrs(map);
         boolean f=orderService.splice2Create(orderId, items, json.getInt("cashPay"));
         if(f){
-           boolean s= o.save();
-            /**下单后推送**/
-            if(s&&payType==3){
-                String str=",收货人:"+o.getStr("name");
-                str+=",联系电话："+o.getStr("phone");
-                str+=",收获地址:"+o.getStr("address");
-                str+=",支付方式："+o.getStr("pay_name");
-                str+=",购买产品：【";
-                for(Record r:o.getOrderItems(o.getStr("uuid"))){
-                    str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
+            boolean s= o.save();
+            if(s){
+                net.sf.json.JSONArray pros = net.sf.json.JSONArray.fromObject(items);
+                if (array.size() > 0) {
+                    for (int i = 0; i < array.size(); i++) {
+                        JSONObject pro = array.getJSONObject(i);
+                        int productId = pro.getInt("productId");
+                        int productNum = pro.getInt("productNum");
+                        goodsService.reduceProNum(productId,productNum,shop.getInt("id"));
+                    }
                 }
-                str+="】";
-                str+="总价:"+o.getInt("price")/100+"元";
-               SdkMessage.sendUser(shop.getStr("phone"),str);
+                /**下单后推送**/
+                if(payType==3){
+                    String str=",收货人:"+o.getStr("name");
+                    str+=",联系电话："+o.getStr("phone");
+                    str+=",收获地址:"+o.getStr("address");
+                    str+=",支付方式："+o.getStr("pay_name");
+                    str+=",购买产品：【";
+                    for(Record r:o.getOrderItems(o.getStr("uuid"))){
+                        str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
+                    }
+                    str+="】";
+                    str+="总价:"+o.getInt("price")/100+"元";
+                    SdkMessage.sendUser(shop.getStr("phone"),str);
+                }
             }
+
 //            o.createLog(orderId, IConstant.orderAction.order_action_chushi, IConstant.sendType.get(sendType), null, null, null, IConstant.OrderStatus.order_status_chushi);
 //            if(s){
 //                if(payType==3){

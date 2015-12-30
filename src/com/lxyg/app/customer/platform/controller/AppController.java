@@ -2096,13 +2096,11 @@ public class AppController extends Controller {
 		}
 
 
-//		allPrice=allPrice-json.getInt("cashPay");
-//		if(allPrice!=price){
-//			renderFaile("总金额异常");
-//			return;
-//		}
-
-
+		allPrice=allPrice-json.getInt("cashPay");
+		if(allPrice!=price){
+			renderFaile("总金额异常");
+			return;
+		}
 
 //		if(json.getInt("cashPay")!=0){
 //			Record cashRe= Db.findFirst("select * from kk_user_cash where u_uuid=?", uid);
@@ -2112,7 +2110,6 @@ public class AppController extends Controller {
 //			}
 //		}
 		map.put("cash_pay", json.getInt("cashPay"));
-		System.out.println(items);
 		boolean f=orderService.splice2Create_1(orderId, items,json.getInt("cashPay"));
 		if(f){
 			Order o=new Order();
@@ -2559,13 +2556,34 @@ public class AppController extends Controller {
 			o.set("id",o.getInt("orderId"));
 			o.set("order_status", IConstant.OrderStatus.order_status_js);
 			o.set("refuse_time",new Date());
-			o.set("refuse_case",cause);
+			o.set("refuse_cause",cause);
 			o.update();
+			/**退款后恢复库存数量**/
+			List<Record> records=o.getOrderItems(orderId);
+			Shop shop =Shop.dao.findBysuid(o.getStr("shop_id"));
+			for(Record record:records){
+				goodService.addProNum(record.getInt("product_id"), record.getInt("product_number"), shop.getInt("id"));
+			}
+			renderSuccess("拒收成功",null);
+			return;
+		}
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?", orderId, uid);
+		if(orderActivity.getLong("count")>0){
+			orderActivity.set("order_status",IConstant.OrderStatus.order_status_js);
+			orderActivity.set("refuse_time",new Date());
+			orderActivity.set("refuse_cause",cause);
+			orderActivity.update();
+			/**退款后恢复库存数量**/
+			List<Record> records=OrderActivity.dao.getActivityOrderItem(orderId);
+			for(Record record:records){
+				Db.update("update kk_product_activity set surplus_num=surplus_num+? where id=?",record.getInt("product_number"),record.getInt("product_id"));
+			}
 			renderSuccess("拒收成功",null);
 			return;
 		}
 		renderFaile("异常");
 	}
+
 	@ActionKey("app/user/orderStatusNum")
 	public void orderStatusNum(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
@@ -2651,39 +2669,35 @@ public class AppController extends Controller {
 		/**
 		 * 队列
 		 * */
-
 		IConstant.orderQueue.insert(r);//放入队列中
 		while(!IConstant.orderQueue.isEmpty()){
 			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
-			Record r1=Db.findFirst("select surplus_num from kk_product_activity pa where pa.activity_id=?", activityId);
-			if(r1!=null){
-				if(r1.getInt("surplus_num")<=0){
-					renderFaile("已经购买完");
+			JSONArray array = JSONArray.fromObject(items);
+			for(int i=0;i<array.size();i++) {
+				JSONObject o = array.getJSONObject(i);
+				int productId = o.getInt("productId");
+				int productNum = o.getInt("productNum");
+				Record pr = Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
+				if (pr.getInt("surplus_num") < productNum) {
+					renderFaile("剩余数量不够");
 					return;
 				}
 			}
+
+
 			/**下单*/
 			boolean save=Db.save("kk_order_activity", record);
 			if(save){
-				JSONArray array = JSONArray.fromObject(items);
-				if(array.size()!=0){
-					for(int i=0;i<array.size();i++){
-						JSONObject o = array.getJSONObject(i);
-						int productId = o.getInt("productId");
-						int productNum = o.getInt("productNum");
-						Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
-						Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
-										"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
-								pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
-						/**
-						 * 减少库存数量
-						 * */
-//						Record activity=Db.findById("kk_shop_activity",activityId);
-//						if(activity.getInt("limit_e")!=null&&activity.getInt("limit_e")!=0){
-//							productNum=activity.getInt("limit_e");
-//						}
-						Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
-					}
+				for(int i=0;i<array.size();i++){
+					JSONObject o = array.getJSONObject(i);
+					int productId = o.getInt("productId");
+					int productNum = o.getInt("productNum");
+					Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?",productId, activityId);
+					Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
+									"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
+							pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
+					/**减少库存数量*/
+					Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
 				}
 //				if(r.getInt("pay_type")==3){
 //					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
@@ -2772,17 +2786,18 @@ public class AppController extends Controller {
 			renderFaile("退款异常");
 			return;
 		}
+		String cause="";
+		if(obj.containsKey("cause")){
+			cause=obj.getString("cause");
+		}
 		String order_id=obj.getString("order_id");
 		String u_id=obj.getString("u_id");
 		Record r=loadWXconfig(u_id);
-		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
-		System.out.println(o);
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id,s_uuid,price from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
 		if(o.getLong("count")!=0){
 			if(o.getInt("pay_type")==1){
 				//微信退款
-				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r);
-				o.set("order_status",IConstant.OrderStatus.order_status_js);
-				o.update();
+				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r,o.getBigDecimal("price").intValue());
 			}
 			else if(o.getInt("pay_type")==2){
 				//支付宝退款
@@ -2790,17 +2805,25 @@ public class AppController extends Controller {
                 renderFaile("货到付款不支持退款");
                 return;
             }
-			renderSuccess("退款成功",null);
+			/**修改订单状态**/
+			o.set("order_status",IConstant.OrderStatus.order_status_js);
+			o.set("refuse_time",new Date());
+			o.set("refuse_cause",cause);
+			o.update();
+			/**退款后恢复库存数量**/
+			List<Record> records=o.getOrderItems(order_id);
+			Shop shop =Shop.dao.findBysuid(o.getStr("s_uuid"));
+			for(Record record:records){
+				goodService.addProNum(record.getInt("product_id"),record.getInt("product_number"),shop.getInt("id"));
+			}
+			renderSuccess("退款成功", null);
 			return;
 		}
-		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?", order_id, u_id);
-		System.out.println(orderActivity);
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id,price from kk_order_activity oa where oa.order_id=? and u_uuid=?", order_id, u_id);
 		if(orderActivity.getLong("count")!=0){
 			if(orderActivity.getInt("pay_type")==1){
 				//微信退款
-				WXUtil.wxRefund(orderActivity.getStr("alipay_no"),order_id,r);
-                orderActivity.set("order_status", IConstant.OrderStatus.order_status_js);
-                orderActivity.update();
+				WXUtil.wxRefund(orderActivity.getStr("alipay_no"),order_id,r,r.getBigDecimal("price").intValue());
 			}
 			else if(orderActivity.getInt("pay_type")==2){
 				//支付宝退款
@@ -2808,6 +2831,17 @@ public class AppController extends Controller {
                 renderFaile("货到付款不支持退款");
                 return;
             }
+
+			/**修改订单状态**/
+			orderActivity.set("order_status", IConstant.OrderStatus.order_status_js);
+			orderActivity.set("refuse_time",new Date());
+			orderActivity.set("refuse_cause",cause);
+			orderActivity.update();
+			/**退款后恢复库存数量**/
+			List<Record> records=OrderActivity.dao.getActivityOrderItem(order_id);
+			for(Record record:records){
+				Db.update("update kk_product_activity set surplus_num=surplus_num+? where id=?",record.getInt("product_number"),record.getInt("product_id"));
+			}
 			renderSuccess("退款成功",null);
 			return;
 		}
