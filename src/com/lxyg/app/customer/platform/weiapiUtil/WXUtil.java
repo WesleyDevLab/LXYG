@@ -164,23 +164,20 @@ public class WXUtil {
     	return sb.toString();
     }
 
-	public static Map wxRefund(String transaction_id,String refund_id,Record conf){
+	public static Map wxRefund(String transaction_id,String refund_id,Record conf,int total_fee){
 		Map<String,Object> map=new HashMap<String,Object>();
-		map.put("appid",conf.getStr("app_key"));
-		map.put("mch_id",conf.getStr("mch_id"));
+		map.put("appid",APPID);
+		map.put("mch_id",MCH_ID);
 		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
 		map.put("op_user_id",MCH_ID);
 		map.put("out_refund_no",refund_id);
-		map.put("refund_fee_type","CNY");
-		map.put("total_fee",1);
-		map.put("refund_fee",1);
+		map.put("total_fee",total_fee);
+		map.put("refund_fee",total_fee);
 		map.put("transaction_id",transaction_id);
-		String sign= Signature.getSign(map, conf.getStr("key"));
+		String sign= Signature.getSign(map,conf.getStr("key"));
 		map.put("sign",sign);
-		System.out.println(map);
 		String postData= M.mapToXML(map);
-		log.info("postData:"+postData);
-		System.out.println(postData);
+		log.error("postData:" + postData);
 		String str="";
 		try {
 			 str=new certValidate().validate(certLocatPath,MCH_ID,postData,refund_url);  //证书验证请求微信服务器
@@ -199,6 +196,8 @@ public class WXUtil {
 		}
 		return res;
 	}
+
+
 
 	public static void checkWXPay(){
 		Map<String,Object> map=new HashMap<String,Object>();
@@ -219,8 +218,9 @@ public class WXUtil {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
 	}
+
+
 //	public static void createMenu(){
 //		delMenu();
 //		String url="https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+Token.loadTokenD();
@@ -289,7 +289,8 @@ public class WXUtil {
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
 		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
-//		wxRefund();
+		Record record=new Record();
+		wxRefund("1008760584201512292384335393","0f0929d278b248aa",record,2);
 		//checkWXPay();
 
 	}

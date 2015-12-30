@@ -35,11 +35,14 @@ public class ConfigUtils {
 	}
 	public static int rate=Integer.parseInt(getProperty("kaka.commission_rate"));
 	public static int clear=Integer.parseInt(getProperty("kaka.Distribution_coefficient"));
+	public static String upYunServer=getProperty("kaka.qiniu.server");
 	/**
 	 * @param args
 	 */
 
 	public static void main(String[] args) {
+		System.out.println(upYunServer);
+
 		System.out.println(getProperty("kaka.server.secret"));
 	}
 

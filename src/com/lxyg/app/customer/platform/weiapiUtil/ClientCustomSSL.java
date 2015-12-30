@@ -34,10 +34,7 @@ import java.security.KeyStore;
 
 import javax.net.ssl.SSLContext;
 
-import com.lxyg.app.customer.alipay.util.httpClient.HttpRequest;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLContexts;
@@ -80,8 +77,8 @@ public class ClientCustomSSL {
         try {
 //            HttpGet httpget = new HttpGet("https://api.mch.weixin.qq.com/secapi/pay/refund");
             HttpPost httpPost=new HttpPost("https://api.mch.weixin.qq.com/secapi/pay/refund");
-            String xml="<xml><appid>wx2d2b54b6349d8ef7</appid><mch_id>1281748701</mch_id><nonce_str>2n0v5wdmmfqgwnfory5p297bt4g9ebft</nonce_str><op_user_id>1281748701</op_user_id><out_refund_no>4abdd15e53cc41bc1</out_refund_no><out_trade_no>4abdd15e53cc41bc</out_trade_no><refund_fee>1</refund_fee><total_fee>1</total_fee><transaction_id>1008760584201512252297616778</transaction_id><sign>91B58DF615F7B295CAA22CC9887AB880</sign></xml>";
-            httpPost.setEntity(new StringEntity(xml));
+            String str="<xml><sign>48A44D407032DD972047FCA963CEB5F5</sign><refund_fee>2</refund_fee><mch_id>1281748701</mch_id><refund_fee_type>CNY</refund_fee_type><total_fee>2</total_fee><op_user_id>1281748701</op_user_id><appid>wx2d2b54b6349d8ef7</appid><out_refund_no>0f0929d278b248aa</out_refund_no><nonce_str>xisaohkmco42xktmmxhjvzvxj6w2xsr3</nonce_str><transaction_id>1008760584201512292384335393</transaction_id></xml>\n";
+            httpPost.setEntity(new StringEntity(str));
             System.out.println("executing request" + httpPost.getRequestLine());
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
@@ -93,7 +90,6 @@ public class ClientCustomSSL {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent()));
                     String text;
                     while ((text = bufferedReader.readLine()) != null) {
-                        System.out.println(text);
                         System.out.println(new String(text.getBytes(),"utf-8"));
                     }
                 }

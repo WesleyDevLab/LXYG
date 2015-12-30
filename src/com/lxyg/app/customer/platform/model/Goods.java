@@ -4,6 +4,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.util.ConfigUtils;
 import com.lxyg.app.customer.platform.util.IConstant;
 
 import java.util.*;
@@ -82,7 +83,7 @@ public class Goods extends Model<Goods> {
 	
 	public boolean insertImgDetail(int productId,String imgUrl,String alt){
 		String sql="insert into kk_product_img(product_id,img_url,create_time,alt) values(?,?,?,?)";
-		int i= Db.update(sql, new Object[]{productId, imgUrl, new Date(), alt});
+		int i= Db.update(sql, new Object[]{productId, ConfigUtils.upYunServer+ imgUrl, new Date(), alt});
 		if(i!=0){
 			return true;
 		}else{

@@ -75,5 +75,21 @@ public class GoodsService{
 		}
 	    return res;
 	}
+	/**减少库存*/
+	public void reduceProNum(int proId,int proNum,int shopId){
+		Db.update("update kk_shop_product set product_number=product_number-? where product_id=? and shop_id=?",proNum,proId,shopId);
+	}
+	/**判断库存是否足够*/
+	public boolean isProEnough(int proId,int proNum,int shopId){
+		Record record=Db.findFirst("select * from kk_shop_product ps where ps.shop_id=? and product_id=?",shopId,proId);
+		if(record.getInt("product_number")<proNum){
+			return false;
+		}
+		return true;
+	}
+	/**增加库存*/
+	public void addProNum(int proId,int proNum,int shopId){
+		Db.update("update kk_shop_product set product_number=product_number+? where product_id=? and shop_id=?",proNum,proId,shopId);
+	}
 
 }
