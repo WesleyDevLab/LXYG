@@ -7,7 +7,7 @@ import com.jfinal.plugin.activerecord.Record;
 import java.util.List;
 
 /**
- * Created by ç§¦å¸… on 2015/12/28.
+ * Created by ÇØË§ on 2015/12/28.
  */
 public class OrderActivity extends Model<OrderActivity>{
     private static final long serialVersionUID = 112L;
@@ -23,6 +23,7 @@ public class OrderActivity extends Model<OrderActivity>{
     }
 
     public void delActivityOrderItem(String orderId){
+        System.out.println(orderId);
         List<Record> records=getActivityOrderItem(orderId);
         for(Record record:records){
             record.set("id",record.getInt("orderItemId"));
