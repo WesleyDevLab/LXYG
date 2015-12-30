@@ -1,41 +1,35 @@
 package com.lxyg.app.customer.platform.weiapiUtil;
 
-import com.alibaba.fastjson.JSONArray;
+import com.jfinal.core.Const;
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.config.Config;
+import com.lxyg.app.customer.platform.util.ConfigUtils;
 import com.lxyg.app.customer.platform.util.M;
 import com.lxyg.app.customer.tencent.common.HttpKit;
 import com.lxyg.app.customer.tencent.common.RandomStringGenerator;
 import com.lxyg.app.customer.tencent.common.Signature;
 import com.lxyg.app.customer.tencent.common.XMLParser;
-import com.sun.org.apache.xpath.internal.SourceTree;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import net.sf.json.JSONObject;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
+import org.apache.taglibs.standard.extra.spath.Path;
 import org.xml.sax.SAXException;
 
-import javax.net.ssl.SSLContext;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.lxyg.app.customer.platform.weiapiUtil.HttpRequest;
+
+import static com.lxyg.app.customer.platform.weiapiUtil.HttpRequest.postSend;
+
 
 public class WXUtil {
 	private static final Logger log=Logger.getLogger(WXUtil.class);
-	private static String certLocatPath=new File("").getAbsoluteFile()+File.separator+"src"+File.separator+"res"+File.separator+"apiclient_cert.p12";
 	private static final String port="APP";
 	public static final String MCH_ID = "1281748701";
 	public static final String APPID = "wx2d2b54b6349d8ef7";
@@ -45,6 +39,10 @@ public class WXUtil {
 	public static final String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+ WXUtil.APPID+"&secret="+ WXUtil.SECRET;
 	private static final String pay_order_url="https://api.mch.weixin.qq.com/pay/unifiedorder";
 	private static final String refund_url="https://api.mch.weixin.qq.com/secapi/pay/refund";
+	private static final String refund_query="https://api.mch.weixin.qq.com/pay/refundquery";
+	private static final String order_query="https://api.mch.weixin.qq.com/pay/orderquery";
+	private static final String certPath= Path.class.getClassLoader().getResource("").getPath()+"res" + File.separator +"apiclient_cert.p12";
+
 	private static final String notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
 
 
@@ -164,8 +162,15 @@ public class WXUtil {
     	return sb.toString();
     }
 
-	public static Map wxRefund(String transaction_id,String refund_id,Record conf,int total_fee){
+	public static Map<String,Object> wxRefund(String transaction_id,String refund_id,Record conf,int total_fee) {
+		//String certPath=new File("").getCanonicalPath()+ File.separator + "src" + File.separator + "res" + File.separator + "apiclient_cert.p12";
 		Map<String,Object> map=new HashMap<String,Object>();
+		Map<String,Object> res=new HashMap<String,Object>();
+		File f=new File(certPath);
+		if(!f.exists()){
+			log.error("文件不存在!!!");
+			return map;
+		}
 		map.put("appid",APPID);
 		map.put("mch_id",MCH_ID);
 		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
@@ -177,16 +182,54 @@ public class WXUtil {
 		String sign= Signature.getSign(map,conf.getStr("key"));
 		map.put("sign",sign);
 		String postData= M.mapToXML(map);
-		log.error("postData:" + postData);
 		String str="";
 		try {
-			 str=new certValidate().validate(certLocatPath,MCH_ID,postData,refund_url);  //证书验证请求微信服务器
+			str= new certValidate().validate(certPath, MCH_ID, postData, refund_url);  //证书验证请求微信服务器
+			res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return res;
+	}
+
+
+
+	public static Map<String,Object> orderQuery(String order_id,Record conf){
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("appid",APPID);
+		map.put("mch_id",MCH_ID);
+		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
+		map.put("out_trade_no",order_id);
+		String sign= Signature.getSign(map,conf.getStr("key"));
+		map.put("sign",sign);
+		String postData= M.mapToXML(map);
+		String str = postSend(order_query, postData);
 		Map res=new HashMap();
 		try {
-			 res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
+			res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	public static  Map<String,Object> refundQuery(String transaction_id,Record conf){
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("appid",APPID);
+		map.put("mch_id",MCH_ID);
+		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
+		map.put("transaction_id",transaction_id);
+		String sign= Signature.getSign(map,conf.getStr("key"));
+		map.put("sign",sign);
+		String postData= M.mapToXML(map);
+		String str=postSend(refund_query,postData);
+		Map res=new HashMap();
+		try {
+			res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -199,26 +242,9 @@ public class WXUtil {
 
 
 
-	public static void checkWXPay(){
-		Map<String,Object> map=new HashMap<String,Object>();
-		map.put("appid",APPID);
-		map.put("mch_id",MCH_ID);
-		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
-		map.put("transaction_id","1008760584201512252297616778");
-		String sign= Signature.getSign(map, "d4624c36b6795d1lxygcf0547af5443d");
-		map.put("sign",sign);
-		String postData= M.mapToXML(map);
-		try {
-			String str = HttpKit.post("https://api.mch.weixin.qq.com/pay/orderquery", postData);
-			System.out.println(str);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+
+
+
 
 
 //	public static void createMenu(){
@@ -283,15 +309,12 @@ public class WXUtil {
 //	}
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+		String str="<xml><return_code><![CDATA[SUCCESS]]></return_code>";
 
-		File f=new File(certLocatPath);
-		System.out.println(f.exists());
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
 		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
-		Record record=new Record();
-		wxRefund("1008760584201512292384335393","0f0929d278b248aa",record,2);
-		//checkWXPay();
-
+		//Record record=new Record();
+		//wxRefund("1008760584201512292384335393","0f0929d278b248aa",record,2);
 	}
 }

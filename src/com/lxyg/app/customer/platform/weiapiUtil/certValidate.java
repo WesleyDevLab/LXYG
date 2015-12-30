@@ -17,14 +17,17 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Created by ÇØË§ on 2015/12/25.
  */
 public class certValidate {
+    private static final Logger log=Logger.getLogger(certValidate.class);
 
     public static String validate(String path,String mac_id,String xml,String postURL) throws Exception{
         String text="";
+        String res="";
         KeyStore keyStore  = KeyStore.getInstance("PKCS12");
         FileInputStream instream = new FileInputStream(new File(path));
         try {
@@ -46,7 +49,6 @@ public class certValidate {
                 .setSSLSocketFactory(sslsf)
                 .build();
 
-
         try {
             HttpPost httpPost=new HttpPost(postURL);
             httpPost.setEntity(new StringEntity(xml));
@@ -56,8 +58,7 @@ public class certValidate {
                 if (entity != null) {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent()));
                     while ((text = bufferedReader.readLine()) != null) {
-                       text=new String(text.getBytes(),"utf-8");
-                        System.out.println(text);
+                        res+=new String(text.getBytes(),"utf-8");
                     }
                 }
                 EntityUtils.consume(entity);
@@ -67,7 +68,7 @@ public class certValidate {
         } finally {
             httpclient.close();
         }
-        return text;
+        return res;
     }
 
 }

@@ -127,9 +127,6 @@ public class HttpRequest {
             try {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
-                    System.out.println("--------------------------------------");
-                    System.out.println("Response content: " + EntityUtils.toString(entity, "UTF-8"));
-                    System.out.println("--------------------------------------");
                     result=EntityUtils.toString(entity, "UTF-8");
                 }
             }finally {

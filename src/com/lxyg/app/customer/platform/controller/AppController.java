@@ -2779,11 +2779,12 @@ public class AppController extends Controller {
 	}
 
 	@ActionKey("/app/user/refundOrder")
+	@Before(Tx.class)
 	public void refundOrder(){
 		log.info("refundOrder");
 		JSONObject obj= JSONObject.fromObject(getPara("info"));
 		if(!obj.containsKey("u_id")||!obj.containsKey("order_id")){
-			renderFaile("退款异常");
+			renderFaile("退款异常，参数错误");
 			return;
 		}
 		String cause="";
@@ -2793,11 +2794,21 @@ public class AppController extends Controller {
 		String order_id=obj.getString("order_id");
 		String u_id=obj.getString("u_id");
 		Record r=loadWXconfig(u_id);
-		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id,s_uuid,price from kk_order o where o.order_id=? and o.u_uuid=?",obj.getString("order_id"),obj.getString("u_id"));
+		/**查询微信/支付宝订单 是否可以删除**/
+		JSONObject res= Order.dao.isRefund(order_id, r);
+		if(!res.containsKey("flag")||!res.getBoolean("flag")){
+			renderFaile("退款异常,微信/支付宝 查询不到退款订单");
+			return;
+		}
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id,s_uuid,price from kk_order o where o.order_id=? and o.u_uuid=?", obj.getString("order_id"), obj.getString("u_id"));
 		if(o.getLong("count")!=0){
 			if(o.getInt("pay_type")==1){
-				//微信退款
-				WXUtil.wxRefund(o.getStr("alipay_no"),order_id,r,o.getBigDecimal("price").intValue());
+					//微信退款
+				Map<String,Object> resMap=WXUtil.wxRefund(res.getString("transaction_id"),order_id,r,res.getInt("cash_fee"));
+				if(!resMap.containsKey("return_code")||!resMap.get("return_code").toString().toUpperCase().equals("SUCCESS")){
+					renderFaile("退款失败");
+					return;
+				}
 			}
 			else if(o.getInt("pay_type")==2){
 				//支付宝退款
@@ -2819,11 +2830,16 @@ public class AppController extends Controller {
 			renderSuccess("退款成功", null);
 			return;
 		}
+
 		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id,price from kk_order_activity oa where oa.order_id=? and u_uuid=?", order_id, u_id);
 		if(orderActivity.getLong("count")!=0){
 			if(orderActivity.getInt("pay_type")==1){
 				//微信退款
-				WXUtil.wxRefund(orderActivity.getStr("alipay_no"),order_id,r,r.getBigDecimal("price").intValue());
+				Map<String,Object> resMap=WXUtil.wxRefund(res.getString("transaction_id"), order_id, r, res.getInt("cash_fee"));
+				if(!resMap.containsKey("return_code")||!resMap.get("return_code").toString().toUpperCase().equals("SUCCESS")){
+					renderFaile("退款失败");
+					return;
+				}
 			}
 			else if(orderActivity.getInt("pay_type")==2){
 				//支付宝退款

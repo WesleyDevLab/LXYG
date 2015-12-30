@@ -6,6 +6,8 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.util.IConstant;
 import com.lxyg.app.customer.platform.util.M;
+import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
+import net.sf.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -393,6 +395,36 @@ public class Order extends Model<Order> {
 			Db.save("kk_user_cash_log", rl);
 		}
 
+	}
+
+	public net.sf.json.JSONObject isRefund(String order_id,Record conf){
+		net.sf.json.JSONObject jsonObject=new JSONObject();
+		Map<String,Object> map=WXUtil.orderQuery(order_id,conf);
+		if(map.containsKey("return_code")&&map.get("return_code").toString().toUpperCase().equals("SUCCESS")){
+			if(map.get("trade_state").toString().toUpperCase().equals("SUCCESS")){
+				//支付成功，可以申请退款
+				jsonObject.put("flag",true);
+				jsonObject.put("cash_fee",Integer.parseInt(map.get("cash_fee").toString()));
+				jsonObject.put("transaction_id",map.get("transaction_id").toString());
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("REFUND")){
+				//已经退款
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("NOTPAY")){
+				//未支付
+
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("CLOSED")){
+				//已关闭
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("REVOKED")){
+				//已撤销
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("USERPAYING")){
+				//用户支付中
+			}
+		}
+		return jsonObject;
 	}
 
 
