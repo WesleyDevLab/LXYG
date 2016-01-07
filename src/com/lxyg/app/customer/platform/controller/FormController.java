@@ -17,6 +17,7 @@ import com.lxyg.app.customer.platform.model.User;
 import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.EmojiFilter;
 import com.lxyg.app.customer.platform.util.M;
+import com.lxyg.app.customer.platform.util.SensitivewordFilter;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
@@ -65,10 +66,12 @@ public class FormController extends Controller {
             return;
         }
         if(json.containsKey("title")){
-            form.setTitle(json.getString("title"));
+            String title=  SensitivewordFilter.filterSensitiveWord(json.getString("title"));
+            form.setTitle(title);
         }
         if(json.containsKey("content")){
-            form.setContent(EmojiFilter.filterEmoji(json.getString("content")));
+            String content=  SensitivewordFilter.filterSensitiveWord(json.getString("content"));
+            form.setContent(EmojiFilter.filterEmoji(content));
         }
         if(json.containsKey("uid")){
             form.setU_uid(json.getString("uid"));

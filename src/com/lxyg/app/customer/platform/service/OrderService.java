@@ -81,6 +81,7 @@ public class OrderService {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("shopId", suid);
 		map.put("status", status);
+		map.put("desc","desc");
 		Page<Order> os = new Order().find(map, page);
 		for (Order or : os.getList()) {
 			List<Record> res = or.getOrderItems(or.getStr("order_id"));
@@ -122,119 +123,119 @@ public class OrderService {
 		return os;
 	}
 
-	public Map<String, Object> splice2Create(String order_id) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		Order order = new Order().findById(false, order_id);
-		Shop shop = new Shop().findBysuid(order.getStr("shop_id"));
-		List<Record> rs = order.get("orderItems");
-		Double lat = order.getDouble("lat");
-		Double lng = order.getDouble("lng");
-
-		/***
-		 * 定时送
-		 * */
-		int sendType = order.getInt("send_type");
-		if (sendType == IConstant.sendType.send_type_dingshi) {
-			/***
-			 * 查找该店是否有货
-			 * */
-			String str="";
-			for(int i=0;i<rs.size();i++){
-				str+=""+rs.get(i).getInt("product_id")+",";
-			}
-			str=str.substring(0, str.length()-1);
-			List<Shop> allShops = new Shop().findShopByProductRecord(rs, lng, lat);
-			String [] strA=str.split(","); //订单中的产品
-			String [] strB= RegularUtil.unionMore(allShops);  //所有店产品的 合集
-			
-			String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
-			if(res_pro.length!=0){
-				//缺失的产品流单
-				 orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
-							"",
-							IConstant.OrderStatus.order_status_ld);
-			}
-			if(allShops.size()==0){
-				//所有店都没有 这些产品 流单
-				orderDao.updateOrder(order.getInt("orderId"),
-						IConstant.OrderStatus.order_status_ld);
-				orderDao.createLog(order_id,
-						IConstant.orderAction.order_action_lliudan,
-						IConstant.orderAction.order_type_lijisong, null, null,
-						null, IConstant.OrderStatus.order_status_ld);
-				result.put("code", 10002);
-				result.put("msg", "立即送-0-流单");
-				return result;
-			}else{
-				List<Shop> dShops = new Shop().findShopByProductShop(rs, lng, lat,order.getStr("shop_id"));//查询我关注的那家店 是否有我所需的货物
-				Shop dShop=dShops.get(0);
-				if(dShops.get(0).getLong("num")!=0){
-					/**关注商家的店 直接下单 推送*/
-					String [] hstrs=dShop.getStr("pros").split(",");
-					List<Integer> hpros= RegularUtil.getIntArray(hstrs);
-					Order hOrder = orderDao.createOrder(hpros,
-							order.getStr("order_id"), order.getStr("shop_id"),
-							IConstant.OrderStatus.order_status_dfh);
-					new JPush(IConstant.Title, IConstant.content_order_new,
-							shop.getStr("phone"), IConstant.PUSH_ONE,
-							M.pushMap(hOrder.getStr("order_id"),
-									IConstant.OrderStatus.order_status_dfh),"shop")
-					.start();
-					//所有店 去除 我关注商家的 店
-					String [] lesPros= RegularUtil.minus(strA, hstrs);//去除我关注产品店的产品
-					if(lesPros.length!=0){
-						List<Shop> lessShops=Shop.dao.findShopByProductRecord(lesPros, lng, lat);//省下的产品 查找的店
-						if(lessShops.size()!=0){
-							return orderDSS_2(lessShops, order_id,lng,lat);
-						}
-					}
-				}else{
-					return orderDSS_2(allShops, order_id,lng,lat);
-				}
-				
-			}
-		}
-		/***
-		 * 立即送
-		 * */
-		if (sendType == IConstant.sendType.send_type_jishi) {
-			List<Shop> lShops = new Shop().findShopByProductRecordDis(rs, lng, lat);
-			if (lShops.size() == 0) {
-				/***
-				 * 3公里没有店面 流单
-				 * */
-				orderDao.updateOrder(order.getInt("orderId"),
-						IConstant.OrderStatus.order_status_ld);
-				orderDao.createLog(order_id,
-						IConstant.orderAction.order_action_lliudan,
-						IConstant.orderAction.order_type_lijisong, null, null,
-						null, IConstant.OrderStatus.order_status_ld);
-				result.put("code", 10002);
-				result.put("msg", "立即送-0-流单");
-				return result;
-			} else {
-				String str="";
-				for(int i=0;i<rs.size();i++){
-					str+=""+rs.get(i).getInt("product_id")+",";
-				}
-				str=str.substring(0, str.length()-1);
-				String [] strA=str.split(","); //订单中的产品
-				String [] strB= RegularUtil.unionMore(lShops);  //所有店产品的 合集
-				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
-				if(res_pro.length!=0){
-					/**缺失的产品生成流单*/
-					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
-							"",
-							IConstant.OrderStatus.order_status_ld);
-				}
-				/***
-				 * 3公里有店面
-				 * */
-				return orderLJS_2(lShops, order_id);
-			}
-		}
-		return null;
-	}
+//	public Map<String, Object> splice2Create(String order_id) {
+//		Map<String, Object> result = new HashMap<String, Object>();
+//		Order order = new Order().findById(false, order_id);
+//		Shop shop = new Shop().findBysuid(order.getStr("shop_id"));
+//		List<Record> rs = order.get("orderItems");
+//		Double lat = order.getDouble("lat");
+//		Double lng = order.getDouble("lng");
+//
+//		/***
+//		 * 定时送
+//		 * */
+//		int sendType = order.getInt("send_type");
+//		if (sendType == IConstant.sendType.send_type_dingshi) {
+//			/***
+//			 * 查找该店是否有货
+//			 * */
+//			String str="";
+//			for(int i=0;i<rs.size();i++){
+//				str+=""+rs.get(i).getInt("product_id")+",";
+//			}
+//			str=str.substring(0, str.length()-1);
+//			List<Shop> allShops = new Shop().findShopByProductRecord(rs, lng, lat);
+//			String [] strA=str.split(","); //订单中的产品
+//			String [] strB= RegularUtil.unionMore(allShops);  //所有店产品的 合集
+//
+//			String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
+//			if(res_pro.length!=0){
+//				//缺失的产品流单
+//				 orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
+//							"",
+//							IConstant.OrderStatus.order_status_ld);
+//			}
+//			if(allShops.size()==0){
+//				//所有店都没有 这些产品 流单
+//				orderDao.updateOrder(order.getInt("orderId"),
+//						IConstant.OrderStatus.order_status_ld);
+//				orderDao.createLog(order_id,
+//						IConstant.orderAction.order_action_lliudan,
+//						IConstant.orderAction.order_type_lijisong, null, null,
+//						null, IConstant.OrderStatus.order_status_ld);
+//				result.put("code", 10002);
+//				result.put("msg", "立即送-0-流单");
+//				return result;
+//			}else{
+//				List<Shop> dShops = new Shop().findShopByProductShop(rs, lng, lat,order.getStr("shop_id"));//查询我关注的那家店 是否有我所需的货物
+//				Shop dShop=dShops.get(0);
+//				if(dShops.get(0).getLong("num")!=0){
+//					/**关注商家的店 直接下单 推送*/
+//					String [] hstrs=dShop.getStr("pros").split(",");
+//					List<Integer> hpros= RegularUtil.getIntArray(hstrs);
+//					Order hOrder = orderDao.createOrder(hpros,
+//							order.getStr("order_id"), order.getStr("shop_id"),
+//							IConstant.OrderStatus.order_status_dfh);
+//					new JPush(IConstant.Title, IConstant.content_order_new,
+//							shop.getStr("phone"), IConstant.PUSH_ONE,
+//							M.pushMap(hOrder.getStr("order_id"),
+//									IConstant.OrderStatus.order_status_dfh),"shop")
+//					.start();
+//					//所有店 去除 我关注商家的 店
+//					String [] lesPros= RegularUtil.minus(strA, hstrs);//去除我关注产品店的产品
+//					if(lesPros.length!=0){
+//						List<Shop> lessShops=Shop.dao.findShopByProductRecord(lesPros, lng, lat);//省下的产品 查找的店
+//						if(lessShops.size()!=0){
+//							return orderDSS_2(lessShops, order_id,lng,lat);
+//						}
+//					}
+//				}else{
+//					return orderDSS_2(allShops, order_id,lng,lat);
+//				}
+//
+//			}
+//		}
+//		/***
+//		 * 立即送
+//		 * */
+//		if (sendType == IConstant.sendType.send_type_jishi) {
+//			List<Shop> lShops = new Shop().findShopByProductRecordDis(rs, lng, lat);
+//			if (lShops.size() == 0) {
+//				/***
+//				 * 3公里没有店面 流单
+//				 * */
+//				orderDao.updateOrder(order.getInt("orderId"),
+//						IConstant.OrderStatus.order_status_ld);
+//				orderDao.createLog(order_id,
+//						IConstant.orderAction.order_action_lliudan,
+//						IConstant.orderAction.order_type_lijisong, null, null,
+//						null, IConstant.OrderStatus.order_status_ld);
+//				result.put("code", 10002);
+//				result.put("msg", "立即送-0-流单");
+//				return result;
+//			} else {
+//				String str="";
+//				for(int i=0;i<rs.size();i++){
+//					str+=""+rs.get(i).getInt("product_id")+",";
+//				}
+//				str=str.substring(0, str.length()-1);
+//				String [] strA=str.split(","); //订单中的产品
+//				String [] strB= RegularUtil.unionMore(lShops);  //所有店产品的 合集
+//				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
+//				if(res_pro.length!=0){
+//					/**缺失的产品生成流单*/
+//					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
+//							"",
+//							IConstant.OrderStatus.order_status_ld);
+//				}
+//				/***
+//				 * 3公里有店面
+//				 * */
+//				return orderLJS_2(lShops, order_id);
+//			}
+//		}
+//		return null;
+//	}
 
 
 	/**定时送下单**/
@@ -420,137 +421,137 @@ public class OrderService {
 	}
 
 
-	public Map<String, Object> splice2Create_2(String order_id) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		Order order = new Order().findById(false, order_id);
-		Shop shop = new Shop().findBysuid(order.getStr("shop_id"));
-		List<Record> rs = order.get("orderItems");
-		Double lat = order.getDouble("lat");
-		Double lng = order.getDouble("lng");
-
-		fb_splice2order(order_id);
-
-
-		for(int i=0;i<rs.size();i++){
-			if(rs.get(i).getInt("is_norm")==2){
-				rs.remove(i);
-				i--;
-			}
-		}
-		if(rs.size()==0){
-			result.put("code", 10005);
-			result.put("msg", "无标准产品");
-			return result;
-		}
-		/***
-		 * 定时送
-		 * */
-		int sendType = order.getInt("send_type");
-		if (sendType == IConstant.sendType.send_type_dingshi) {
-			/***
-			 * 查找该店是否有货
-			 * */
-			String str="";
-			for(int i=0;i<rs.size();i++){
-				str+=""+rs.get(i).getInt("product_id")+",";
-			}
-			str=str.substring(0, str.length()-1);
-			List<Shop> allShops = new Shop().findShopByProductRecord(rs, lng, lat);
-			if(allShops.size()==0){
-				//所有店都没有 这些产品 流单
-				orderDao.updateOrder(order.getInt("orderId"),
-						IConstant.OrderStatus.order_status_ld);
-				orderDao.createLog(order_id,
-						IConstant.orderAction.order_action_lliudan,
-						IConstant.orderAction.order_type_lijisong, null, null,
-						null, IConstant.OrderStatus.order_status_ld);
-
-				result.put("code", 10002);
-				result.put("msg", "立即送-0-流单");
-				return result;
-			}else{
-				String [] strA=str.split(","); //订单中的产品
-				String [] strB= RegularUtil.unionMore(allShops);  //所有店产品的 合集
-				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
-				if(res_pro.length!=0){
-					//缺失的产品流单
-					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
-							"",
-							IConstant.OrderStatus.order_status_ld);
-				}
-				List<Shop> dShops = new Shop().findShopByProductShop(rs, lng, lat,order.getStr("shop_id"));//查询我关注的那家店 是否有我所需的货物
-				Shop dShop=dShops.get(0);
-				if(dShops.get(0).getLong("num")!=0){
-					/**关注商家的店 直接下单 推送*/
-					String [] hstrs=dShop.getStr("pros").split(",");
-					List<Integer> hpros= RegularUtil.getIntArray(hstrs);
-					Order hOrder = orderDao.createOrder(hpros,
-							order.getStr("order_id"), order.getStr("shop_id"),
-							IConstant.OrderStatus.order_status_dfh);
-
-					new JPush(IConstant.Title, IConstant.content_order_new,
-							shop.getStr("phone"), IConstant.PUSH_ONE,
-							M.pushMap(hOrder.getStr("order_id"),
-									IConstant.OrderStatus.order_status_dfh),"shop")
-							.start();
-
-					pushBySdk(shop.getStr("phone"),hOrder.getStr("order_id"),1);
-
-					//所有店 去除 我关注商家的 店
-					String [] lesPros= RegularUtil.minus(strA, hstrs);//去除我关注产品店的产品
-					if(lesPros.length!=0){
-						List<Shop> lessShops=Shop.dao.findShopByProductRecord(lesPros, lng, lat);//省下的产品 查找的店
-						if(lessShops.size()!=0){
-							return orderDSS(lessShops, order_id,lng,lat);
-						}
-					}
-				}else{
-					return orderDSS(allShops, order_id,lng,lat);
-				}
-
-			}
-		}
-		/***
-		 * 立即送
-		 * */
-		if (sendType == IConstant.sendType.send_type_jishi) {
-			List<Shop> lShops = new Shop().findShopByProductRecordDis(rs, lng, lat);
-			if (lShops.size() == 0) {
-				/***
-				 * 3公里没有店面 流单
-				 * */
-				orderDao.updateOrder(order.getInt("orderId"),
-						IConstant.OrderStatus.order_status_ld);
-				orderDao.createLog(order_id,
-						IConstant.orderAction.order_action_lliudan,
-						IConstant.orderAction.order_type_lijisong, null, null,
-						null, IConstant.OrderStatus.order_status_ld);
-				result.put("code", 10002);
-				result.put("msg", "立即送-0-流单");
-				return result;
-			} else {
-				String str="";
-				for(int i=0;i<rs.size();i++){
-					str+=""+rs.get(i).getInt("product_id")+",";
-				}
-				str=str.substring(0, str.length()-1);
-				String [] strA=str.split(","); //订单中的产品
-				String [] strB= RegularUtil.unionMore(lShops);  //所有店产品的 合集
-				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
-				if(res_pro.length!=0){
-					/**缺失的产品生成流单*/
-					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
-							"",
-							IConstant.OrderStatus.order_status_ld);
-				}
-				/***
-				 * 3公里有店面
-				 * */
-				return orderLJS(lShops, order_id);
-			}
-		}
-		return null;
-	}
+//	public Map<String, Object> splice2Create_2(String order_id) {
+//		Map<String, Object> result = new HashMap<String, Object>();
+//		Order order = new Order().findById(false, order_id);
+//		Shop shop = new Shop().findBysuid(order.getStr("shop_id"));
+//		List<Record> rs = order.get("orderItems");
+//		Double lat = order.getDouble("lat");
+//		Double lng = order.getDouble("lng");
+//
+//		fb_splice2order(order_id);
+//
+//
+//		for(int i=0;i<rs.size();i++){
+//			if(rs.get(i).getInt("is_norm")==2){
+//				rs.remove(i);
+//				i--;
+//			}
+//		}
+//		if(rs.size()==0){
+//			result.put("code", 10005);
+//			result.put("msg", "无标准产品");
+//			return result;
+//		}
+//		/***
+//		 * 定时送
+//		 * */
+//		int sendType = order.getInt("send_type");
+//		if (sendType == IConstant.sendType.send_type_dingshi) {
+//			/***
+//			 * 查找该店是否有货
+//			 * */
+//			String str="";
+//			for(int i=0;i<rs.size();i++){
+//				str+=""+rs.get(i).getInt("product_id")+",";
+//			}
+//			str=str.substring(0, str.length()-1);
+//			List<Shop> allShops = new Shop().findShopByProductRecord(rs, lng, lat);
+//			if(allShops.size()==0){
+//				//所有店都没有 这些产品 流单
+//				orderDao.updateOrder(order.getInt("orderId"),
+//						IConstant.OrderStatus.order_status_ld);
+//				orderDao.createLog(order_id,
+//						IConstant.orderAction.order_action_lliudan,
+//						IConstant.orderAction.order_type_lijisong, null, null,
+//						null, IConstant.OrderStatus.order_status_ld);
+//
+//				result.put("code", 10002);
+//				result.put("msg", "立即送-0-流单");
+//				return result;
+//			}else{
+//				String [] strA=str.split(","); //订单中的产品
+//				String [] strB= RegularUtil.unionMore(allShops);  //所有店产品的 合集
+//				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
+//				if(res_pro.length!=0){
+//					//缺失的产品流单
+//					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
+//							"",
+//							IConstant.OrderStatus.order_status_ld);
+//				}
+//				List<Shop> dShops = new Shop().findShopByProductShop(rs, lng, lat,order.getStr("shop_id"));//查询我关注的那家店 是否有我所需的货物
+//				Shop dShop=dShops.get(0);
+//				if(dShops.get(0).getLong("num")!=0){
+//					/**关注商家的店 直接下单 推送*/
+//					String [] hstrs=dShop.getStr("pros").split(",");
+//					List<Integer> hpros= RegularUtil.getIntArray(hstrs);
+//					Order hOrder = orderDao.createOrder(hpros,
+//							order.getStr("order_id"), order.getStr("shop_id"),
+//							IConstant.OrderStatus.order_status_dfh);
+//
+//					new JPush(IConstant.Title, IConstant.content_order_new,
+//							shop.getStr("phone"), IConstant.PUSH_ONE,
+//							M.pushMap(hOrder.getStr("order_id"),
+//									IConstant.OrderStatus.order_status_dfh),"shop")
+//							.start();
+//
+//					pushBySdk(shop.getStr("phone"),hOrder.getStr("order_id"),1);
+//
+//					//所有店 去除 我关注商家的 店
+//					String [] lesPros= RegularUtil.minus(strA, hstrs);//去除我关注产品店的产品
+//					if(lesPros.length!=0){
+//						List<Shop> lessShops=Shop.dao.findShopByProductRecord(lesPros, lng, lat);//省下的产品 查找的店
+//						if(lessShops.size()!=0){
+//							return orderDSS(lessShops, order_id,lng,lat);
+//						}
+//					}
+//				}else{
+//					return orderDSS(allShops, order_id,lng,lat);
+//				}
+//
+//			}
+//		}
+//		/***
+//		 * 立即送
+//		 * */
+//		if (sendType == IConstant.sendType.send_type_jishi) {
+//			List<Shop> lShops = new Shop().findShopByProductRecordDis(rs, lng, lat);
+//			if (lShops.size() == 0) {
+//				/***
+//				 * 3公里没有店面 流单
+//				 * */
+//				orderDao.updateOrder(order.getInt("orderId"),
+//						IConstant.OrderStatus.order_status_ld);
+//				orderDao.createLog(order_id,
+//						IConstant.orderAction.order_action_lliudan,
+//						IConstant.orderAction.order_type_lijisong, null, null,
+//						null, IConstant.OrderStatus.order_status_ld);
+//				result.put("code", 10002);
+//				result.put("msg", "立即送-0-流单");
+//				return result;
+//			} else {
+//				String str="";
+//				for(int i=0;i<rs.size();i++){
+//					str+=""+rs.get(i).getInt("product_id")+",";
+//				}
+//				str=str.substring(0, str.length()-1);
+//				String [] strA=str.split(","); //订单中的产品
+//				String [] strB= RegularUtil.unionMore(lShops);  //所有店产品的 合集
+//				String [] res_pro= RegularUtil.minus(strA, strB);//缺失的产品
+//				if(res_pro.length!=0){
+//					/**缺失的产品生成流单*/
+//					orderDao.createOrder(RegularUtil.getIntArray(res_pro), order_id,
+//							"",
+//							IConstant.OrderStatus.order_status_ld);
+//				}
+//				/***
+//				 * 3公里有店面
+//				 * */
+//				return orderLJS(lShops, order_id);
+//			}
+//		}
+//		return null;
+//	}
 
 
 	/**定时送下单**/

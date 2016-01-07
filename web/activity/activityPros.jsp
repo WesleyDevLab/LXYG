@@ -35,7 +35,6 @@
         }
     </style>
     <script>
-        console.info();
         var imgCover="";
         function openTable(ap_id){
             $.post("${path}/activity/aProduct",{"ap_id":ap_id},function(result){
@@ -63,7 +62,6 @@
             $("#img").html("");
             if(type==1){
                 var files=document.getElementById('coverFile').files;
-                console.info(files);
                 for(var i=0;i<files.length;i++){
                     var file=files[i];
                     var fileReader=new FileReader();
@@ -86,6 +84,10 @@
                 }
                 imgs=selectFile(files);
             }
+        }
+
+        function delImg(){
+            alert(1);
         }
 
         function selectFile(files){
@@ -210,6 +212,7 @@
                 <label class="control-label">产品图片：</label>
                 <input id="coverFile" name="file"  type="file" onchange="showImg(1)" /><p class="help-block red" >* 产品图仅限一张</p><br/>
                 <div class="controls" id="img">
+
                 </div>
             </div>
 

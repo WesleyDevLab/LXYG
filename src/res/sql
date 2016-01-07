@@ -167,3 +167,14 @@ PRIMARY  KEY (id)
 
 ALTER TABLE kk_order add remark VARCHAR (255);
 ALTER TABLE kk_order_activity add remark VARCHAR (255);
+
+ALTER TABLE  kk_shop_product add sort_id int(4) DEFAULT 1;
+
+DROP TABLE if EXISTS kk_form_irr;
+CREATE TABLE kk_form_irr(
+  id int(11) NOT null AUTO_INCREMENT,
+  form_id int(11) not null,
+  uid VARCHAR(17) not null,
+  cause VARCHAR(255),
+  PRIMARY  KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

@@ -29,8 +29,8 @@ public class Goods extends Model<Goods> {
 
 
 	public Goods findById(int productId){
-		Goods gs=new Goods().findFirst("select id as productId,name,title,price," +
-				"p_type_id,p_brand_id,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +
+		Goods gs=new Goods().findFirst("select id as productId,name,title,price,p_category_id," +
+				"p_type_id,p_brand_id,p_category_name,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +
 				"hide,index_show,server_id,server_name,payment,create_time,cash_pay,market_price,code from kk_product p where p.id=? ",new Object[]{productId});
 		gs.put("productImgs", gs.getProductImgs());
 	    return gs;
@@ -83,7 +83,10 @@ public class Goods extends Model<Goods> {
 	
 	public boolean insertImgDetail(int productId,String imgUrl,String alt){
 		String sql="insert into kk_product_img(product_id,img_url,create_time,alt) values(?,?,?,?)";
-		int i= Db.update(sql, new Object[]{productId, ConfigUtils.upYunServer+ imgUrl, new Date(), alt});
+		if(!imgUrl.startsWith(ConfigUtils.upYunServer)){
+			imgUrl=ConfigUtils.upYunServer+imgUrl;
+		}
+		int i= Db.update(sql, new Object[]{productId,imgUrl, new Date(), alt});
 		if(i!=0){
 			return true;
 		}else{

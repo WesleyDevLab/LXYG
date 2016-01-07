@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    <title></title>
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" href="css/us.css">
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            var img = new Image();
+            img.src =$('.img').attr("src") ;
+            var w = img.width;
+            var h = img.height;
+            var screen_width= $(window).width();
+            $(".img").css("height",screen_width*(h/w)*0.8);
+            $(".img").css("width",screen_width);
+
+
+            $(".icon").css("width",screen_width/11);
+            $(".icon").css("height",screen_width/11);
+
+            $(".img_mt").css("width",screen_width);
+            $(".img_mt").css("height",screen_width*(h/w));
+
+            $(".img_zxfw").css("width",screen_width*0.75);
+            $(".img_zxfw").css("height",screen_width*7/8*0.75);
+
+            $(".app").css("width",screen_width *0.4);
+            $(".app").css("height",screen_width*7/8*0.4);
+
+
+        });
+    </script>
+</head>
+<body>
+
+<div data-role="page" class="main">
+    <div data-role="content" class="c ui-title">
+        <label class="lb">关于蜂域购</label>
+    </div>
+
+    <div class="block">
+        <div data-role="content"  class="c">
+            <img src="css/images/1.png" class="img">
+        </div>
+
+        <div class="c_1" style="text-align: center">
+            <label class="lb">球赛开始，零食、啤酒走起！呀！冰箱里没有吃的喝的了！咋办？去附近的便利店买吧</label>
+        </div>
+
+        <div data-role="content" style="border: 1.2em">
+            <div class="ui-grid-c">
+                <div class="ui-block-a">
+                    <div style="border-right: 0.1em solid grey;">
+                        <img src="css/images/water.png" class="icon">
+                    </div>
+                </div>
+                <div class="ui-block-b" style="border-right: 0.1em solid grey">
+                    <div>
+                        <img src="css/images/xh.png" class="icon" >
+                    </div>
+                </div>
+                <div class="ui-block-c" style="border-right: 0.1em solid grey">
+                    <div>
+                        <img src="css/images/wj.png"class="icon" >
+                    </div>
+                </div>
+                <div class="ui-block-d">
+                    <div>
+                        <img src="css/images/foot.png" class="icon">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="c_1" style="text-align: center">
+            <label class="lb">球赛开始，零食、啤酒走起！呀！冰箱里没有吃的喝的了！咋办？去附近的便利店买吧</label>
+        </div>
+
+        <div data-role="content"  class="c">
+            <img src="css/images/mt.png" class="img_mt">
+        </div>
+    </div>
+
+    <div class="block">
+        <div data-role="content" style="text-align: center"  class="c">
+
+            <div style="padding-left: 1em;border-bottom: 0.2em solid #C7C6CB">
+                <div style="border-left: 0.2em solid #FCDF01;text-align: left">
+                    <label class="lb" style="margin-left: 1em;margin-bottom: 1em">尊享服务</label>
+                </div>
+            </div>
+            <div class="c_1" style="text-align: left">
+                <label class="lb">球赛开始，零食、啤酒走起！呀！冰箱里没有吃的喝的了！咋办？去附近的便利店买吧</label>
+            </div>
+            <div>
+               <img src="css/images/zxfw.png" class="img_zxfw">
+            </div>
+        </div>
+    </div>
+
+    <div class="block">
+        <div data-role="content" style="text-align: center" class="c">
+            <div class="c_2">
+                <label class="lb">把蜂域·购分享给更多的朋友吧，一起享受快乐</label>
+            </div>
+            <div>
+                <img src="css/images/app.png" class="app">
+                <label>更多的惊喜等你来</label>
+                <label>扫描下载蜂域·购客户端</label>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

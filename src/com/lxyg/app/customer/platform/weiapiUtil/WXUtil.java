@@ -217,12 +217,12 @@ public class WXUtil {
 		return res;
 	}
 
-	public static  Map<String,Object> refundQuery(String transaction_id,Record conf){
+	public static  Map<String,Object> refundQuery(String out_trade_no,Record conf){
 		Map<String,Object> map=new HashMap<String,Object>();
 		map.put("appid",APPID);
 		map.put("mch_id",MCH_ID);
 		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
-		map.put("transaction_id",transaction_id);
+		map.put("out_trade_no",out_trade_no);
 		String sign= Signature.getSign(map,conf.getStr("key"));
 		map.put("sign",sign);
 		String postData= M.mapToXML(map);

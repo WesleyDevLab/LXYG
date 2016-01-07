@@ -14,14 +14,14 @@ import java.util.*;
 
 public class Order extends Model<Order> {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 107L;
 	public OrderCache orderCache=new OrderCache();
 	public static final Order dao = new Order();
 	public static final Shop shopDao=new Shop();
 	SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	
+
 	private static final String sql = "select o.id as orderId,order_no,order_id,order_status,create_time,modify_time,finish_time,"
 			+ "price,order_type,u_uuid,s_uuid as shop_id,address_id,shop_name,pay_type,pay_name,send_type,send_id,"
 			+ "send_name,address,send_time ,cash_pay,is_rob,receive_code "
@@ -40,11 +40,11 @@ public class Order extends Model<Order> {
 			+ "ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng ,ua.name ,ua.phone,u.name as user_name, u.phone as user_phone,s.phone as shop_phone  ";
 	private static final String sql_all_from = "FROM kk_order o LEFT JOIN kk_user_address ua ON o.address_id = ua.id left join kk_user u on o.u_uuid=u.uuid left join kk_shop s on o.s_uuid=s.uuid where 1=1 ";
 
-	
+
 	private static final String sql_user="select o.id as orderId,o.order_no,o.order_id,o.order_status,o.create_time,o.finish_time,o.send_goods_time," +
 			"o.modify_time,o.finish_time,o.price,o.cash_pay,o.order_type,o.u_uuid,o.s_uuid as shop_id,o.receive_code,o.address_id,o.shop_name,o.pay_type,o.pay_name,o.send_type,o.send_id,"
 			+ "o.send_name,o.address,o.send_time,o.is_rob,o.original_s_uid,o.original_order_id,u.phone,u.name,u.head_img,u.cash_pay,u.uuid,u.wechat_id from kk_order o left join kk_user u on o.u_uuid=u.uuid where o.order_id = ? ";
-	
+
 	public Order findById(boolean lazy, String order_id) {
 		if (!lazy) {
 			Order o = dao.findFirst(sql_address, new Object[] { order_id });
@@ -60,14 +60,14 @@ public class Order extends Model<Order> {
 		}
 		return null;
 	}
-	
-	
+
+
 	public Order findByStatus(String orderId,int status){
 		String str=sql_user+" and o.order_status=?";
 		Order o=dao.findFirst(str,new Object[]{orderId,status});
 		return o;
 	}
-	
+
 	public List<Record> getOrderItemsV2(String orderId) {
 		return Db
 				.find("select oi.id as orderItemId,oi.product_id,oi.product_number,oi.product_price,oi.cash_pay,oi.product_pay,p.name,p.cover_img,oi.is_norm  "
@@ -169,7 +169,10 @@ public class Order extends Model<Order> {
 			String userStatus=map.get("userStatus").toString();
 			where +=" and o.order_status in "+userStatus +" group by o.order_id order by o.create_time desc";
 		}
-
+		if(map.containsKey("desc")){
+			String desc=map.get("desc").toString();
+			where +=" order by o.create_time "+desc;
+		}
 		Object[] o = new Object[list.size()];
 
 		for (int i = 0; i < list.size(); i++) {
@@ -177,6 +180,7 @@ public class Order extends Model<Order> {
 		}
 		Page<Order> os = new Order().paginate(page, IConstant.PAGE_DATA,
 				sql_all_select, sql_all_from + where, o);
+		System.out.println(os.getList());
 		return os;
 	}
 
@@ -199,9 +203,9 @@ public class Order extends Model<Order> {
 		Record r = Db.findFirst(sql, new Object[]{uuid, uuid, uuid, uuid});
 		return r;
 	}
-	
+
 	public Order createOrder(List<Integer> L,String orderId,String shopId,int status){
-		
+
 		Order order = dao.findById(false, orderId);
 		String order_id= M.getOrderId();
 		Order nOrder=order;
@@ -244,7 +248,7 @@ public class Order extends Model<Order> {
 		Order order = dao.findById(false, orderId);
 		String order_id= M.getOrderId();
 		Order nOrder=order;
-		
+
 		nOrder.set("id", null);
 		nOrder.set("order_status", status);
 		nOrder.set("s_uuid", shopId);
@@ -302,8 +306,8 @@ public class Order extends Model<Order> {
 		dao.createLog(orderId, IConstant.orderAction.order_action_newOrder, order.getStr("send_name"), pids, null,order_id,status);
 		return nOrder;
 	}
-	
-	
+
+
 	public void updateOrder(int id,int status){
 		Order order = new Order();
 		order.set("id", id);
@@ -315,7 +319,7 @@ public class Order extends Model<Order> {
 		order.set("order_status",status);
 		order.update();
 	}
-	
+
 	public void createLog(String order_id,String action,String order_type,String product,String cache_id,String newOrderId,int status){
 		Record r=new Record();
 		r.set("order_id", order_id);
@@ -342,39 +346,39 @@ public class Order extends Model<Order> {
 		Db.save("kk_order_action_log", r);
 	}
 
-	public void createListener(Order o,String msg){
-		String order_id=o.getStr("order_id");
-
-		if(order_id!=null&&!order_id.equals("")){
-			Record r1= Db.findFirst("select * from kk_order_listener ol where ol.order_id=?", new Object[]{order_id});
-			if(r1!=null){
-				if(o.getInt("order_status")== IConstant.OrderStatus.order_status_ywc||
-						o.getInt("order_status")== IConstant.OrderStatus.order_status_rd){
-					Db.delete("kk_order_listener", r1);
-					return;
-				}
-				if(o.getInt("order_status")!=r1.getInt("order_status")){
-					r1.set("order_status", o.getInt("order_status"));
-					r1.set("error_msg", msg);
-					Db.update("kk_order_listener", r1);
-				}
-			}else{
-				if(o.getInt("order_status")== IConstant.OrderStatus.order_status_ywc){
-					return;
-				}
-				Record r=new Record();
-				r.set("order_id",o.getStr("order_id"));
-				r.set("s_uid",o.getStr("s_uuid"));
-				r.set("u_uid",o.getStr("u_uuid"));
-				r.set("order_status",o.getInt("order_status"));
-				r.set("order_create_time",sdf.format(o.getDate("create_time")));
-				r.set("process_status",0);
-				r.set("create_time",new Date());
-				r.set("error_msg",msg);
-				Db.save("kk_order_listener", r);
-			}
-		}
-	}
+//	public void createListener(Order o,String msg){
+//		String order_id=o.getStr("order_id");
+//
+//		if(order_id!=null&&!order_id.equals("")){
+//			Record r1= Db.findFirst("select * from kk_order_listener ol where ol.order_id=?", new Object[]{order_id});
+//			if(r1!=null){
+//				if(o.getInt("order_status")== IConstant.OrderStatus.order_status_ywc||
+//						o.getInt("order_status")== IConstant.OrderStatus.order_status_rd){
+//					Db.delete("kk_order_listener", r1);
+//					return;
+//				}
+//				if(o.getInt("order_status")!=r1.getInt("order_status")){
+//					r1.set("order_status", o.getInt("order_status"));
+//					r1.set("error_msg", msg);
+//					Db.update("kk_order_listener", r1);
+//				}
+//			}else{
+//				if(o.getInt("order_status")== IConstant.OrderStatus.order_status_ywc){
+//					return;
+//				}
+//				Record r=new Record();
+//				r.set("order_id",o.getStr("order_id"));
+//				r.set("s_uid",o.getStr("s_uuid"));
+//				r.set("u_uid",o.getStr("u_uuid"));
+//				r.set("order_status",o.getInt("order_status"));
+//				r.set("order_create_time",sdf.format(o.getDate("create_time")));
+//				r.set("process_status",0);
+//				r.set("create_time",new Date());
+//				r.set("error_msg",msg);
+//				Db.save("kk_order_listener", r);
+//			}
+//		}
+//	}
 
 	public void updateCash(String uid,int cash,String order_id){
 
@@ -402,26 +406,56 @@ public class Order extends Model<Order> {
 		Map<String,Object> map=WXUtil.orderQuery(order_id,conf);
 		if(map.containsKey("return_code")&&map.get("return_code").toString().toUpperCase().equals("SUCCESS")){
 			if(map.get("trade_state").toString().toUpperCase().equals("SUCCESS")){
-				//֧���ɹ������������˿�
+				//支付成功，可以申请退款
 				jsonObject.put("flag",true);
 				jsonObject.put("cash_fee",Integer.parseInt(map.get("cash_fee").toString()));
 				jsonObject.put("transaction_id",map.get("transaction_id").toString());
 			}
 			if(map.get("trade_state").toString().toUpperCase().equals("REFUND")){
-				//�Ѿ��˿�
+				//已经退款
 			}
 			if(map.get("trade_state").toString().toUpperCase().equals("NOTPAY")){
-				//δ֧��
+				//未支付
 
 			}
 			if(map.get("trade_state").toString().toUpperCase().equals("CLOSED")){
-				//�ѹر�
+				//已关闭
 			}
 			if(map.get("trade_state").toString().toUpperCase().equals("REVOKED")){
-				//�ѳ���
+				//已撤销
 			}
 			if(map.get("trade_state").toString().toUpperCase().equals("USERPAYING")){
-				//�û�֧����
+				//用户支付中
+			}
+		}
+		return jsonObject;
+	}
+
+	public net.sf.json.JSONObject refundQuery(String order_id,Record conf){
+		net.sf.json.JSONObject jsonObject=new JSONObject();
+		Map<String,Object> map=WXUtil.refundQuery(order_id,conf);
+		if(map.containsKey("return_code")&&map.get("return_code").toString().toUpperCase().equals("SUCCESS")){
+			if(map.get("trade_state").toString().toUpperCase().equals("SUCCESS")){
+				//支付成功，可以申请退款
+				jsonObject.put("flag",true);
+				jsonObject.put("cash_fee",Integer.parseInt(map.get("cash_fee").toString()));
+				jsonObject.put("transaction_id",map.get("transaction_id").toString());
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("REFUND")){
+				//已经退款
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("NOTPAY")){
+				//未支付
+
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("CLOSED")){
+				//已关闭
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("REVOKED")){
+				//已撤销
+			}
+			if(map.get("trade_state").toString().toUpperCase().equals("USERPAYING")){
+				//用户支付中
 			}
 		}
 		return jsonObject;

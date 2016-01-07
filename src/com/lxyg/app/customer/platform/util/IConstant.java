@@ -122,13 +122,13 @@ public interface IConstant {
 		public static final String order_status_ywc_String = "已完成";
 
 		public static final int order_status_js = 5;
-		public static final String order_status_js_String = "拒收/退款";
+		public static final String order_status_js_String = "申请 拒收/退款";
 
-		public static final int order_status_rd = 6;
-		public static final String order_status_rd_String = "让单";
+		public static final int order_status_js_in = 6;
+		public static final String order_status_rd_String = "退款中";
 		
-		public static final int order_status_ld = 7;
-		public static final String order_status_ld_String = "流单";
+		public static final int order_status_js_success = 7;
+		public static final String order_status_ld_String = "退款成功";
 
 		private static Map<Integer, String> map = new HashMap<Integer, String>();
 
@@ -138,11 +138,11 @@ public interface IConstant {
 			map.put(order_status_psz, order_status_psz_String);
 			map.put(order_status_ywc, order_status_ywc_String);
 			map.put(order_status_js, order_status_js_String);
-			map.put(order_status_rd, order_status_rd_String);
-			map.put(order_status_ld, order_status_ld_String);
+			map.put(order_status_js_in, order_status_rd_String);
+			map.put(order_status_js_success, order_status_ld_String);
 		}
 
-		public static String unusual=order_status_dfh+","+order_status_ld+","+order_status_js;
+		//public static String unusual=order_status_dfh+","+order_status_ld+","+order_status_js;
 
 		public static String get(int key) {
 			return map.get(key);

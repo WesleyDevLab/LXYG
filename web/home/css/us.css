@@ -1,0 +1,40 @@
+body{
+    border: 0px;
+    text-align: center;
+    Font-size:62.5%;
+}
+.main{
+    margin: 0 auto;
+    text-align: center;
+    float:right;
+    width: 70%;
+}
+.head{
+    text-align: center;
+}
+.lb{
+    font-size: 1.2em;
+    font-family: "Microsoft YaHei";
+}
+
+.c{
+    margin-left: -1em;
+    margin-right: -1em;
+}
+
+.c_1{
+    padding: 0.8em;
+}
+.c_2{
+    background-color: #FCDF01;
+    border-radius: 20px;
+    width:80%;
+    margin-left: 10%;
+}
+.block{
+    padding-bottom: 1em;
+    background-color: white;
+    -moz-box-shadow:2px 2px 5px #333333;
+    -webkit-box-shadow:2px 2px 5px #333333;
+    box-shadow:2px 2px 5px #333333;
+ }

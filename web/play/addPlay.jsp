@@ -20,17 +20,16 @@ var imgCover="";
 var imgs=new Array();
 
 $(document).ready(function(){
-	var type="<option value=0> 请选择... </option>";
-	var brand="<option value=0> 请选择... </option>";
+	var cat="<option value=0> 请选择... </option>";
 	var unit="<option value=0> 请选择... </option>";
 	var payType="";
 	var server="<option value=0> 请选择... </option>";
     var url="${path}/goods/loadGoodsAttribute";
     $.get(url,function(result){
        if(result.code==10010){
-	       for(var i=0;i<result.type.length;i++){
-	           type+="<option value="+result.type[i].id+"> "+result.type[i].name+" </option>"
-	       }
+		   for(var i=0;i<result.categorys.length;i++){
+			   cat+="<option value="+result.categorys[i].id+"> "+result.categorys[i].name+" </option>"
+		   }
 	        for(var i=0;i<result.unit.length;i++){
 	           unit+="<option value="+result.unit[i].id+"> "+result.unit[i].name+" </option>"
 	       }
@@ -40,7 +39,8 @@ $(document).ready(function(){
 	       for(var i=0;i<result.server.length;i++){
 	           server+="<option value="+result.server[i].id+"> "+result.server[i].type_name+" </option>"
 	       }
-	       $("#column_type").append(type);
+
+		   $("#column_cat").append(cat);
 	       $("#column_unit").append(unit);
 	       $("#column_server").append(server);
 	       $("#column_payType").append(payType);
@@ -103,70 +103,6 @@ function uploadImg(path,file){
 };
 
 
-
-
-
-<%--$(function(){--%>
-	<%--$("#img").click(function(){--%>
-		<%--$("#coverFile").click();--%>
-	<%--});--%>
-	<%--$("#coverFile").fileupload({--%>
-		<%--url: "http://upload.qiniu.com/",--%>
-		<%--formData:{--%>
-			<%--"token": "${token}"--%>
-		<%--},--%>
-		<%--done: function (e, data) {--%>
-			<%--$("#img").html("上传成功,读取中...");--%>
-			<%--if(data.result.key && data.result.hash){--%>
-				<%--imgCover=data.result.key;--%>
-				<%--var url=serverUrl+data.result.key--%>
-				<%--$("#imgs").append("<img key='"+data.result.key+"' src='"+url+"' style='width:100px;height:100px;padding:5px' />")--%>
-			<%--}else{--%>
-				<%--alert("上传失败");--%>
-			<%--}--%>
-		<%--},--%>
-		<%--progressall: function (e, data) {--%>
-			<%--var progress = data.loaded / data.total;--%>
-		<%--},--%>
-		<%--start:function(e){--%>
-			<%--$("#img").html("上传中...");--%>
-		<%--}--%>
-	<%--});--%>
-<%--});--%>
-
-
- <%--var i=0;--%>
-<%--$(function(){--%>
-   <%--$("#details").click(function(){--%>
-		<%--$("#coverFiles").click();--%>
-	<%--});--%>
-   <%--$("#coverFiles").fileupload({--%>
-        <%--url: "http://upload.qiniu.com/",--%>
-        <%--formData:{--%>
-        	<%--"token": "${token}"--%>
-        <%--},--%>
-        <%--done: function (e, data) {--%>
-        	<%--$("#details").html("上传成功,读取中...");--%>
-	        <%--if(data.result.key && data.result.hash){--%>
-	        <%--var url=serverUrl+data.result.key--%>
-	           <%--$("#imgss").append("<img key='"+data.result.key+"' src='"+url+"' style='width:100px;height:100px;padding:5px'/>");--%>
-        	   <%--imgs[i]=data.result.key;--%>
-        	   <%--i++;--%>
-	        <%--}else{--%>
-				<%--alert("上传失败");--%>
-	        <%--}--%>
-        <%--},--%>
-        <%--progressall: function (e, data) {--%>
-            <%--var progress = data.loaded / data.total;--%>
-        <%--},--%>
-        <%--start:function(e){--%>
-        	<%--$("#details").html("上传中...");--%>
-        <%--}--%>
-        <%----%>
-    <%--});--%>
- <%----%>
-<%--});--%>
-
 var editor;
 KindEditor.ready(function(K) {
 	editor = K.create('textarea[name="play.content"]',
@@ -185,7 +121,26 @@ KindEditor.ready(function(K) {
 	});
 });
 
-function load(data){
+function loadType(data){
+	$.post("${path}/goods/loadTypeByCat",{"catId":data},function(result){
+		var type="";
+		$("#column_type").html(type);
+		if(result.code==10002){
+			if(result.types.length==0){
+				$("#column_type").append("<option  selected='selected' value=0>暂无</option>");
+			}else{
+				for(var i=0;i<result.types.length;i++){
+					type+="<option  selected='selected' value="+result.types[i].id+">"+result.types[i].name+" </option>"
+				}
+				$("#column_type").append(type);
+				$("#column_brand").html("");
+			}
+		}
+	});
+}
+
+
+function loadBrand(data){
    $.post("${path}/goods/loadBrandByType",{"typeId":data},function(result){
       var brand="";
       $("#column_brand").html(brand);
@@ -213,10 +168,13 @@ function checkForm() {
 	var market_price=$("#market_price").val();
 	var cash_pay=$("#cash_pay").val();
 	var code=$("#market_code").val();
-	
+
+	var catText=$("#column_cat").find("option:selected").text();
+	var catValue=$("#column_cat").val();
+
 	var typeText=$("#column_type").find("option:selected").text();
 	var typeValue=$("#column_type").val();
-	
+
 	var brandText=$("#column_brand").find("option:selected").text();
 	var brandValue=$("#column_brand").val();
 	
@@ -242,8 +200,7 @@ function checkForm() {
 	   payType+="{payId:"+key[k]+",payName:"+value[k]+"},"
 	}	
 	payType=payType.substring(0, payType.length-1)+"]";
-	
-	
+
 	var imgDetail="";
 	if(imgs.length!=0){
 	    imgDetail+="[";
@@ -285,6 +242,7 @@ function checkForm() {
 	   alert("选择产品来源 ！");
 	   return false;
 	}
+
 	if(typeValue==0){
 	   alert("选择产品类型 ！");
 	   return false;
@@ -299,7 +257,7 @@ function checkForm() {
 	}
 	
 	$.post("${path}/goods/add",{"name":name,"title":title,"price":price*100,"marketPrice":market_price*100,
-	           "typeId":typeValue,"code":code,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"brandName":brandText,"descripation":content,
+	           "typeId":typeValue,"catId":catValue,"code":code,"brandId":brandValue,"unitId":unitValue,"typeName":typeText,"catName":catText,"brandName":brandText,"descripation":content,
 	           "unitName":unitText,"payment":payType ,"serverId":serverValue,"serverName":serverText,
 	           "cashPay":cash_pay,"isShow":isShow,cover:imgCover,"imgs":imgDetail},
 	function(result){
@@ -312,10 +270,6 @@ function checkForm() {
 	      alert(result.message);
 	   }
 	});
-
-
-
-
 
 }
 </script>
@@ -388,9 +342,17 @@ function checkForm() {
 						</div>
 
 						<div class="control-group">
+							<label class="control-label" >产品主类型：</label>
+							<div class="controls">
+								<select name="play.columnid" id="column_cat" onchange="loadType(this.value)">
+								</select>
+							</div>
+						</div>
+
+						<div class="control-group">
 							<label class="control-label" >产品类型：</label>
 							<div class="controls">
-								<select name="play.columnid" id="column_type" onchange="load(this.value)">
+								<select name="play.columnid" id="column_type" onchange="loadBrand(this.value)">
 								</select>
 							</div>
 						</div>
