@@ -114,6 +114,8 @@ public class HttpRequest {
         }
         return result;
     }
+
+
     public static String postSend(String url,String postData){
         String result="";
         httpPost=new HttpPost(url);

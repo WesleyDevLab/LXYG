@@ -7,6 +7,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.alipay.util.AlipayNotify;
 import com.lxyg.app.customer.platform.model.Order;
+import com.lxyg.app.customer.platform.model.OrderActivity;
 import com.lxyg.app.customer.platform.model.Shop;
 import com.lxyg.app.customer.platform.service.OrderService;
 import com.lxyg.app.customer.platform.util.ConfigUtils;
@@ -64,7 +65,15 @@ public class alipayController extends Controller {
 				orderId=request.getParameter("orderId");
 				if(params.containsKey("out_trade_no")){
 					orderId=request.getParameter("out_trade_no");
-					OrderC(orderId, alipayNo);
+					Order o=new Order().dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
+					if(o.getLong("count")!=0){
+						OrderC(orderId, alipayNo);
+						return;
+					}
+					Record record= Db.findFirst("select count(*) as count from kk_order_activity oa where oa.order_id=?",orderId);
+					if(record.getLong("count")!=0){
+						activtyOrder(orderId,alipayNo);
+					}
 				}
 				log.error("----订单Id:"+orderId);
 			}
@@ -91,9 +100,11 @@ public class alipayController extends Controller {
 			String notifyJson = new String(buffer);
 			log.error("notifyJson:"+notifyJson);
 			Map<String,Object> map=XMLParser.getMapFromXML(notifyJson);
+
 			if(map.get("result_code").toString().equals("SUCCESS")){
 				String orderId=map.get("out_trade_no").toString();
 				String wxPayNo=map.get("transaction_id").toString();
+
 				Order o=new Order().dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
 				if(o.getLong("count")!=0){
 					OrderC(orderId, wxPayNo);
@@ -118,25 +129,26 @@ public class alipayController extends Controller {
 
 	public void activtyOrder(String orderId,String payNo){
 		log.error("activtyOrder");
-		Record record=Db.findFirst("select * from kk_order_activity oa where oa.order_id=?",orderId);
-		if(record==null){
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select * from kk_order_activity oa where oa.order_id=?",orderId);
+		log.error(orderActivity);
+		if(orderActivity==null){
 			log.error("--异常--");
 			renderText("success");
 			return;
 		}
-		if(record.getInt("order_status")!=-1){
+		if(orderActivity.getInt("order_status")!=IConstant.OrderStatus.order_status_chushi){
 			log.error("--订单状态异常--");
 			renderText("success");
 			return;
 		}
 		boolean ub=false;
-		if(record.getStr("alipay_no")==null){
+		if(orderActivity.getStr("alipay_no")==null){
 			log.error("--订单状态修改   正常状态--");
-			record.set("id", record.getInt("id"));
-			record.set("order_status", IConstant.OrderStatus.order_status_dfh);
-			record.set("alipay_no",payNo);
-			record.set("pay_time", new Date());
-			ub=Db.update("kk_order_activity",record);
+			orderActivity.set("id", orderActivity.getInt("id"));
+			orderActivity.set("order_status", IConstant.OrderStatus.order_status_dfh);
+			orderActivity.set("alipay_no",payNo);
+			orderActivity.set("pay_time", new Date());
+			orderActivity.update();
 		}
 		if(ub){
 			renderText("success");
@@ -147,6 +159,7 @@ public class alipayController extends Controller {
 	public void OrderC(String orderId,String payNo){
 		log.error("OrderC");
 		Order o=new Order().findById(true, orderId);
+
 		if(o==null){
 			log.error("--异常--");	
 			renderText("success");

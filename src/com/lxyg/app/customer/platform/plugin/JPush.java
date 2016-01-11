@@ -6,7 +6,9 @@ import com.lxyg.app.customer.platform.JPush.JPushKit;
 import java.util.Map;
 
 public class JPush implements IPlugin {
-	public JPush() {}
+	public JPush() {
+
+	}
 	public String Content;
 	public String Title;
 	public String [] alias;
@@ -42,7 +44,6 @@ public class JPush implements IPlugin {
 		this.pushType=pushType;
 	}
 	public boolean stop() {
-
 		return true;
 	}
 

@@ -180,7 +180,6 @@ public class Order extends Model<Order> {
 		}
 		Page<Order> os = new Order().paginate(page, IConstant.PAGE_DATA,
 				sql_all_select, sql_all_from + where, o);
-		System.out.println(os.getList());
 		return os;
 	}
 

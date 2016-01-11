@@ -89,8 +89,10 @@
         }
 
         function showTable(obj) {
+
+
+
             var o = res[obj.val()];
-            console.info(o);
             var cat_id= o.p_category_id;
             var type="";
             $.post("${path}/goods/loadGoodsAttribute",{"catId":cat_id},function(result){

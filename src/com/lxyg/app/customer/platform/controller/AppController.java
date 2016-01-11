@@ -2656,21 +2656,17 @@ public class AppController extends Controller {
 		String cause=json.getString("cause");
 		String orderId=json.getString("orderId");
 		Order o= Order.dao.findById(true, orderId);
-		if(o!=null&&o.getInt("order_status")== IConstant.OrderStatus.order_status_psz){
+		if(o!=null){
 			o.set("id",o.getInt("orderId"));
 			o.set("order_status", IConstant.OrderStatus.order_status_js);
 			o.set("refuse_time",new Date());
 			o.set("refuse_cause",cause);
 			o.update();
 			/**退款后恢复库存数量**/
-//			List<Record> records=o.getOrderItems(orderId);
-//			Shop shop =Shop.dao.findBysuid(o.getStr("shop_id"));
-//			for(Record record:records){
-//				goodService.addProNum(record.getInt("product_id"), record.getInt("product_number"), shop.getInt("id"));
-//			}
 			renderSuccess("拒收成功",null);
 			return;
 		}
+
 		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id from kk_order_activity oa where oa.order_id=? and u_uuid=?", orderId, uid);
 		if(orderActivity.getLong("count")>0){
 			orderActivity.set("order_status",IConstant.OrderStatus.order_status_js);
@@ -2685,7 +2681,6 @@ public class AppController extends Controller {
 			renderSuccess("拒收成功",null);
 			return;
 		}
-		renderFaile("异常");
 	}
 
 

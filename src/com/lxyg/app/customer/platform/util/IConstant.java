@@ -105,28 +105,20 @@ public interface IConstant {
 
 		public static int order_status_chushi = -1;
 		public static final String order_status_chushi_String = "待付款";
-		
 		public static int order_status_pay = 0;
 		public static final String order_status_fendan_String = "支付完成";
-		
 		public static final int order_status_kqd = 1;
 		public static final String order_status_kqd_String = "可抢单";
-
 		public static final int order_status_dfh = 2;
 		public static String order_status_dfh_String = "待发货";
-
 		public static final int order_status_psz = 3;
 		public static final String order_status_psz_String = "待收货";
-		
 		public static final int order_status_ywc = 4;
 		public static final String order_status_ywc_String = "已完成";
-
 		public static final int order_status_js = 5;
 		public static final String order_status_js_String = "申请 拒收/退款";
-
 		public static final int order_status_js_in = 6;
 		public static final String order_status_rd_String = "退款中";
-		
 		public static final int order_status_js_success = 7;
 		public static final String order_status_ld_String = "退款成功";
 

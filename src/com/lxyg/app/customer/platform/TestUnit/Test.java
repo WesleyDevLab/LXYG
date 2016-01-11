@@ -8,10 +8,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.model.*;
 
-import com.lxyg.app.customer.platform.util.JsonUtils;
-import com.lxyg.app.customer.platform.util.Point;
-import com.lxyg.app.customer.platform.util.UpYun;
-import com.lxyg.app.customer.platform.util.loadUUID;
+import com.lxyg.app.customer.platform.util.*;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -399,16 +396,35 @@ public class Test extends TestBefore {
                 reduce= object.getInt("reduce");
             }
         }
-        System.out.println(reduce);
     }
 
-    @org.junit.Test
     public void copyActivityPros(){
         List<Record> records=Db.find("select * from kk_product_activity pa where activity_id=?",10);
         for(Record record:records){
             record.set("id",null);
             record.set("activity_id",18);
             Db.save("kk_product_activity",record);
+        }
+    }
+
+    @org.junit.Test
+    public void updateImgUrl(){
+        List<Record> records=Db.find("select * from kk_product_img pi");
+        for(Record record:records){
+            String img_url=record.getStr("img_url");
+            if(img_url.equals("http://lxyg8.b0.upaiyun.com")){
+                System.out.println(img_url+"_"+record.getInt("id"));
+            }
+//            if(!img_url.startsWith(ConfigUtils.upYunServer)){
+//                if(img_url.startsWith("http://www.lexiangyungou.cn:8080")){
+//                    img_url=img_url.replaceAll("http://www.lexiangyungou.cn:8080","http://lxyg8.b0.upaiyun.com");
+//                    record.set("img_url",img_url);
+//                }else{
+//                    img_url="http://lxyg8.b0.upaiyun.com"+img_url;
+//                    record.set("img_url",img_url);
+//                }
+//                Db.update("kk_product_img",record);
+//            }
         }
     }
 }
