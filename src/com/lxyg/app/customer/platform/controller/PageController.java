@@ -221,10 +221,10 @@ public class PageController extends Controller {
 		Shop s=Shop.dao.findBysuid(s_uid);
 		Record record=Db.findFirst("select * from kk_shop_activity where shop_id=? and id=?",s.getInt("id"),activityId);
 		if(record.getInt("activity_type")==7){
-			render("/home/reduce.jsp");
+			render("/home/reduce.html");
 		}
 		if(record.getInt("activity_type")==5){
-			render("/home/hongbao.jsp");
+			render("/home/hongbao.html");
 		}
 
 	}

@@ -5,10 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.lxyg.app.customer.alipay.config.AlipayConfig;
 import com.lxyg.app.customer.alipay.sign.RSA;
 import com.lxyg.app.customer.platform.weiapiUtil.HttpRequest;
-import com.sun.org.apache.xpath.internal.SourceTree;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-
-import java.io.UTFDataFormatException;
 import java.util.*;
 
 /**

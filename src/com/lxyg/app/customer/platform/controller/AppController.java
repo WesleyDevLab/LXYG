@@ -1357,7 +1357,6 @@ public class AppController extends Controller {
 			else if(o.getInt("pay_type")==2){
 				//支付宝退款
 			}
-
 			/**修改订单状态**/
 			o.set("order_status",IConstant.OrderStatus.order_status_js_success);
 			o.set("refuse_time",new Date());
