@@ -69,7 +69,7 @@ function showImg(type){
 			var file=files[i];
 			var fileReader=new FileReader();
 			fileReader.onloadend=function(e){
-				$("#imgss").append('<img width="100px" height="100px"  src='+e.target.result+'></img>')
+				$("#imgss").append('<img width="100px" height="100px"  src='+e.target.result+'></img>');
 			}
 			fileReader.readAsDataURL(file);
 		}
@@ -82,7 +82,8 @@ function selectFile(files){
 	for(var i=0;i<files.length;i++){
 		var ext = '.' +files[i].name.split('.').pop();
 		var path='/platform/' + Math.uuid(16,"")+ext;
-		uploadImg(path,files[i])
+		uploadImg(path,files[i]);
+		console.info(path);
 		img_urls[i]=path;
 	}
 	return img_urls;
@@ -156,8 +157,6 @@ function loadBrand(data){
       }
    });
 }
-
-
 
 //表单提交验证
 function checkForm() {

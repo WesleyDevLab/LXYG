@@ -171,24 +171,12 @@
     function upload(path, file) {
         var self = this;
         var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
-
         async.waterfall([
             function(callback) {
                 var chunkInfo = {
                     chunksHash: {}
                 };
-                //var files;
-                //if(fileSelector === void 0) {
-                //    files = document.getElementById('file').files;
-                //} else {
-                //    files = document.querySelector(fileSelector).files;
-                //}
-                //if (!files.length) {
-                //    console.log('no file is selected');
-                //    return;
-                //}
-                //
-                //var file = files[0];
+
                 var chunkSize = _config.chunkSize;
                 var chunks = Math.ceil(file.size / chunkSize);
                 var currentChunk = 0;
@@ -211,7 +199,6 @@
                 var frOnerror = function() {
                     console.warn("oops, something went wrong.");
                 };
-
                 function loadNext() {
                     var fileReader = new FileReader();
                     fileReader.onload = frOnload;
@@ -232,13 +219,6 @@
                     'file_hash': chunkInfo.entire,
                 };
                 var signature;
-                //_extend(options, self.options);
-
-                //if (self._signature) {
-                //    signature = self._signature;
-                //} else {
-                //
-                //}
                 signature = calcSign(options, _config.form_api_secret);
                 var policy = Base64.encode(JSON.stringify(options));
                 var paramsData = {
@@ -263,15 +243,7 @@
             },
             function(chunkInfo, res,file, callback) {
                 res = JSON.parse(res);
-
                 var chunkSize = _config.chunkSize;
-                //var file;
-                //if(fileSelector === void 0) {
-                //    file = document.getElementById('file').files[0];
-                //} else {
-                //    file = document.querySelector(fileSelector).files[0];
-                //}
-
                 var _status = res.status;
                 var result;
                 async.until(function() {

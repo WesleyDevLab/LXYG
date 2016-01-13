@@ -26,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.net.URL;
@@ -407,7 +408,6 @@ public class Test extends TestBefore {
         }
     }
 
-    @org.junit.Test
     public void updateImgUrl(){
         List<Record> records=Db.find("select * from kk_product_img pi");
         for(Record record:records){
@@ -426,5 +426,36 @@ public class Test extends TestBefore {
 //                Db.update("kk_product_img",record);
 //            }
         }
+    }
+    @org.junit.Test
+    public void addSignLog(){
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        Date d=new Date();
+        int mg=1;
+        int num=1;
+        Record r=Db.findFirst("select * from kk_login_sign where u_uid=? order by  id desc limit 0,1","a28358da76424297");
+        String last_sign=sdf.format(r.getDate("create_time"));
+        if(last_sign.equals(sdf.format(d))){
+            return;
+        }
+        Record r1=new Record();
+        r1.set("u_uid","a28358da76424297");
+        r1.set("create_time",d);
+
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+
+        if(sdf.format(calendar.getTime()).equals(last_sign)){
+            num=r.getInt("num")+1;
+            if(r.getInt("mg")<5){
+                mg=r.getInt("mg")+1;
+            }else{
+                mg=r.getInt("mg");
+            }
+        }
+        r1.set("num",num);
+        r1.set("mg",mg);
+        Db.save("kk_login_sign",r1);
     }
 }

@@ -1,9 +1,5 @@
 package com.lxyg.app.customer.platform.controller;
 
-import cn.jpush.api.report.UsersResult;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.google.gson.JsonArray;
 import com.jfinal.aop.Before;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
@@ -958,6 +954,7 @@ public class AppControllerV2 extends Controller {
         renderSuccess("成功", null);
     }
 
+    /**签到**/
     @ActionKey("/app/user/v2/addSign")
     public void sign() {
         JSONObject obj = JSONObject.fromObject(getPara("info"));
@@ -965,10 +962,15 @@ public class AppControllerV2 extends Controller {
             renderFaile("异常");
             return;
         }
-        new User().dao.addLoginLog(obj.getString("uid"));
+        new User().dao.addSignLog(obj.getString("uid"));
         renderSuccess("签到成功", null);
     }
 
+    /**签到记录
+     * jf_num 积分
+     * lxqd_num 累计签到天数
+     * zqd_num 总签到天数
+     * **/
     @ActionKey("/app/user/v2/signLog")
     public void signLog() {
         log.info("signLog");
@@ -978,10 +980,10 @@ public class AppControllerV2 extends Controller {
             renderFaile("异常");
             return;
         }
-        List<Record> records = Db.find("select create_time from kk_login_log ll where ll.u_uid=?", obj.getString("uid"));
-        Record record = Db.findFirst("SELECT IFNULL(( SELECT ls.num FROM kk_login_sign ls WHERE ls.u_uid = ? ), 0 ) AS lxqd_num, " +
-                "IFNULL(( SELECT i.integral FROM kk_integral i WHERE i.u_uid = ? ), 0 ) AS jf_num, " +
-                "IFNULL(( SELECT COUNT(*) FROM kk_login_log ll WHERE ll.u_uid = ? ), 0 ) AS zqd_num", obj.getString("uid"), obj.getString("uid"), obj.getString("uid"));
+        List<Record> records = Db.find("select create_time from kk_login_sign ll where ll.u_uid=?", obj.getString("uid"));
+        Record record = Db.findFirst("SELECT IFNULL(( SELECT ls.num FROM kk_login_sign ls WHERE ls.u_uid = ? order by id desc limit 0,1), 0 ) AS lxqd_num, " +
+                "IFNULL(( SELECT sum(mg) FROM kk_login_sign i WHERE i.u_uid = ? ), 0 ) AS jf_num, " +
+                "IFNULL(( SELECT COUNT(ll.num) FROM kk_login_sign ll WHERE ll.u_uid = ? ), 0 ) AS zqd_num", obj.getString("uid"), obj.getString("uid"), obj.getString("uid"));
         Map<Object, Object> map = new HashMap<>();
         map.put("times", records);
         map.put("record", record);
@@ -1000,9 +1002,15 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功", goodCategories);
     }
 
-    @ActionKey("/app/user/v2/homeCategory")
+
+    @ActionKey("/app/user/v2/categorys_1")
     public void homeCategory() {
-        List<GoodCategory> goodCategories = GoodCategory.dao.find("select id,name,img from kk_product_category order by sort_id asc");
+        log.info("categorys");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        List<GoodCategory> goodCategories = GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
+        for (GoodCategory goodCategory : goodCategories) {
+            goodCategory.put("types", goodCategory.getGoodTypes_1(goodCategory.getInt("id")));
+        }
         renderSuccess("获取成功", goodCategories);
     }
 

@@ -16,10 +16,11 @@
     <script type="text/javascript" src="${path}/upYun/lib/upyun-mu.js"></script>
     <script type="text/javascript" src="${path}/upYun/lib/uuid.js"></script>
     <script type="text/javascript">
-        console.info("${goods}");
+
         var serverUrl = "${qiniuServer}";
         var imgCover = "";
         var imgs = new Array();
+
         $(document).ready(function () {
             var cat = "<option value=0> 请选择... </option>";
             var type = "<option value=0> 请选择... </option>";
@@ -86,7 +87,6 @@
                     }
                     fileReader.readAsDataURL(file);
                 }
-                imgCover = selectFile(files)[0];
             }
 
             if (type == 2) {
@@ -95,11 +95,10 @@
                     var file = files[i];
                     var fileReader = new FileReader();
                     fileReader.onloadend = function (e) {
-                        $("#imgss").append('<img width="100px" height="100px" onclick="deleteImg($(this));"  src=' + e.target.result + '></img>')
+                        $("#imgss").append('<img width="100px" height="100px" onclick="deleteImg($(this));"  src=' + e.target.result + '></img>');
                     }
                     fileReader.readAsDataURL(file);
                 }
-                imgs = selectFile(files);
             }
         }
 
@@ -107,9 +106,10 @@
             var img_urls = new Array();
             for (var i = 0; i < files.length; i++) {
                 var ext = '.' + files[i].name.split('.').pop();
-                var path = '/platform/' + Math.uuid(16, "") + ext;
-                uploadImg(path, files[i])
-                img_urls[i] = "http://lxyg8.b0.upaiyun.com" + path;
+                var path = '/app/' + Math.uuid(16, "") + ext;
+                uploadImg(path, files[i]);
+                var img_url = "http://lxyg8.b0.upaiyun.com" + path;
+                img_urls[i] = img_url;
             }
             return img_urls;
         }
@@ -166,7 +166,11 @@
 
 
         function checkForm() {
-
+            console.info("imgs0:"+imgs);
+            var file = document.getElementById('coverFile').files;
+            imgCover = selectFile(file)[0];
+            var files = document.getElementById('coverFiles').files;
+            imgs = selectFile(files);
 
             var name = $("#name").val();
             var content = editor.html();
@@ -240,14 +244,6 @@
             }
 
 
-            $("#imgss").children().each(function (i) {
-                var obj = $(this).context.currentSrc;
-                if (obj.indexOf("data:image/jpeg;base64") != -1) {
-                    return true;
-                } else {
-                    imgs[imgs.length + i] = obj;
-                }
-            });
             var key = new Array();
             var value = new Array();
             $("input[name='payType']").each(function (j) {
@@ -263,50 +259,58 @@
             }
             payType = payType.substring(0, payType.length - 1) + "]";
 
+            $("#imgss").children().each(function (i) {
+                var obj = $(this).context.currentSrc;
+                imgs[imgs.length+i] = obj;
+            });
             var imgDetail = "";
             if (imgs.length != 0) {
                 imgDetail += "[";
                 for (var k = 0; k < imgs.length; k++) {
+                    if(imgs[k]==undefined){
+                        continue;
+                    }
+                    if(!imgs[k].test("http://")){
+                        continue;
+                    }
                     imgDetail += "\"" + imgs[k] + "\",";
                 }
                 imgDetail = imgDetail.substr(0, imgDetail.length - 1) + "]";
             }
-            console.info(imgCover);
-            console.info(imgDetail);
-            $.post("${path}/goods/updateGoods", {
-                        "goodsId":${goods.productId},
-                        "name": name,
-                        "title": title,
-                        "price": price,
-                        "marketPrice": market_price,
-                        "catId": catValue,
-                        "typeId": typeValue,
-                        "brandId": brandValue,
-                        "unitId": unitValue,
-                        "catName": catText,
-                        "typeName": typeText,
-                        "brandName": brandText,
-                        "descripation": content,
-                        "unitName": unitText,
-                        "payment": payType,
-                        "serverId": serverValue,
-                        "serverName": serverText,
-                        "cashPay": cash_pay,
-                        "isShow": isShow,
-                        cover: imgCover,
-                        "imgs": imgDetail,
-                        "code": code
-                    },
-                    function (result) {
-                        if (result.code == 10010) {
-                            alert(result.message);
-                            $("#imgs").text("");
-                            $("#imgss").text("");
-                            window.location.href = "${path}/pageTo/product";
-                        } else {
-                            alert("出现异常");
-                        }
-                    });
+            console.info("imgDetail:"+imgDetail);
+            <%--$.post("${path}/goods/updateGoods", {--%>
+                        <%--"goodsId":${goods.productId},--%>
+                        <%--"name": name,--%>
+                        <%--"title": title,--%>
+                        <%--"price": price,--%>
+                        <%--"marketPrice": market_price,--%>
+                        <%--"catId": catValue,--%>
+                        <%--"typeId": typeValue,--%>
+                        <%--"brandId": brandValue,--%>
+                        <%--"unitId": unitValue,--%>
+                        <%--"catName": catText,--%>
+                        <%--"typeName": typeText,--%>
+                        <%--"brandName": brandText,--%>
+                        <%--"descripation": content,--%>
+                        <%--"unitName": unitText,--%>
+                        <%--"payment": payType,--%>
+                        <%--"serverId": serverValue,--%>
+                        <%--"serverName": serverText,--%>
+                        <%--"cashPay": cash_pay,--%>
+                        <%--"isShow": isShow,--%>
+                        <%--cover: imgCover,--%>
+                        <%--"imgs": imgDetail,--%>
+                        <%--"code": code--%>
+                    <%--},--%>
+                    <%--function (result) {--%>
+                        <%--if (result.code == 10010) {--%>
+                            <%--alert(result.message);--%>
+                            <%--location.reload();--%>
+                            <%--&lt;%&ndash;window.location.href = "${path}/pageTo/product";&ndash;%&gt;--%>
+                        <%--} else {--%>
+                            <%--alert("出现异常");--%>
+                        <%--}--%>
+                    <%--});--%>
         }
 
         function deleteImg(el) {

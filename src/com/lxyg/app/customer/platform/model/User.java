@@ -6,6 +6,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.lxyg.app.customer.platform.util.IConstant;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -127,34 +128,38 @@ public class User extends Model<User> {
 	/**
 	 * 登陆记录
 	 * **/
-	public void addLoginLog(String u_uid){
+	public void addSignLog(String u_uid){
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
 		Date d=new Date();
-
-		Record r=Db.findFirst("select count(id) as cc from kk_login_log where u_uid=? and create_time like ? ",u_uid, "%"+sdf.format(d)+"%");
-		if(r.getLong("cc") > 0){
+		int mg=1;
+		int num=1;
+		Record r=Db.findFirst("select * from kk_login_sign where u_uid=? order by  id desc limit 0,1","a28358da76424297");
+		String last_sign=sdf.format(r.getDate("create_time"));
+		if(last_sign.equals(sdf.format(d))){
 			return;
 		}
 		Record r1=new Record();
-		r1.set("u_uid",u_uid);
-		r1.set("create_time",d);
-		Db.save("kk_login_log", r1);
-		addIntegral(IConstant.login_integral,u_uid);
+		r1.set("u_uid", "a28358da76424297");
+		r1.set("create_time", d);
 
-		Record record=Db.findFirst("select * from kk_login_sign where u_uid=?",u_uid);
-		if(record==null){
-			Db.update("insert into kk_login_sign(u_uid,num,create_time) values(?,?,?)",u_uid,1,new Date());
-			return;
-		}else{
-			if(new Date().getTime()-record.getDate("create_time").getTime()>1000*60*60*24){
-				record.set("num",1);
+		Calendar calendar=Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+
+		if(sdf.format(calendar.getTime()).equals(last_sign)){
+			num=r.getInt("num")+1;
+			if(r.getInt("mg")<5){
+				mg=r.getInt("mg")+1;
 			}else{
-				record.set("num",record.getInt("num")+1);
+				mg=r.getInt("mg");
 			}
-			record.set("create_time",new Date());
-			Db.update("kk_login_sign",record);
 		}
+		r1.set("num", num);
+		r1.set("mg", mg);
+		Db.save("kk_login_sign", r1);
 	}
+
+
 //添加积分
 	public  void addIntegral(int integral,String u_uid){
 		Record record=Db.findFirst("select * from kk_integral where u_uid=?",u_uid);
@@ -169,4 +174,5 @@ public class User extends Model<User> {
 		record.set("create_time",new Date());
 		Db.save("kk_integral",record);
 	}
+
 }

@@ -85,6 +85,10 @@ public class OrderService {
 		Page<Order> os = new Order().find(map, page);
 		for (Order or : os.getList()) {
 			List<Record> res = or.getOrderItems(or.getStr("order_id"));
+			String u_uid=or.getStr("u_uuid");
+			Record record=Db.findFirst("SELECT ( SELECT SUM(mg) FROM kk_login_sign ls WHERE ls.u_uid =? ) AS mg, ( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? ) as jf ",u_uid,u_uid);
+			or.put("jf",record.getInt("jf"));
+			or.put("mg",record.getInt("mg"));
 			or.put("orderItems", res);
 		}
 		return os;
@@ -743,6 +747,10 @@ public class OrderService {
 				"left join kk_shop s on oa.s_uid=s.uuid where 1=1 and oa.u_uuid=? and order_status=?";
 		Page<OrderActivity> orderActivityPage= OrderActivity.dao.paginate(page,IConstant.PAGE_DATA,select,from,uid,status);
 		for(OrderActivity orderActivity:orderActivityPage.getList()){
+			String u_uid=orderActivity.getStr("u_uuid");
+			Record record=Db.findFirst("SELECT ( SELECT SUM(mg) FROM kk_login_sign ls WHERE ls.u_uid =? ) AS mg, ( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? ) as jf ",u_uid,u_uid);
+			orderActivity.put("jf",record.getInt("jf"));
+			orderActivity.put("mg",record.getInt("mg"));
 			orderActivity.put("orderActivityItems",OrderActivity.dao.getActivityOrderItem(orderActivity.getStr("order_id")));
 		}
 		return orderActivityPage;

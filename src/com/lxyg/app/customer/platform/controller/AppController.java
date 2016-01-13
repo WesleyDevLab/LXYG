@@ -797,6 +797,7 @@ public class AppController extends Controller {
 			recordPage = orderService.getActivityOrders(status, uid, page);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
+
 		map.put("order", o);
 		map.put("orderActivity", recordPage);
 		renderSuccess("获取成功", map);
@@ -1823,15 +1824,29 @@ public class AppController extends Controller {
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		Page<Goods> gs=null;
 		int page=json.getInt("pg");
+		String s_uid=json.getString("shopId");
+		Shop s=Shop.dao.findBysuid(s_uid);
+		if(s==null){
+			return;
+		}
+		if(json.containsKey("catId")&&json.getInt("catId")>0){
+			int catId=json.getInt("catId");
+			if(json.getInt("typeId")==0){
+				gs=new Goods().paginate(page,IConstant.PAGE_DATA,"select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay","from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+						"where p.p_category_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{catId,s.getInt("id")});
+			}
+		}
+
 		if(json.containsKey("typeId")&&json.getInt("typeId")>0){
 			int typeId=json.getInt("typeId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_type_id=? group by p.id order by ps.sort_id desc",new Object[]{typeId});
+					"where p.p_type_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{typeId,s.getInt("id")});
 		}
+
 		if(json.containsKey("brandId")&&json.getInt("brandId")>1){
 			int brandId=json.getInt("brandId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_brand_id=? group by p.id order by ps.sort_id desc",new Object[]{brandId});
+					"where p.p_brand_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
 		}
 		renderSuccess("load成功", gs);
 	}
