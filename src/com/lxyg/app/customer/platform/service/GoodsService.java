@@ -25,7 +25,6 @@ public class GoodsService{
 				JSONArray array = new JSONArray(imgs);
 				for (int i = 0; i < array.length(); i++) {
 					String img = array.getString(i);
-
 					if(img.equals("undefined")){
 						continue;
 					}

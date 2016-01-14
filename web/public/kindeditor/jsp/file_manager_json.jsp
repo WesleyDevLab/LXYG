@@ -2,7 +2,7 @@
 <%@ page import="java.util.*,java.io.*" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="net.minidev.json.*"%>
-<%@ page import="com.kaka.platform.util.*" %>
+<%@ page import="com.lxyg.app.customer.platform.util.*" %>
 <%
 /**
  * KindEditor JSP

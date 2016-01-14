@@ -87,6 +87,10 @@ public class PageController extends Controller {
 		render("/activity/activityList.jsp");
 	}
 
+	public void toRefuseOrder(){
+		render("/order/refuseOrder/list.jsp");
+	}
+
 	public void toAddActPros(){
 		int sa_id=getParaToInt("sa_id");
 		int page=1;
@@ -118,9 +122,12 @@ public class PageController extends Controller {
 		String index=getPara("index_search");
 		if(index.equals("bz")){
 			Goods g=new Goods().findById(id);
+			String str=g.getStr("descripation").replaceAll("\"", "\'");
+			g.set("descripation",str.trim());
 			setAttr("goods", g);
 			setAttr("code", 10002);
 		}
+
 		if(index.equals("fbz")){
 			Record r= Db.findFirst("select * from kk_product_fb fb where fb.id=?", id);
 			setAttr("goods", r);
@@ -228,6 +235,7 @@ public class PageController extends Controller {
 		}
 
 	}
+
 
 //
 //	/**

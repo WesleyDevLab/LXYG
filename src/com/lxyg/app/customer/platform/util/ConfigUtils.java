@@ -36,6 +36,7 @@ public class ConfigUtils {
 	public static int rate=Integer.parseInt(getProperty("kaka.commission_rate"));
 	public static int clear=Integer.parseInt(getProperty("kaka.Distribution_coefficient"));
 	public static String upYunServer=getProperty("kaka.qiniu.server");
+	public static String devModel=getProperty("lxyg.dev");
 	/**
 	 * @param args
 	 */

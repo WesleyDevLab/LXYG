@@ -1014,6 +1014,14 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功", goodCategories);
     }
 
+    @ActionKey("/app/user/v2/homeCategory")
+    public void homeCategory_1() {
+        log.info("categorys");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        List<GoodCategory> goodCategories = GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
+        renderSuccess("获取成功", goodCategories);
+    }
+
     /**
      * 红包减免规则
      */

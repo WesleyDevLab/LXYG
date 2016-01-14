@@ -5,7 +5,7 @@
 <%@ page import="org.apache.commons.fileupload.disk.*"%>
 <%@ page import="org.apache.commons.fileupload.servlet.*"%>
 <%@ page import="net.minidev.json.*"%>
-<%@ page import="com.kaka.platform.util.*" %>
+<%@ page import="com.lxyg.app.customer.platform.util.*" %>
 <%
 /**
  * KindEditor JSP

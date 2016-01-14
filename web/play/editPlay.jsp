@@ -7,7 +7,6 @@
     <script type="text/javascript" src="${path }/public/js/query/jquery.js"></script>
     <script type="text/javascript" src="${path }/public/js/jquery.form.js"></script>
     <jsp:include page="/metro.jsp"></jsp:include>
-    <!--  <script type="text/javascript" src="${path }/public/js/public.js"></script>-->
     <script type="text/javascript" src="${path }/js/jquery.fileupload.js"></script>
     <script type="text/javascript" src="${path }/public/kindeditor/kindeditor.js"></script>
     <script type="text/javascript" src="${path }/public/js/My97DatePicker/WdatePicker.js"></script>
@@ -70,7 +69,7 @@
                     $("#column_server").append(server);
                     $("#column_payType").append(payType);
                     $("#imgs").append("<img key='${goods.cover_img}' src='${goods.cover_img}' onclick='deleteImg($(this));'  style='width:100px;height:100px;padding:5px' />");
-                    <%--// editor.html(${goods.descripation});--%>
+                   <%--// editor.html("#content1",${goods.descripation});--%>
                 }
             });
         });
@@ -87,6 +86,9 @@
                     }
                     fileReader.readAsDataURL(file);
                 }
+                imgCover = selectFile(files)[0];
+                console.info(imgCover);
+
             }
 
             if (type == 2) {
@@ -99,6 +101,7 @@
                     }
                     fileReader.readAsDataURL(file);
                 }
+                imgs = selectFile(files);
             }
         }
 
@@ -145,6 +148,7 @@
                             this.sync();
                         }
                     });
+            <%--K.html("#content1","${goods.descripation}");--%>
         });
 
         function load(data) {
@@ -166,12 +170,8 @@
 
 
         function checkForm() {
-            console.info("imgs0:"+imgs);
-            var file = document.getElementById('coverFile').files;
-            imgCover = selectFile(file)[0];
-            var files = document.getElementById('coverFiles').files;
-            imgs = selectFile(files);
 
+            console.info(imgCover);
             var name = $("#name").val();
             var content = editor.html();
             var title = $("#title").val();
@@ -263,6 +263,7 @@
                 var obj = $(this).context.currentSrc;
                 imgs[imgs.length+i] = obj;
             });
+            var reg=/^http:\/\/.*?\/.*?\.jpg$/i;
             var imgDetail = "";
             if (imgs.length != 0) {
                 imgDetail += "[";
@@ -270,47 +271,48 @@
                     if(imgs[k]==undefined){
                         continue;
                     }
-                    if(!imgs[k].test("http://")){
+                    if(!reg.test(imgs[k])){
                         continue;
                     }
                     imgDetail += "\"" + imgs[k] + "\",";
                 }
                 imgDetail = imgDetail.substr(0, imgDetail.length - 1) + "]";
             }
-            console.info("imgDetail:"+imgDetail);
-            <%--$.post("${path}/goods/updateGoods", {--%>
-                        <%--"goodsId":${goods.productId},--%>
-                        <%--"name": name,--%>
-                        <%--"title": title,--%>
-                        <%--"price": price,--%>
-                        <%--"marketPrice": market_price,--%>
-                        <%--"catId": catValue,--%>
-                        <%--"typeId": typeValue,--%>
-                        <%--"brandId": brandValue,--%>
-                        <%--"unitId": unitValue,--%>
-                        <%--"catName": catText,--%>
-                        <%--"typeName": typeText,--%>
-                        <%--"brandName": brandText,--%>
-                        <%--"descripation": content,--%>
-                        <%--"unitName": unitText,--%>
-                        <%--"payment": payType,--%>
-                        <%--"serverId": serverValue,--%>
-                        <%--"serverName": serverText,--%>
-                        <%--"cashPay": cash_pay,--%>
-                        <%--"isShow": isShow,--%>
-                        <%--cover: imgCover,--%>
-                        <%--"imgs": imgDetail,--%>
-                        <%--"code": code--%>
-                    <%--},--%>
-                    <%--function (result) {--%>
-                        <%--if (result.code == 10010) {--%>
-                            <%--alert(result.message);--%>
-                            <%--location.reload();--%>
-                            <%--&lt;%&ndash;window.location.href = "${path}/pageTo/product";&ndash;%&gt;--%>
-                        <%--} else {--%>
-                            <%--alert("出现异常");--%>
-                        <%--}--%>
-                    <%--});--%>
+            $.post("${path}/goods/updateGoods", {
+                        "goodsId":${goods.productId},
+                        "name": name,
+                        "title": title,
+                        "price": price,
+                        "marketPrice": market_price,
+                        "catId": catValue,
+                        "typeId": typeValue,
+                        "brandId": brandValue,
+                        "unitId": unitValue,
+                        "catName": catText,
+                        "typeName": typeText,
+                        "brandName": brandText,
+                        "descripation": content,
+                        "unitName": unitText,
+                        "payment": payType,
+                        "serverId": serverValue,
+                        "serverName": serverText,
+                        "cashPay": cash_pay,
+                        "isShow": isShow,
+                        cover: imgCover,
+                        "imgs": imgDetail,
+                        "code": code
+                    },
+                    function (result) {
+                        if (result.code == 10010) {
+                            alert(result.message);
+                            window.location.href = "${path}/pageTo/product";
+                        }else if(result.code==10011){
+                            alert("修改失败");
+                        }else{
+                            alert("超时 请重新登陆");
+                            window.location.href="${path}/index";
+                        }
+                    });
         }
 
         function deleteImg(el) {

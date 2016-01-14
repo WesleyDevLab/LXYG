@@ -9,6 +9,7 @@ import com.lxyg.app.customer.platform.interceptor.visitInterceptor;
 import com.lxyg.app.customer.platform.listener.pushTimerTask;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.plugin.JPush;
+import com.lxyg.app.customer.platform.util.ConfigUtils;
 
 /**
  * API引导式配
@@ -19,7 +20,7 @@ public class Config extends JFinalConfig {
 	 */
 	public void configConstant(Constants me) {
 		loadPropertyFile("res/jdbc.properties");
-		me.setDevMode(true);
+		me.setDevMode(Boolean.valueOf(ConfigUtils.devModel));
 		me.setViewType(ViewType.JSP); 		// 设置视图类型为Jsp，否则默认为FreeMarker
 		//me.setUploadedFileSaveDirectory(uploadedFileSaveDirectory);//修改默认保存文件路径
 	}
@@ -27,6 +28,7 @@ public class Config extends JFinalConfig {
 	 * 配置路由
 	 */
 	public void configRoute(Routes me) {
+
 		me.add(new Router());
 	}
 	

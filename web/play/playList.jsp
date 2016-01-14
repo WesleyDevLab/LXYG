@@ -113,42 +113,8 @@
                     $("#page").append(pageHtml);
                 }
             });
-            // cutFBStyle();
         }
 
-
-        //function cutFBStyle(){
-        //    if(index_search=="fbz"){
-        //        $("#plat_name").text("乐享云购非标产品管理");
-        //        $("#plat_name1").text("乐享云购非标产品管理");
-        //        $("#brand").hide();
-        //        $("#type").hide();
-        //        $("#product_s").hide();
-        //        $("#brand_s").hide();
-        //    }
-        //    if(index_search=="bz"){
-        //        $("#plat_name").text("乐享云购产品管理");
-        //        $("#plat_name1").text("乐享云购产品管理");
-        //        $("#brand").show();
-        //        $("#type").show();
-        //        $("#product_s").show();
-        //        $("#brand_s").show();
-        //    }
-        //}
-
-        //    function cunFB(){
-        //        if(index_search=="fbz"){
-        //            index_search="bz";
-        //            loadData(page,0,0);
-        //            return;
-        //        }
-        //
-        //        if(index_search=="bz"){
-        //            index_search="fbz";
-        //            loadData(page,0,0);
-        //            return;
-        //        }
-        //    }
 
         function searchByBrand(v) {
             var brandId = v.attr("value");
@@ -306,7 +272,6 @@
     </p>
 
 </footer>
-
 
 </body>
 

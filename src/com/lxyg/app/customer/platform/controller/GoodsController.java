@@ -8,7 +8,9 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.config.Config;
 import com.lxyg.app.customer.platform.model.FBGoods;
+import com.lxyg.app.customer.platform.model.GoodCategory;
 import com.lxyg.app.customer.platform.model.Goods;
 import com.lxyg.app.customer.platform.model.Manager;
 import com.lxyg.app.customer.platform.service.GoodsService;
@@ -32,9 +34,6 @@ import java.util.Map;
 public class GoodsController extends Controller {
     private static final Logger log = Logger.getLogger(GoodsController.class);
     private GoodsService goodsService = new GoodsService();
-//	
-//	private ShopService shopService = new ShopService();
-//
 
     /**
      * 产品管理 -> 产品列表
@@ -154,6 +153,15 @@ public class GoodsController extends Controller {
         renderJson();
     }
 
+    public void loadCategorys(){
+        List<GoodCategory> goodCategories = GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
+        for (GoodCategory goodCategory : goodCategories) {
+            goodCategory.put("types", goodCategory.getGoodTypes(goodCategory.getInt("id")));
+        }
+        setAttr("categorys",goodCategories);
+        renderJson();
+    }
+
     public void loadBrandByType() {
         int typeId = getParaToInt("typeId");
         String sql1 = "select id,name,img,p_type_id,p_type_name from kk_product_brand where p_type_id=?";
@@ -181,9 +189,6 @@ public class GoodsController extends Controller {
         Manager user = (Manager) getSession().getAttribute("manager");
         if (null != user) {
             String cover = getPara("cover");
-            if (cover != null && !cover.equals("")) {
-                cover = ConfigUtils.getProperty("kaka.qiniu.server") + cover;
-            }
             Goods goods = new Goods();
             goods.set("name", getPara("name"));
             goods.set("title", getPara("title"));
@@ -196,14 +201,14 @@ public class GoodsController extends Controller {
             goods.set("p_brand_id", getPara("brandId"));
             goods.set("p_type_name", getPara("typeName"));
             goods.set("p_brand_name", getPara("brandName"));
-            goods.set("cover_img", cover);
+            goods.set("cover_img", cover.startsWith(ConfigUtils.upYunServer)?cover:ConfigUtils.upYunServer+cover);
             goods.set("p_unit_id", getPara("unitId"));
             goods.set("p_unit_name", getPara("unitName"));
             goods.set("descripation", getPara("descripation"));
-            goods.set("index_show", getPara("isShow"));
+            goods.set("index_show",1);
             goods.set("server_id", getPara("serverId"));
             goods.set("server_name", getPara("serverName"));
-            goods.set("payment", getPara("payment"));
+            goods.set("payment","[{payId:1,payName:微信支付},{payId:2,payName:支付宝支付},{payId:3,payName:自提}]");
             goods.set("create_time", DateTools.createTime());
             goods.set("code", getPara("code"));
             if (isParaExists("supplier_price")) {
@@ -240,7 +245,7 @@ public class GoodsController extends Controller {
             String cover = getPara("cover");
             Goods goods = new Goods().findById(getPara("goodsId"), "id");
             if (cover != null && !cover.equals("")) {
-                goods.set("cover_img", cover);
+                goods.set("cover_img", cover.startsWith(ConfigUtils.upYunServer)?cover:ConfigUtils.upYunServer+cover);
             }
             goods.set("name", getPara("name"));
             goods.set("title", getPara("title"));
