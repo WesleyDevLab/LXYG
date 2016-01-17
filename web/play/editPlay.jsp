@@ -263,15 +263,12 @@
                 var obj = $(this).context.currentSrc;
                 imgs[imgs.length+i] = obj;
             });
-            var reg=/^http:\/\/.*?\/.*?\.jpg$/i;
+            var reg=/^http:\/\/([0-9a-z][0-9a-z\-]*\.)+[a-z]{2,}(:\d+)?\/[0-9a-z%\-_\/\.]+/;
             var imgDetail = "";
             if (imgs.length != 0) {
                 imgDetail += "[";
                 for (var k = 0; k < imgs.length; k++) {
-                    if(imgs[k]==undefined){
-                        continue;
-                    }
-                    if(!reg.test(imgs[k])){
+                    if(imgs[k]==undefined || !reg.test(imgs[k])){
                         continue;
                     }
                     imgDetail += "\"" + imgs[k] + "\",";

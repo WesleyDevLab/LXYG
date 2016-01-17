@@ -407,27 +407,15 @@ public class Test extends TestBefore {
             Db.save("kk_product_activity",record);
         }
     }
-
+    @org.junit.Test
     public void updateImgUrl(){
-        List<Record> records=Db.find("select * from kk_product_img pi");
+        List<Record> records=Db.find("select id from kk_product ");
         for(Record record:records){
-            String img_url=record.getStr("img_url");
-            if(img_url.equals("http://lxyg8.b0.upaiyun.com")){
-                System.out.println(img_url+"_"+record.getInt("id"));
-            }
-//            if(!img_url.startsWith(ConfigUtils.upYunServer)){
-//                if(img_url.startsWith("http://www.lexiangyungou.cn:8080")){
-//                    img_url=img_url.replaceAll("http://www.lexiangyungou.cn:8080","http://lxyg8.b0.upaiyun.com");
-//                    record.set("img_url",img_url);
-//                }else{
-//                    img_url="http://lxyg8.b0.upaiyun.com"+img_url;
-//                    record.set("img_url",img_url);
-//                }
-//                Db.update("kk_product_img",record);
-//            }
+            Db.update("insert into kk_shop_product (product_id,shop_id,status,create_time,product_number,is_recomm,sort_id) " +
+                    "values(?,?,?,?,?,?,?)",record.getInt("id"),6,1,new Date(),30,0,1);
         }
     }
-    @org.junit.Test
+
     public void addSignLog(){
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         Date d=new Date();

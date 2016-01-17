@@ -37,7 +37,7 @@
             });
 
             $(".selectList").each(function () {
-                var url = "http://127.0.0.1/LXYG/goods/loadCategorys";
+                var url = "${path}/LXYG/goods/loadCategorys";
                 var areaJson;
                 var temp_html;
                 var onCategory = $(this).find("#column_cat");

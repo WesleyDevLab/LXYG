@@ -133,13 +133,23 @@ public class User extends Model<User> {
 		Date d=new Date();
 		int mg=1;
 		int num=1;
-		Record r=Db.findFirst("select * from kk_login_sign where u_uid=? order by  id desc limit 0,1","a28358da76424297");
+		Record r=Db.findFirst("select * from kk_login_sign where u_uid=? order by  id desc limit 0,1",u_uid);
+		if(r==null){
+			Record record=new Record();
+			record.set("u_uid",u_uid);
+			record.set("create_time",new Date());
+			record.set("num", num);
+			record.set("mg", mg);
+			Db.save("kk_login_sign",record);
+			addIntegral(mg,u_uid,2);
+			return;
+		}
 		String last_sign=sdf.format(r.getDate("create_time"));
 		if(last_sign.equals(sdf.format(d))){
 			return;
 		}
 		Record r1=new Record();
-		r1.set("u_uid", "a28358da76424297");
+		r1.set("u_uid", u_uid);
 		r1.set("create_time", d);
 
 		Calendar calendar=Calendar.getInstance();
@@ -157,12 +167,12 @@ public class User extends Model<User> {
 		r1.set("num", num);
 		r1.set("mg", mg);
 		Db.save("kk_login_sign", r1);
+		addIntegral(mg,u_uid,2);
 	}
 
-
 //添加积分
-	public  void addIntegral(int integral,String u_uid){
-		Record record=Db.findFirst("select * from kk_integral where u_uid=?",u_uid);
+	public  void addIntegral(int integral,String u_uid,int type){
+		Record record=Db.findFirst("select * from kk_integral where u_uid=? and type=?",u_uid,type);
 		if(record!=null){
 			record.set("integral",record.getInt("integral")+integral);
 			Db.update("kk_integral",record);
@@ -172,7 +182,7 @@ public class User extends Model<User> {
 		record.set("u_uid",u_uid);
 		record.set("integral",integral);
 		record.set("create_time",new Date());
+		record.set("type",type);
 		Db.save("kk_integral",record);
 	}
-
 }

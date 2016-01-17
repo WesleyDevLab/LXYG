@@ -380,90 +380,6 @@ public class AppControllerV2 extends Controller {
     /***
      * C端 首页列表
      **/
-//    @ActionKey("app/user/v2/homePage")
-//    public void homePage(){
-//        JSONObject json= JSONObject.fromObject(getPara("info"));
-//        String lat=json.getString("lat");
-//        String lng=json.getString("lng");
-//        String uid="";
-//        Shop s=new Shop();
-//        User u=new User();
-//        if(!json.containsKey("uid")){
-//            if(!lat.equals("")&&!lng.equals("")){
-//                s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.shop_type=st.id ORDER BY dis asc", new Object[]{lng,lat});
-//            }else{
-//                renderFaile("定位错误");
-//                return;
-//            }
-//        }else{
-//            uid=json.getString("uid");
-//            u=new User().getUser(uid);
-//            if(u==null || u.equals("")){
-//                renderFaile("登录错误！");
-//                return;
-//            }
-//            s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.shop_type=st.id where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
-//        }
-//
-//        if(s==null){
-//            renderFaile("异常！");
-//            return;
-//        }
-//        List<Map<String,Object>> maps=new ArrayList<Map<String, Object>>();
-//        List<Map<String,Object>> types=new ArrayList<Map<String,Object>>();
-//        String [] sorts=s.getStr("sort").split(",");
-//        for(int i=0;i<sorts.length;i++){
-//            Map<String,Object> obj=new HashMap<String,Object>();
-//            Record record= Db.findFirst("select * from kk_product_type pt where pt.id in (" + sorts[i] + ")");
-//            obj.put("typeId",record.getInt("id"));
-//            obj.put("name",record.getStr("name"));
-//            obj.put("img",record.getStr("img"));
-//            obj.put("is_norm",record.getInt("is_norm"));
-//            types.add(obj);
-//        }
-//
-//        /**标准店 产品推荐**/
-//        if(s.getInt("is_norm")==1){
-//            List<Goods> recommGoods= Goods.dao.find("SELECT distance ( ?,?, s.lng, s.lat ) AS dis, p.id AS productId, p. NAME, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND distance ( ?,?, s.lng, s.lat ) < 5000 GROUP BY p.id ORDER BY is_recomm DESC, dis ASC LIMIT 6",lng,lat,lng,lat);
-//            for(int i=0;i<sorts.length;i++){
-//                Map<String,Object> m=new HashMap<String, Object>();
-//                Record r= Db.findFirst("select id as typeId,name,img from kk_product_type where id=?", sorts[i]);
-//                m.put("type", r);
-//                List<Goods> g=new Goods().find("select p.id as productId,p.name,p.title,p.price," +
-//                        "p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay," +
-//                        "p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  from kk_product p right join kk_shop_product ps on p.id=ps.product_id LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and distance(?,?,s.lng,s.lat) <5000   GROUP BY p.id order by cash_pay desc, is_recomm desc LIMIT 0,6", new Object[]{sorts[i],lng,lat});
-//                if(g.size()!=0){
-//                    m.put("products", g);
-//                    maps.add(m);
-//                }
-//            }
-//            s.put("recommGoods", recommGoods);
-//            Record record= Db.findFirst("select count(s.id) as count from kk_shop s WHERE distance(?,?,s.lng,s.lat )<5000;", lng, lat);
-//            s.put("shopCount",record.getLong("count"));
-//            s.put("types",maps);
-//        }
-//
-//        if(s.getInt("is_norm")==2){
-//            Record record= Db.findFirst("select count(*) as count from kk_product_fb where s_uid=?", s.getStr("uuid"));
-//            Long count=record.getLong("count");
-//            String sql="select id as fb_product_id,name,title,price,market_price,cash_pay,cover_img,p_unit_name," +
-//                    "descripation,hide,index_show,payment,create_time,modify_time,order_no,s_uid from kk_product_fb where 1=1 and s_uid=? and hide=0 order by order_no asc limit 0,"+(count/3)*3 ;
-//            List<FBGoods> fbGoodses= FBGoods.dao.find(sql, s.getStr("uuid"));
-//            s.put("recommGoods", fbGoodses);
-//            List<Record> records= FBGoods.dao.getactivitys(s.getInt("shopId"),3);
-//            if(records.size()==0){
-//                s.put("recommActivitys",records);
-//            }
-//        }
-//
-//        if(s.getActivity()!=null){
-//            s.put("shopActivits", s.getActivity());
-//        }else{
-//            s.put("shopActivits", null);
-//        }
-//        s.put("category", types);
-//        renderSuccess("load成功", s);
-//    }
     @ActionKey("app/user/v2/homePage")
     public void homePage_1() {
         if (M.loadInfo() != 1) {
@@ -526,7 +442,6 @@ public class AppControllerV2 extends Controller {
 
     /***
      * 乐享云购 订单下载
-     *
      * @author 秦帅
      */
     @ActionKey("app/user/v2/addOrderInfo")
@@ -1016,7 +931,7 @@ public class AppControllerV2 extends Controller {
 
     @ActionKey("/app/user/v2/homeCategory")
     public void homeCategory_1() {
-        log.info("categorys");
+        log.info("homeCategory");
         JSONObject obj = JSONObject.fromObject(getPara("info"));
         List<GoodCategory> goodCategories = GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
         renderSuccess("获取成功", goodCategories);
@@ -1077,17 +992,6 @@ public class AppControllerV2 extends Controller {
     }
 
 
-//    @ActionKey("app/user/v2/shopActivtys")
-//    public void shopActivitys(){
-//        log.info("shopActivitys");
-//        JSONObject obj= JSONObject.fromObject(getPara("info"));
-//        String s_uid=obj.getString("s_uid");
-//        Shop shop=Shop.dao.findBysuid(s_uid);
-//        if(shop!=null){
-//
-//        }
-//
-//    }
 
 
 }

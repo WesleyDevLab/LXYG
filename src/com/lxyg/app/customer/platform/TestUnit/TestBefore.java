@@ -17,17 +17,17 @@ public class TestBefore {
     /**
      * 数据连接地址
      */
-    private static final String URL ="jdbc:mysql://127.0.0.1:3306/lxyg";
+    private static final String URL ="jdbc:mysql://rdsf0grfx0586yt46rn1o.mysql.rds.aliyuncs.com/app";
 
     /**
      * 数据库账号
      */
-    private static final String USERNAME ="root";
+    private static final String USERNAME ="approot";
 
     /**
      * 数据库密码
      */
-    private static final String PASSWORD ="root";
+    private static final String PASSWORD ="mcf8899";
 
     /**
      * 数据库驱动

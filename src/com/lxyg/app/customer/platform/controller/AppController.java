@@ -1822,6 +1822,7 @@ public class AppController extends Controller {
 	@ActionKey("app/user/products")
 	public void producListtByType(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
+		log.error("json:"+json);
 		Page<Goods> gs=null;
 		int page=json.getInt("pg");
 		String s_uid=json.getString("shopId");
@@ -1848,6 +1849,7 @@ public class AppController extends Controller {
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
 					"where p.p_brand_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
 		}
+
 		renderSuccess("load成功", gs);
 	}
 
@@ -2297,8 +2299,6 @@ public class AppController extends Controller {
 			 o=orderService.userLoadOrderByStatus(status,uid,page);
 			recordPage=orderService.getActivityOrders(status,uid,page);
 		}
-
-
 		Map<String,Object> map=new HashMap<String,Object>();
 		map.put("order",o);
 		map.put("orderActivity",recordPage);
@@ -2362,7 +2362,6 @@ public class AppController extends Controller {
 		}
 		String orderId=json.getString("orderId");
 		Order o= Order.dao.findByStatus(orderId, IConstant.OrderStatus.order_status_psz);
-		System.out.println(o);
 		String userPhone=o.getStr("phone");
 		o.set("id", o.getInt("orderId"));
 		o.set("order_status", o.getInt("order_status")+1);

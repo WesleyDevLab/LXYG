@@ -68,7 +68,7 @@ public class OrderController extends Controller {
 	public void allOrderJson(){
 		Manager user = (Manager) getSession().getAttribute("manager");
 		if(user==null){
-			render("/login.jsp");
+			render("/index");
 		}
 		int pg=1;
 		if (null != getPara("pg")) {
@@ -235,7 +235,26 @@ public class OrderController extends Controller {
 		Shop s= Shop.dao.findByShopIdenti(shop_id);
 		renderSuccess("获取成功",s);
 	}
-
+	public void refuseOrderList(){
+		int page=1;
+		List<Object> objects=new ArrayList<>();
+		String str="";
+		if(isParaExists("page")&& getParaToInt("page")!=0){
+			page=getParaToInt("page");
+		}
+		if(isParaExists("pay_type")&&getParaToInt("pay_type")!=0){
+			objects.add(getParaToInt("pay_type"));
+			str+=" and o.pay_type=?";
+		}
+		if(isParaExists("order_status")&&getParaToInt("order_status")!=0){
+			objects.add(getParaToInt("order_status"));
+			str+=" and o.order_status=?";
+		}
+		Page<Order> orders=Order.dao.paginate(page,IConstant.PAGE_DATA,"select o.id,o.order_id,o.order_no,s.name as s_name,s.phone as s_phone,u.name as u_name,u.phone as u_phone,o.pay_type,o.pay_name,o.order_status,o.price"," from kk_order o " +
+				"left join kk_shop s on o.s_uuid=s.uuid left join kk_user u on o.u_uuid=u.uuid where 1=1 " + str, objects.toArray());
+		setAttr("orders",orders);
+		renderJson();
+	}
 
 
 }

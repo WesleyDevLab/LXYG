@@ -323,7 +323,7 @@ public class OrderService {
 		/**
 		 * 积分
 		 * */
-		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"));
+		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"),1);
 
 //		int allPay = allPrice-allCash;
 //		int shopAccount = 0;
@@ -750,10 +750,9 @@ public class OrderService {
 			String u_uid=orderActivity.getStr("u_uuid");
 			Record record=Db.findFirst("SELECT ( SELECT SUM(mg) FROM kk_login_sign ls WHERE ls.u_uid =? ) AS mg, ( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? ) as jf ",u_uid,u_uid);
 			orderActivity.put("jf",record.getInt("jf"));
-			orderActivity.put("mg",record.getInt("mg"));
+			orderActivity.put("mg",record.getBigDecimal("mg").intValue());
 			orderActivity.put("orderActivityItems",OrderActivity.dao.getActivityOrderItem(orderActivity.getStr("order_id")));
 		}
 		return orderActivityPage;
 	}
-
 }

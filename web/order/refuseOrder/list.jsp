@@ -6,6 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8" %>
+<%@ page language="java" import="com.lxyg.app.customer.platform.util.*" pageEncoding="utf-8" %>
 <%@ include file="/common/taglibs.jsp" %>
 <html>
 <head>
@@ -15,7 +16,6 @@
 <%@ include file="/common/top.jsp" %>
 <body>
 <!-- start: Content -->
-
 <div id="content" class="span10">
     <div class="row-fluid">
         <div class="box span12">
@@ -37,15 +37,18 @@
                         <div style="padding: 10px">
 
                             <div class="btn-group">
-                                <div class="controls"><select class="form-control" id="type">
+                                <div class="controls"><select class="form-control" id="pay" onchange="searchByPay(this.value)">
                                     <option value="0">支付方式</option>
                                 </select>
                                 </div>
                             </div>
 
                             <div class="btn-group">
-                                <div class="controls"><select class="form-control" id="brand">
+                                <div class="controls"><select class="form-control" id="order" onchange="searchByStatus(this.value)">
                                     <option value="0">退款状态</option>
+                                    <option value="5">申请拒收/退款订单</option>
+                                    <option value="6">退款中</option>
+                                    <option value="7">退款成功</option>
                                 </select></div>
                             </div>
 
@@ -63,11 +66,10 @@
                             <thead  >
                             <tr>
                                 <th >订单号</th>
-                                <th>店铺</th>
-                                <th>顾客</th>
-                                <th>顾客电话</th>
                                 <th>商铺</th>
                                 <th>商铺电话</th>
+                                <th>顾客</th>
+                                <th>顾客电话</th>
                                 <th>付款方式</th>
                                 <th>订单状态</th>
                                 <th>付款金额</th>
@@ -75,9 +77,9 @@
                             </tr>
                             </thead>
                             <tbody id="innerOrders">
-
                             </tbody>
                         </table>
+
                         <div class="pagination pagination-centered">
                             <div class="bg">
                                 <div class="r_page">
@@ -94,8 +96,8 @@
                                 </div>
                                 <div class="clear"></div>
                             </div>
-
                         </div>
+
                     </div>
                 </div>
                 <!--/span-->
@@ -128,14 +130,62 @@
 </div>
 
 
-<div class="clearfix"></div>
+<div class="clearfix">
+
+</div>
 <footer>
     <p>
         <span style="text-align: left; float: left">Copyright &copy; 2014.乐享云购 All rights reserved.</span>
     </p>
-
 </footer>
+<script>
+    var pay_type;
+    var order_status;
 
+    $(document).ready(function(){
+        var url="${path}/goods/payType";
+        $.getJSON(url,function(data){
+            for(var i=0;i<data.payType.length;i++){
+                $("#pay").append("<option value="+data.payType[i].id+">"+data.payType[i].pay_type_name+"</option>");
+            }
+        });
+        loadData();
+    });
+
+    var loadData=function (){
+        var postDataUrl="${path}/order/refuseOrderList";
+        $("#innerOrders").html("");
+        var postParm={
+            "pay_type":pay_type,
+            "order_status":order_status,
+            "page":1
+        };
+        $.post(postDataUrl,postParm,function(data){
+            var json=data.orders.list;
+            var innerOrders="";
+            $.each(json,function(i,order){
+                innerOrders+="<tr><td>"+order.order_no+"</td><td>"+order.s_name+"</td><td>"+order.s_phone+"</td><td>"+order.u_name+"</td><td>"+order.u_phone+"</td>" +
+                        "<td>"+order.pay_name+"</td><td>"+order.order_status+"</td><td>"+order.price+"</td><td><button type='button' class='btn btn-primary'>退款</button></td></tr>";
+            });
+            $("#innerOrders").append(innerOrders);
+        });
+    }
+
+
+
+    function searchByPay(val){
+        pay_type=val;
+        loadData();
+    }
+
+    function searchByStatus(val){
+        order_status=val;
+        loadData();
+    }
+
+
+
+</script>
 </body>
 <%@include file="/common/bottom.jsp" %>
 </html>

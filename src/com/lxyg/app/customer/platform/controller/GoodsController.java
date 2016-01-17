@@ -268,6 +268,7 @@ public class GoodsController extends Controller {
             goods.set("modify_time", DateTools.createTime());
             goods.set("code", getPara("code"));
             boolean flag = goods.update();
+            System.out.println("imgs:"+getPara("imgs"));
             if (flag && getPara("imgs") != null && !getPara("imgs").equals("")) {
                 flag = goodsService.save(goods, getPara("imgs"));
             }
@@ -489,6 +490,12 @@ public class GoodsController extends Controller {
         record.set("name", brand_name);
         Db.update("kk_product_brand", record);
         renderJson("code", 10002);
+    }
+
+    public void payType(){
+        List<Record> records=Db.find("select * from kk_pay_type");
+        setAttr("payType",records);
+        renderJson();
     }
 
 //	
