@@ -16,7 +16,7 @@ public class alipayRefund {
     private static String alipay_app_id="2016010401061405";
     private static String alipay_app_method="refund_fastpay_by_platform_pwd";
     private static String alipay_app_version="1.0";
-    private static String alipay_notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
+    private static String alipay_notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/alipayRefuse";
 
     public static String batchNo(){
         Random random=new Random(2);
