@@ -74,7 +74,7 @@ public class AlipayNotify {
         //获得签名验证结果
         boolean isSign = false;
         if(AlipayConfig.sign_type.equals("MD5") ) {
-        	isSign = MD5.verify(preSignStr, sign, AlipayConfig.key, AlipayConfig.input_charset);
+        	isSign = MD5.verify(preSignStr, sign, AlipayConfig.MD5_PRIVATE, AlipayConfig.input_charset);
         }else if(AlipayConfig.sign_type.equals("RSA")){
         	isSign = RSA.verify(preSignStr, sign, AlipayConfig.ali_public_key, AlipayConfig.input_charset);
         }

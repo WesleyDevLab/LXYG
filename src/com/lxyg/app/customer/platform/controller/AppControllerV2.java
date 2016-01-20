@@ -7,6 +7,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.JPush.JPushKit;
 import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.service.GoodsService;
@@ -593,7 +594,7 @@ public class AppControllerV2 extends Controller {
                         goodsService.reduceProNum(productId, productNum, shop.getInt("id"));
                     }
                 }
-                /**下单后推送**/
+                /**下单后短信推送**/
                 if (payType == 3) {
                     String str = ",收货人:" + o.getStr("name");
                     str += ",联系电话：" + o.getStr("phone");
@@ -607,6 +608,10 @@ public class AppControllerV2 extends Controller {
                     str += "总价:" + o.getInt("price") / 100 + "元";
                     SdkMessage.sendUser(shop.getStr("phone"), str);
                 }
+                /**下单后 程序推送**/
+                Map<String,Object> pu=new HashMap<String,Object>();
+                pu.put("orderId",orderId);
+                JPushKit.push(shop.getStr("phone"),"shop",IConstant.content_order_new,pu,"");
             }
         } else {
             renderFaile("购买出现异常");
@@ -897,7 +902,7 @@ public class AppControllerV2 extends Controller {
         }
         List<Record> records = Db.find("select create_time from kk_login_sign ll where ll.u_uid=?", obj.getString("uid"));
         Record record = Db.findFirst("SELECT IFNULL(( SELECT ls.num FROM kk_login_sign ls WHERE ls.u_uid = ? order by id desc limit 0,1), 0 ) AS lxqd_num, " +
-                "IFNULL(( SELECT sum(mg) FROM kk_login_sign i WHERE i.u_uid = ? ), 0 ) AS jf_num, " +
+                "IFNULL(( SELECT integral FROM kk_integral i WHERE i.u_uid = ? and type=2), 0 ) AS jf_num, " +
                 "IFNULL(( SELECT COUNT(ll.num) FROM kk_login_sign ll WHERE ll.u_uid = ? ), 0 ) AS zqd_num", obj.getString("uid"), obj.getString("uid"), obj.getString("uid"));
         Map<Object, Object> map = new HashMap<>();
         map.put("times", records);
@@ -991,7 +996,17 @@ public class AppControllerV2 extends Controller {
         renderSuccess("成功",null);
     }
 
-
-
-
+    @ActionKey("/app/user/v2/userJF")
+    public void userJF(){
+        log.info("userJF");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String u_id=obj.getString("u_id");
+        User user=User.dao.getUser(u_id);
+        if(user==null){
+            renderFaile("u_id 异常");
+            return;
+        }
+        Record record=Db.findFirst("SELECT IFNULL((SELECT integral from kk_integral where u_uid=? and type=1 ),0) as jf ,IFNULL((SELECT integral from kk_integral where u_uid=? and type=2 ),0) as mg",u_id,u_id);
+        renderSuccess("获取成功",record);
+    }
 }

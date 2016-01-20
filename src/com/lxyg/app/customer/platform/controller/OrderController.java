@@ -226,6 +226,8 @@ public class OrderController extends Controller {
 		setAttr("orders",objs);
 		render("/shopdetail/orderDetail.jsp");
 	}
+
+
 	public void loadShopInfo(){
 		Manager user = (Manager) getSession().getAttribute("manager");
 		if(user==null){
@@ -256,5 +258,10 @@ public class OrderController extends Controller {
 		renderJson();
 	}
 
+	public void getOrderInfo(){
+		log.info("getOrderInfo");
+		Order o=Order.dao.findFirst("select * from kk_order o where o.order_id=?",getPara("order_id"));
+		renderSuccess("获取成功",o);
+	}
 
 }

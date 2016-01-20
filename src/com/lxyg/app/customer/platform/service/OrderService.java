@@ -86,9 +86,9 @@ public class OrderService {
 		for (Order or : os.getList()) {
 			List<Record> res = or.getOrderItems(or.getStr("order_id"));
 			String u_uid=or.getStr("u_uuid");
-			Record record=Db.findFirst("SELECT ( SELECT SUM(mg) FROM kk_login_sign ls WHERE ls.u_uid =? ) AS mg, ( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? ) as jf ",u_uid,u_uid);
-			or.put("jf",record.getInt("jf"));
-			or.put("mg",record.getInt("mg"));
+			Record record=Db.findFirst("SELECT IFNULL(( SELECT integral FROM kk_integral ls WHERE ls.u_uid =? and type=2),0) AS mg, IFNULL(( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? and type=1),0) as jf ",u_uid,u_uid);
+			or.put("jf",record.getLong("jf"));
+			or.put("mg",record.getLong("mg"));
 			or.put("orderItems", res);
 		}
 		return os;
@@ -315,16 +315,14 @@ public class OrderService {
 	public boolean recordfinshOrder(Order o) {
 		String orderId = o.getStr("order_id");
 		String shopId = o.getStr("shop_id");
-		int allPrice =o.getBigDecimal("price").intValue();
+		int allPrice =o.getBigDecimal("price").intValue()/100;
 		int allCash = o.getBigDecimal("cash_pay").intValue();
 		shopDao.updateBalance(shopId,allPrice,1);
 		shopDao.createBalanceLog(shopId,allPrice,0,IConstant.balanceType.getType(o.getInt("pay_type")),orderId);
-
 		/**
 		 * 积分
 		 * */
 		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"),1);
-
 //		int allPay = allPrice-allCash;
 //		int shopAccount = 0;
 //		int shopCommission = 0;
@@ -748,9 +746,9 @@ public class OrderService {
 		Page<OrderActivity> orderActivityPage= OrderActivity.dao.paginate(page,IConstant.PAGE_DATA,select,from,uid,status);
 		for(OrderActivity orderActivity:orderActivityPage.getList()){
 			String u_uid=orderActivity.getStr("u_uuid");
-			Record record=Db.findFirst("SELECT ( SELECT SUM(mg) FROM kk_login_sign ls WHERE ls.u_uid =? ) AS mg, ( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? ) as jf ",u_uid,u_uid);
-			orderActivity.put("jf",record.getInt("jf"));
-			orderActivity.put("mg",record.getBigDecimal("mg").intValue());
+			Record record=Db.findFirst("SELECT IFNULL(( SELECT integral FROM kk_integral ls WHERE ls.u_uid =? and type=2 ),0) AS mg, IFNULL(( SELECT i.integral FROM kk_integral i WHERE i.u_uid =? and type=1 ),0) as jf ",u_uid,u_uid);
+			orderActivity.put("jf",record.getLong("jf"));
+			orderActivity.put("mg",record.getLong("mg"));
 			orderActivity.put("orderActivityItems",OrderActivity.dao.getActivityOrderItem(orderActivity.getStr("order_id")));
 		}
 		return orderActivityPage;

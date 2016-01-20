@@ -2,6 +2,7 @@ package com.lxyg.app.customer.platform.util;
 
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.alipay.util.UtilDate;
 import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
 import com.lxyg.app.customer.tencent.common.HttpKit;
 import net.sf.json.JSONObject;
@@ -11,6 +12,7 @@ import sun.awt.GlobalCursorManager;
 
 import java.awt.geom.Point2D;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -116,8 +118,7 @@ public class M {
     	for(int i=0;i<len;i++){
     		for(int j=1;j<len;j++){
     			if(shops.get(i).getInt("num")==shops.get(j).getInt("num")){
-    				System.out.println(shops.get(i));
-    				list.add(shops.get(i)); 
+    				list.add(shops.get(i));
     			}
     		}
     	}
@@ -252,20 +253,8 @@ public class M {
 
 
     public static void main(String[] args){
-
-//		String str="1,2,3,4,5,6";
-//		System.out.println(str.contains("6"));
-
-//		log.info("info");
-//		log.error("error");
-		//throw new RuntimeException();
-//		List<Record> records=Db.find("select * from kk_area");
-//		if(records.size()!=0){
-//			System.out.println(records);
-//		}
-//		File f=new File("res/jdbc.properties");
-//		if(f.exists()){
-//			System.out.println(f.getAbsoluteFile());
-//		}
+		BigDecimal b1=new BigDecimal(1);
+		BigDecimal b2=new BigDecimal(100);
+		System.out.println(Math.round(b1.intValue()/100));
     }
 }

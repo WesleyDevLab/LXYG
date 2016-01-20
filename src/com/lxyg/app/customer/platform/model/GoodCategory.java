@@ -22,7 +22,7 @@ public class GoodCategory extends Model<GoodCategory> {
     public List<GoodType> getGoodTypes(int ca_id) {
         List<GoodType> goodTypes=GoodType.dao.find("select * from kk_product_type pt where pt.p_category_id=? order by sort_id asc,id asc",ca_id);
         for(GoodType goodType:goodTypes){
-            List<Record> records= Db.find("select * from kk_product_brand where p_type_id=? or id=0 order by sort_id asc",goodType.getInt("id"));
+            List<Record> records= Db.find("select * from kk_product_brand where p_type_id=? or id=1 order by sort_id asc",goodType.getInt("id"));
             goodType.put("brands",records);
         }
         return goodTypes;
@@ -32,7 +32,7 @@ public class GoodCategory extends Model<GoodCategory> {
     public List<GoodType> getGoodTypes_1(int ca_id) {
         List<GoodType> goodTypes=GoodType.dao.find("select * from kk_product_type pt where pt.p_category_id=? or id=0 order by sort_id asc,id asc",ca_id);
         for(GoodType goodType:goodTypes){
-            List<Record> records= Db.find("select * from kk_product_brand where p_type_id=? or id=1 by sort_id asc",goodType.getInt("id"));
+            List<Record> records= Db.find("select * from kk_product_brand where p_type_id=? or id=1 order by sort_id asc",goodType.getInt("id"));
             goodType.put("brands",records);
         }
         return goodTypes;

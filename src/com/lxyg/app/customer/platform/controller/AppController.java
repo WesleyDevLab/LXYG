@@ -1341,11 +1341,7 @@ public class AppController extends Controller {
 			renderFaile("退款异常,微信/支付宝 查询不到退款订单");
 			return;
 		}
-		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id,s_uuid,price,order_status from kk_order o where o.order_id=? and o.u_uuid=?", obj.getString("order_id"), obj.getString("u_id"));
-		if(o.getInt("order_status")!=IConstant.OrderStatus.order_status_js){
-			renderFaile("退款异常,查询不到退款订单");
-			return;
-		}
+		Order o=new Order().dao.findFirst("select count(*) as count,alipay_no,pay_type,id,s_uuid,price,order_status from kk_order o where o.order_id=? and o.u_uuid=? and order_status=?", obj.getString("order_id"), obj.getString("u_id"),IConstant.OrderStatus.order_status_js);
 		if(o.getLong("count")!=0){
 			if(o.getInt("pay_type")==1){
 				//微信退款
@@ -1373,7 +1369,7 @@ public class AppController extends Controller {
 			return;
 		}
 
-		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id,price,order_status from kk_order_activity oa where oa.order_id=? and u_uuid=?", order_id, u_id);
+		OrderActivity orderActivity=OrderActivity.dao.findFirst("select count(*) as count,alipay_no,pay_type,id,price,order_status from kk_order_activity oa where oa.order_id=? and u_uuid=? and order_status=? ", order_id, u_id,IConstant.OrderStatus.order_status_js);
 		if(orderActivity.getInt("order_status")!=IConstant.OrderStatus.order_status_js){
 			renderFaile("退款异常,查询不到退款订单");
 			return;
@@ -1822,7 +1818,6 @@ public class AppController extends Controller {
 	@ActionKey("app/user/products")
 	public void producListtByType(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
-		log.error("json:"+json);
 		Page<Goods> gs=null;
 		int page=json.getInt("pg");
 		String s_uid=json.getString("shopId");
@@ -1834,20 +1829,20 @@ public class AppController extends Controller {
 			int catId=json.getInt("catId");
 			if(json.getInt("typeId")==0){
 				gs=new Goods().paginate(page,IConstant.PAGE_DATA,"select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay","from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-						"where p.p_category_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{catId,s.getInt("id")});
+						"where p.p_category_id=? and ps.shop_id=?  order by ps.sort_id desc",new Object[]{catId,s.getInt("id")});
 			}
 		}
 
 		if(json.containsKey("typeId")&&json.getInt("typeId")>0){
 			int typeId=json.getInt("typeId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_type_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{typeId,s.getInt("id")});
+					"where p.p_type_id=? and ps.shop_id=?  order by ps.sort_id desc",new Object[]{typeId,s.getInt("id")});
 		}
 
 		if(json.containsKey("brandId")&&json.getInt("brandId")>1){
 			int brandId=json.getInt("brandId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_brand_id=? and ps.shop_id=? group by p.id order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
+					"where p.p_brand_id=? and ps.shop_id=? order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
 		}
 
 		renderSuccess("load成功", gs);
@@ -1865,6 +1860,17 @@ public class AppController extends Controller {
 		int productId=json.getInt("productId");
 		Goods gs=new Goods().findById(productId);
 		renderSuccess("load成功", gs);
+	}
+
+	@ActionKey("/app/user/categorys_1")
+	public void homeCategory() {
+		log.info("categorys");
+		JSONObject obj = JSONObject.fromObject(getPara("info"));
+		List<GoodCategory> goodCategories = GoodCategory.dao.find("select * from kk_product_category order by sort_id asc");
+		for (GoodCategory goodCategory : goodCategories) {
+			goodCategory.put("types", goodCategory.getGoodTypes_1(goodCategory.getInt("id")));
+		}
+		renderSuccess("获取成功", goodCategories);
 	}
 	
 	/**

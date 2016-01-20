@@ -6,7 +6,6 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8" %>
-<%@ page language="java" import="com.lxyg.app.customer.platform.util.*" pageEncoding="utf-8" %>
 <%@ include file="/common/taglibs.jsp" %>
 <html>
 <head>
@@ -140,7 +139,7 @@
 </footer>
 <script>
     var pay_type;
-    var order_status;
+    var order_status=5;
 
     $(document).ready(function(){
         var url="${path}/goods/payType";
@@ -165,13 +164,11 @@
             var innerOrders="";
             $.each(json,function(i,order){
                 innerOrders+="<tr><td>"+order.order_no+"</td><td>"+order.s_name+"</td><td>"+order.s_phone+"</td><td>"+order.u_name+"</td><td>"+order.u_phone+"</td>" +
-                        "<td>"+order.pay_name+"</td><td>"+order.order_status+"</td><td>"+order.price+"</td><td><button type='button' class='btn btn-primary'>退款</button></td></tr>";
+                        "<td>"+order.pay_name+"</td><td>"+order.order_status+"</td><td>"+order.price/100+" 元</td><td><button type='button' value='"+order.order_id+"' onclick='refuse(this)' class='btn btn-primary'>退款</button></td></tr>";
             });
             $("#innerOrders").append(innerOrders);
         });
     }
-
-
 
     function searchByPay(val){
         pay_type=val;
@@ -183,8 +180,29 @@
         loadData();
     }
 
+    function refuse(val){
+        var order_id=val.value;
+        $.post("${path}/order/getOrderInfo",{"order_id":order_id},function(data){
+            if(data.data.pay_type==1){
+                //微信
+                <%--window.location.href="${path}/app/pay/alirefuseOrder?order_id="+order_id;--%>
+            }
 
-
+            else if(data.data.pay_type==2){
+                var array=new Array();
+                array.push(order_id);
+                var postData="[";
+                array.forEach(function(o){
+                   postData+= "'"+o +"',";
+                });
+                postData=postData.substr(0,postData.length-1)+"]";
+                //支付宝
+                window.location.href="${path}/app/pay/alirefuseOrder?order_ids="+postData;
+            }else{
+                alert("自提订单无法退款,请联系店铺");
+            }
+        });
+    }
 </script>
 </body>
 <%@include file="/common/bottom.jsp" %>

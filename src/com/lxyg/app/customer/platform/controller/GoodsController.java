@@ -268,7 +268,6 @@ public class GoodsController extends Controller {
             goods.set("modify_time", DateTools.createTime());
             goods.set("code", getPara("code"));
             boolean flag = goods.update();
-            System.out.println("imgs:"+getPara("imgs"));
             if (flag && getPara("imgs") != null && !getPara("imgs").equals("")) {
                 flag = goodsService.save(goods, getPara("imgs"));
             }

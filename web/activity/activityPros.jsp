@@ -40,13 +40,14 @@
             $.post("${path}/activity/aProduct",{"ap_id":ap_id},function(result){
                 $("#img").html("");
                 if(result.code==10002){
+                    console.info(result);
                     $("#p_id").val(ap_id);
                     $("#p_name").val(result.data.name);
                     $("#p_type_name").val(result.data.p_type_name);
                     $("#p_brand_name").val(result.data.p_brand_name);
                     $("#p_price").val((result.data.price/100).toFixed(2));
                     $("#p_title").val(result.data.title);
-                    $("#p_num").val(1);
+                    $("#p_num").val(result.data.surplus_num);
                     $("#img").append("<img src="+result.data.cover_img+" width=100px height=100px>");
                     $("#proInfo").show();
                     imgCover=result.data.cover_img;

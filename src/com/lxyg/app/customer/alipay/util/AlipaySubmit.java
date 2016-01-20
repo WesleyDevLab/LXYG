@@ -47,7 +47,7 @@ public class AlipaySubmit {
     	String prestr = AlipayCore.createLinkString(sPara); //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
         String mysign = "";
         if(AlipayConfig.sign_type.equals("MD5") ) {
-        	mysign = MD5.sign(prestr, AlipayConfig.key, AlipayConfig.input_charset);
+        	mysign = MD5.sign(prestr, AlipayConfig.MD5_PRIVATE, AlipayConfig.input_charset);
         }
         return mysign;
     }

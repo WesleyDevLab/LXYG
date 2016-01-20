@@ -163,9 +163,9 @@ public class activityController extends Controller{
         Record record=Db.findById("kk_product_activity","id",p_id);
         record.set("title",getPara("title"));
         record.set("price",getParaToInt("price"));
-        record.set("limit_num",getParaToInt("p_num"));
+        record.set("limit_num",getParaToInt("ap_num"));
         record.set("cover_img",getPara("ap_cover"));
-        record.set("surplus_num",getParaToInt("p_num"));
+        record.set("surplus_num",getParaToInt("ap_num"));
         Db.update("kk_product_activity",record);
         renderSuccess("ÐÞ¸Ä³É¹¦",null);
     }

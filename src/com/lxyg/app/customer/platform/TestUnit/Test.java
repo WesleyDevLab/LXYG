@@ -370,7 +370,6 @@ public class Test extends TestBefore {
             record1.set("id",p_brand_id);
             record1.set("p_type_id",type);
             Db.update("kk_product_brand_copy",record1);
-            System.out.println(p_brand_id+"   "+type);
         }
     }
 
@@ -409,11 +408,7 @@ public class Test extends TestBefore {
     }
     @org.junit.Test
     public void updateImgUrl(){
-        List<Record> records=Db.find("select id from kk_product ");
-        for(Record record:records){
-            Db.update("insert into kk_shop_product (product_id,shop_id,status,create_time,product_number,is_recomm,sort_id) " +
-                    "values(?,?,?,?,?,?,?)",record.getInt("id"),6,1,new Date(),30,0,1);
-        }
+
     }
 
     public void addSignLog(){
