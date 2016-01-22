@@ -85,9 +85,9 @@ public class Order extends Model<Order> {
 				record.set("cover_img",f.getStr("cover_img"));
 			}
 			if(record.getInt("is_norm")==2){
-				FBGoods f= FBGoods.dao.findById(record.getInt("product_id"));
-				record.set("name",f.getStr("name"));
-				record.set("cover_img",f.getStr("cover_img"));
+				Record r=Db.findById("kk_product_activity", record.getInt("product_id"));
+				record.set("name",r.getStr("name"));
+				record.set("cover_img",r.getStr("cover_img"));
 			}
 		}
 		return records;

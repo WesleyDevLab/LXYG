@@ -1,5 +1,7 @@
 package com.lxyg.app.customer.platform.util;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -580,6 +582,17 @@ public final class DateTools extends SimpleDateFormat{
 		}
 		return df.format(d);
 	}
+
+	public static Date str2Date(String datetime) {
+		DateFormat df = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS);
+		Date d = null;
+		try {
+			d = df.parse(datetime);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return d;
+	}
 	
 	public static Date unixTimeToDate(String time){
 		Long timestamp = Long.parseLong(time)*1000;
@@ -598,11 +611,9 @@ public final class DateTools extends SimpleDateFormat{
 	public static void main(String[] args){
 
 		Long timestamp = Long.parseLong("1422079620")*1000;
-
 		String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp));
-
-		System.out.println(date);
-		
-		System.out.println(str2Str("2015-7-23 08:00:00"));
+		Date d=DateTools.str2Date(DateTools.createDate() + " 08:00:00");
+		System.out.println(Long.toString(d.getTime()));
+		System.out.println(DateTools.str2Date(DateTools.createDate() + " 08:00:00"));
 	}
 }

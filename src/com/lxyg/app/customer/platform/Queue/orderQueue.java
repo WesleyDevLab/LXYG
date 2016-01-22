@@ -1,6 +1,7 @@
 package com.lxyg.app.customer.platform.Queue;
 
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.model.Order;
 import com.lxyg.app.customer.platform.util.IConstant;
 import com.lxyg.app.customer.platform.util.Quque;
 
@@ -11,9 +12,9 @@ import java.util.Queue;
  * Created by ÇØË§ on 2015/11/25.
  */
 public class orderQueue {
-    Queue<Record> queue = new LinkedList<Record>();
-    public void insert(Record record){
-        queue.offer(record);
+    Queue<Order> queue = new LinkedList<Order>();
+    public void insert(Order order){
+        queue.offer(order);
     }
     public boolean isEmpty(){
         if(queue.size()==0){
@@ -22,7 +23,7 @@ public class orderQueue {
             return false;
         }
     }
-    public Record peekFront(){
+    public Order peekFront(){
         return queue.peek();
     }
     public void remove(){

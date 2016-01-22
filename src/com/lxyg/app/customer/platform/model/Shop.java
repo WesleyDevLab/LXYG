@@ -17,12 +17,21 @@ public class Shop extends Model<Shop> {
 	public static final Shop dao = new Shop();
 	
 	public List<Record> getActivity(){
-		return Db.find("select id as activityId,img_url,alt,label_cn,shop_id,type,end_time,start_time,limit_e from kk_shop_activity where shop_id=0");
+		return Db.find("select id as activityId,img_url,alt,label_cn,shop_id,type,end_time,start_time,limit_e,activity_type from kk_shop_activity where shop_id=0");
 	}
 
+	/**
+	 * type  0：无动作
+	 *       1：打开网页
+	 *       2：活动列表
+	 *       3：产品详情
+	 * **/
+	public List<Record> banner(int shopId){
+		return Db.find("select sa.id as activityId,sa.img_url,sa.alt,sa.label_cn,sa.shop_id,sa.type,sa.end_time,sa.start_time,sa.limit_e,sa.activity_type from kk_shop_activity sa LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE shop_id = ? and activity_type=0",shopId);
+	}
 
 	public List<Record> getActivity(int shopId){
-		return Db.find("SELECT sa.id AS activityId, img_url, alt, label_cn, shop_id, type, end_time, start_time, limit_e, activity_type, a. name FROM kk_shop_activity sa LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE shop_id = ?",shopId);
+		return Db.find("SELECT sa.id AS activityId, img_url, alt, label_cn, shop_id, type, end_time, start_time, limit_e, activity_type, a. name FROM kk_shop_activity sa LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE shop_id = ? and activity_type!=0",shopId);
 	}
 	
 	public Shop findBysuid(String suid){
@@ -191,8 +200,7 @@ public class Shop extends Model<Shop> {
 		return res;
 	}
 	
-	
-	
+
 	public void createAccount(String u_uuid,String wechart,String order_id,int order_price,
 			int cash_pay,int is_rob,int commission_rate,int type,int main_account,
 			int main_account_type,String shop_id,int shop_account,

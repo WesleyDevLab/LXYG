@@ -8,6 +8,8 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.alipay.util.UtilDate;
+import com.lxyg.app.customer.platform.JPush.JPushKit;
 import com.lxyg.app.customer.platform.Queue.orderQueue;
 import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
 import com.lxyg.app.customer.platform.model.*;
@@ -16,6 +18,7 @@ import com.lxyg.app.customer.platform.service.GoodsService;
 import com.lxyg.app.customer.platform.service.OrderService;
 import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
 import com.lxyg.app.customer.platform.util.*;
+import com.lxyg.app.customer.tencent.common.Util;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
@@ -23,6 +26,8 @@ import org.json.JSONException;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -309,12 +314,8 @@ public class AppController extends Controller {
 			m.put("title", obj.getString("title"));
 		}
 
-		if (obj.containsKey("title2")) {
-			m.put("title2", obj.getString("title2"));
-		}
-
-		if (obj.containsKey("title3")) {
-			m.put("title3", obj.getString("title3"));
+		if(obj.containsKey("service_phone")){
+			m.put("service_phone", obj.getInt("service_phone"));
 		}
 
 		if (obj.containsKey("shop_type")) {
@@ -521,7 +522,7 @@ public class AppController extends Controller {
 		String uid = json.getString("uid");
 		Shop s = new Shop().findFirst("select * from kk_shop where uuid=?", new Object[]{uid});
 		if (s != null) {
-			s = s.findFirst("select s.id as shopId,s.name,s.link_man,s.phone,s.full_address,s.city_name,s.province_name,s.area_name,s.street,s.cover_img,s.title2,s.title3,s.is_norm,s.create_time,s.uuid,s.q_verifi,s.ewm_code,si.user_name," +
+			s = s.findFirst("select s.id as shopId,s.name,s.link_man,s.phone,s.full_address,s.city_name,s.province_name,s.area_name,s.street,s.cover_img,s.is_norm,s.create_time,s.uuid,s.q_verifi,s.ewm_code,s.service_phone,si.user_name," +
 					"si.id_number,si.bank_name,si.bank_branch_name,si.handle_id_img,si.id_num_img,si.bank_card_img,si.bussiness_num_img," +
 					"si.bussiness_number,si.bank_branch_province,si.bank_branch_city,si.bank_card_num from kk_shop s left join kk_shop_identi si on s.id=si.shop_id where s.uuid=?", new Object[]{uid});
 			setAttr("code", 10002);
@@ -785,21 +786,20 @@ public class AppController extends Controller {
 		String uid = obj.getString("uid");
 		int page = obj.getInt("pg");
 		Page<Order> o = null;//普通订单
-		Page<OrderActivity> recordPage = null;//活动订单
+//		Page<OrderActivity> recordPage = null;//活动订单
 		if (status == 1) {
 			o = orderService.loadOrderByStatus(IConstant.OrderStatus.order_status_chushi, uid, page);
-			recordPage = orderService.getActivityOrders(IConstant.OrderStatus.order_status_chushi, uid, page);
+//			recordPage = orderService.getActivityOrders(IConstant.OrderStatus.order_status_chushi, uid, page);
 		} else if (status == 5) {
 			o = orderService.loadOrderByStatus(5, uid, page);
-			recordPage = orderService.getActivityOrders(IConstant.OrderStatus.order_status_js, uid, page);
+//			recordPage = orderService.getActivityOrders(IConstant.OrderStatus.order_status_js, uid, page);
 		} else {
 			o = orderService.loadOrderByStatus(status, uid, page);
-			recordPage = orderService.getActivityOrders(status, uid, page);
+//			recordPage = orderService.getActivityOrders(status, uid, page);
 		}
 		Map<String, Object> map = new HashMap<String, Object>();
-
 		map.put("order", o);
-		map.put("orderActivity", recordPage);
+//		map.put("orderActivity", recordPage);
 		renderSuccess("获取成功", map);
 	}
 
@@ -983,23 +983,6 @@ public class AppController extends Controller {
 			return;
 		}
 
-//		Order orginOrder=new Order().findById(false, orginOrderId);
-//		List<Record> orginItem=orginOrder.get("orderItems");
-//		String orginStr="";
-//		for(int i=0;i<orginItem.size();i++){
-//			orginStr+=""+orginItem.get(i).getInt("product_id")+",";
-//		}
-//		orginStr=orginStr.substring(0, orginStr.length()-1);
-//		String [] minPros=RegularUtil.minus(orginStr.split(","), orginStr.split(","));
-//		
-//		if(minPros.length!=0){
-//			List<Order> order=Order.dao.find("select * from kk_order where original_order_id=?",new Object[]{orginOrderId});
-//			if(order.size()==0){
-//				renderFaile("异常！");
-//				return;
-//			}
-//			
-//		}
 		List<Record> rs = o.get("orderItems");
 		String str = "";
 		for (int i = 0; i < rs.size(); i++) {
@@ -1845,6 +1828,8 @@ public class AppController extends Controller {
 					"where p.p_brand_id=? and ps.shop_id=? order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
 		}
 
+
+
 		renderSuccess("load成功", gs);
 	}
 
@@ -2278,6 +2263,18 @@ public class AppController extends Controller {
 	}
 	/**
 	 * @author M
+	 * 获取当前系统时间
+	 * */
+	@ActionKey("app/user/currentTime_unix")
+	public void currentTime_unix(){
+		Map<String,Object> map=new HashMap<String, Object>();
+		map.put("currentTime", Long.toString(new Date().getTime()));
+		map.put("startTime", Long.toString(IConstant.startTime_d.getTime()));
+		map.put("endTime", Long.toString(IConstant.endtTime_d.getTime()));
+		renderSuccess("获取成功", map);
+	}
+	/**
+	 * @author M
 	 * 获取用户订单列表
 	 * */
 	
@@ -2294,16 +2291,16 @@ public class AppController extends Controller {
 		int page=json.getInt("pg");
 		int status=json.getInt("status");
 		Page<Order> o = null;
-		Page<OrderActivity> recordPage=null;
+		Page<OrderActivity> recordPage=orderService.getActivityOrders(100,uid,page);
 		if(status==1){
 			o=orderService.userLoadOrderByStatus(IConstant.OrderStatus.order_status_chushi,uid,page);
-			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_chushi,uid,page);
+//			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_chushi,uid,page);
 		}else if(status== IConstant.OrderStatus.order_status_js){
 			o=orderService.userLoadOrderByStatus(IConstant.OrderStatus.order_status_js,uid,page);
-			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_js,uid,page);
+//			recordPage=orderService.getActivityOrders(IConstant.OrderStatus.order_status_js,uid,page);
 		}else{
 			 o=orderService.userLoadOrderByStatus(status,uid,page);
-			recordPage=orderService.getActivityOrders(status,uid,page);
+//			recordPage=orderService.getActivityOrders(status,uid,page);
 		}
 		Map<String,Object> map=new HashMap<String,Object>();
 		map.put("order",o);
@@ -2735,97 +2732,237 @@ public class AppController extends Controller {
 		renderSuccess("获取成功",records);
 	}
 
+
+
 	@ActionKey("app/user/addActivityOrder")
 	@Before(Tx.class)
 	public void addActivityOrder(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String uid=json.getString("uid");
 		String s_uid=json.getString("s_uid");
-		int activityId=json.getInt("activity_id");
-		JSONObject obj=checkActivity(activityId, uid);
-		if(obj.containsKey("code")&&obj.getInt("code")==10001){
-			renderFaile(obj.getString("msg"));
-			return;
-		}
+
+       /*检测是否非法店铺**/
 		Shop s=Shop.dao.findBysuid(s_uid);
 		if(s==null){
 			renderFaile("异常");
 			return;
 		}
-		boolean b=new User().isLogin(uid);
-		if(!b){
-			renderFaile("请登录！");
-			return;
-		}
-		String orderNo= M.getOrderNo();
-		String orderId= M.getOrderId();
-		String items=json.getString("orderItems");
+		String items=json.getString("orderItems"); //订单产品列表
 		if(items==null || items.equals("")){
 			renderFaile("购买产品异常");
 			return;
 		}
-		Record r=new Record();
-		r.set("order_no",orderNo);
-		r.set("order_id",orderId);
 
+			/*检测活动是否有效**/
+		int activityId=json.getInt("activity_id");
+		JSONObject obj=checkActivity(activityId, uid,items);
+
+		if(obj.containsKey("code")&&obj.getInt("code")==10001){
+			renderFaile(obj.getString("msg"));
+			return;
+		}
+
+		Order o=new Order();
+		o.set("order_no",M.getOrderNo());
+		o.set("order_id",M.getOrderId());
+		int sendType = json.getInt("sendType");
+		int addressId=json.getInt("address_id");
 		int order_status= IConstant.OrderStatus.order_status_chushi;
 		if(json.getInt("pay_type")==3){
 			order_status= IConstant.OrderStatus.order_status_dfh;
 		}
         if(json.containsKey("remark")){
-            r.set("remark",json.getString("remark"));
+            o.set("remark",json.getString("remark"));
         }
-		r.set("order_status",order_status);
-		r.set("create_time",new Date());
-		r.set("price",json.getInt("price"));
-		r.set("u_uuid",uid);
-		r.set("s_uid",json.getString("s_uid"));
-		r.set("address_id",json.getInt("address_id"));
-		r.set("pay_type",json.getInt("pay_type"));
-		Record ra= Db.findById("kk_user_address", json.getInt("address_id"));
-		r.set("address", ra.get("full_address"));
+		if (sendType == IConstant.send_type_dingshi) {
+			String sendTime = json.getString("sendTime");
+			o.put("send_time", DateTools.unixTimeToDate(sendTime));
+		}
+		o.set("send_type",sendType);
+		o.set("send_name", IConstant.sendType.get(sendType));
+		o.set("order_status",order_status);
+		o.set("create_time",new Date());
+		o.set("price",json.getInt("price"));
+		o.set("u_uuid",uid);
+		o.set("s_uuid",json.getString("s_uid"));
+		o.set("address_id",json.getInt("address_id"));
+		o.set("pay_type",json.getInt("pay_type"));
+		o.set("is_rob",1);
 		Record rp= Db.findById("kk_pay_type", json.getInt("pay_type"));
-		r.set("pay_name", rp.getStr("pay_type_name"));
+		o.set("pay_name", rp.getStr("pay_type_name"));
+
+		String receive_code = RegularUtil.gen();
+		o.set("receive_code", receive_code);
+
+		Shop shop = new Shop().findFirst("select * from kk_shop s where s.uuid=?", new Object[]{s_uid});
+		/**配送**/
+		if (json.getInt("address_id") != 0 && !s_uid.equals("")) {
+			Record r = Db.findById("kk_user_address", addressId);
+			o.set("address", r.get("full_address"));
+			o.set("shop_name", shop.get("name"));
+			/**
+			 * 配送距离超过1000米 不让下单
+			 * */
+//            Record dis=Db.findFirst("select distance(?,?,?,?) as dis",r.getDouble("lng"),r.getDouble("lat"),shop.getDouble("lng"),shop.getDouble("lat"));
+//            if(dis.getDouble("dis")>1000){
+//                renderFaile("太远了！！送不到啊 亲~");
+//                return;
+//            }
+			/**
+			 * 是否在配送区域内
+			 * */
+			if (shop.getStr("scope") != null) {
+				JSONObject jsonObject = JSONObject.fromObject(shop.getStr("scope"));
+				List objs = JsonUtils.json2list(jsonObject.getString("scope"));
+				Point[] points = Point.list2point(objs);
+				Point p = new Point(r.getDouble("lat"), r.getDouble("lng"));
+				boolean flag = Point.inPolygon(p, points);
+				if (!flag) {
+					renderFaile("超过指定区域,暂时无法下单");
+					return;
+				}
+			}
+		}
 		/**
 		 * 队列
 		 * */
-		IConstant.orderQueue.insert(r);//放入队列中
+		IConstant.orderQueue.insert(o);//放入队列中
 		while(!IConstant.orderQueue.isEmpty()){
-			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
+			Order order=IConstant.orderQueue.peekFront();//取队列第一个元素
 			JSONArray array = JSONArray.fromObject(items);
 			for(int i=0;i<array.size();i++) {
-				JSONObject o = array.getJSONObject(i);
-				int productId = o.getInt("productId");
-				int productNum = o.getInt("productNum");
+				JSONObject oritem = array.getJSONObject(i);
+				int productId = oritem.getInt("productId");
+				int productNum = oritem.getInt("productNum");
 				Record pr = Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
-				if (pr.getInt("surplus_num") < productNum) {
+				if (pr.getInt("surplus_num") <=0 ||pr.getInt("surplus_num") < productNum) {
 					renderFaile("剩余数量不够");
 					return;
 				}
 			}
+
 			/**下单*/
-			boolean save=Db.save("kk_order_activity", record);
+			boolean save=order.save();
 			if(save){
-				for(int i=0;i<array.size();i++){
-					JSONObject o = array.getJSONObject(i);
-					int productId = o.getInt("productId");
-					int productNum = o.getInt("productNum");
-					Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?",productId, activityId);
-					Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
-									"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
-							pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
-					/**减少库存数量*/
-					Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
+				orderService.splice2Create_a(order.getStr("order_id"), items);
+				/**下单后 程序推送**/
+				Map<String,Object> pu=new HashMap<String,Object>();
+				pu.put("orderId",order.getStr("order_id"));
+				JPushKit.push(shop.getStr("phone"), "shop", IConstant.content_order_new, pu, "");
+				/**下单后 短信推送**/
+				if (order.getInt("pay_type") == 3) {
+					String str = ",收货人:" + o.getStr("name");
+					str += ",联系电话：" + o.getStr("phone");
+					str += ",收获地址:" + o.getStr("address");
+					str += ",支付方式：" + o.getStr("pay_name");
+					str += ",购买产品：【";
+					for (Record r : o.getOrderItems(o.getStr("uuid"))) {
+						str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
+					}
+					str += "】";
+					str += "总价:" + o.getInt("price") / 100 + "元";
+					SdkMessage.sendUser(shop.getStr("phone"), str);
 				}
-//				if(r.getInt("pay_type")==3){
-//					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
-//				}
 				IConstant.orderQueue.remove();//从队列移除第一个项目
 			}
 		}
-		renderSuccess("购买成功", r);
+		renderSuccess("购买成功", o);
 	}
-	public JSONObject checkActivity(int activity_id,String uid){
+
+
+//	@ActionKey("app/user/addActivityOrder")
+//	@Before(Tx.class)
+//	public void addActivityOrder(){
+//		JSONObject json= JSONObject.fromObject(getPara("info"));
+//		String uid=json.getString("uid");
+//		String s_uid=json.getString("s_uid");
+//		int activityId=json.getInt("activity_id");
+//		JSONObject obj=checkActivity(activityId, uid);
+//		if(obj.containsKey("code")&&obj.getInt("code")==10001){
+//			renderFaile(obj.getString("msg"));
+//			return;
+//		}
+//		Shop s=Shop.dao.findBysuid(s_uid);
+//		if(s==null){
+//			renderFaile("异常");
+//			return;
+//		}
+//		boolean b=new User().isLogin(uid);
+//		if(!b){
+//			renderFaile("请登录！");
+//			return;
+//		}
+//		String orderNo= M.getOrderNo();
+//		String orderId= M.getOrderId();
+//		String items=json.getString("orderItems");
+//		if(items==null || items.equals("")){
+//			renderFaile("购买产品异常");
+//			return;
+//		}
+//		Record r=new Record();
+//		r.set("order_no",orderNo);
+//		r.set("order_id",orderId);
+//
+//		int order_status= IConstant.OrderStatus.order_status_chushi;
+//		if(json.getInt("pay_type")==3){
+//			order_status= IConstant.OrderStatus.order_status_dfh;
+//		}
+//		if(json.containsKey("remark")){
+//			r.set("remark",json.getString("remark"));
+//		}
+//		r.set("order_status",order_status);
+//		r.set("create_time",new Date());
+//		r.set("price",json.getInt("price"));
+//		r.set("u_uuid",uid);
+//		r.set("s_uid",json.getString("s_uid"));
+//		r.set("address_id",json.getInt("address_id"));
+//		r.set("pay_type",json.getInt("pay_type"));
+//		Record ra= Db.findById("kk_user_address", json.getInt("address_id"));
+//		r.set("address", ra.get("full_address"));
+//		Record rp= Db.findById("kk_pay_type", json.getInt("pay_type"));
+//		r.set("pay_name", rp.getStr("pay_type_name"));
+//		/**
+//		 * 队列
+//		 * */
+//		IConstant.orderQueue.insert(r);//放入队列中
+//		while(!IConstant.orderQueue.isEmpty()){
+//			Record record=IConstant.orderQueue.peekFront();//取队列第一个元素
+//			JSONArray array = JSONArray.fromObject(items);
+//			for(int i=0;i<array.size();i++) {
+//				JSONObject o = array.getJSONObject(i);
+//				int productId = o.getInt("productId");
+//				int productNum = o.getInt("productNum");
+//				Record pr = Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?", productId, activityId);
+//				if (pr.getInt("surplus_num") < productNum) {
+//					renderFaile("剩余数量不够");
+//					return;
+//				}
+//			}
+//			/**下单*/
+//			boolean save=Db.save("kk_order_activity", record);
+//			if(save){
+//				for(int i=0;i<array.size();i++){
+//					JSONObject o = array.getJSONObject(i);
+//					int productId = o.getInt("productId");
+//					int productNum = o.getInt("productNum");
+//					Record pr= Db.findFirst("select * from kk_product_activity pa where pa.id=? and activity_id=?",productId, activityId);
+//					Db.update("insert kk_order_activity_item(order_id,product_id,product_number," +
+//									"product_price,cash_pay,product_pay,create_time) values(?,?,?,?,?,?,?)", orderId, productId, productNum, pr.getBigDecimal("price"),
+//							pr.getBigDecimal("cash_pay"), pr.getBigDecimal("price").intValue() - pr.getBigDecimal("cash_pay").intValue(), new Date());
+//					/**减少库存数量*/
+//					Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
+//				}
+////				if(r.getInt("pay_type")==3){
+////					orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), r.getStr("order_id"),2);
+////				}
+//				IConstant.orderQueue.remove();//从队列移除第一个项目
+//			}
+//		}
+//		renderSuccess("购买成功", r);
+//	}
+
+
+	public JSONObject checkActivity(int activity_id,String uid,String items){
 		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activity_id);
 		JSONObject obj=new JSONObject();
 		if(record==null){
@@ -2833,10 +2970,12 @@ public class AppController extends Controller {
 			obj.put("code",10001);
 			return obj;
 		}
+
 		switch (record.getInt("activity_type")){
 			case 2:
 				Date now=new Date();
-				Date start=record.getDate("start_time");Date end=record.getDate("end_time");
+				Date start=record.getDate("start_time");
+				Date end=record.getDate("end_time");
 				if(start.before(now)&&end.after(now)){
 					obj.put("msg","");
 					obj.put("code",10002);
@@ -2846,12 +2985,25 @@ public class AppController extends Controller {
 				}
 				break;
 			case 4:
-				Record record1=Db.findFirst("select count(*) as count from kk_order o,kk_order_activity oa where o.u_uuid =? or oa.u_uuid=?",uid,uid);
+				Record record1=Db.findFirst("select count(*) as count from kk_order o where o.u_uuid =? ",uid);
 				if(record1.getLong("count")>0){
 					obj.put("msg","您不是新用户");
 					obj.put("code",10001);
 				}
 				break;
+		}
+
+		if(record.getInt("limit_e")>0){
+			JSONArray array = JSONArray.fromObject(items);
+			for(int i=0;i<array.size();i++) {
+				JSONObject oritem = array.getJSONObject(i);
+				int productNum = oritem.getInt("productNum");
+				if(productNum>record.getInt("limit_e")){
+					obj.put("msg","超出限购数量");
+					obj.put("code",10001);
+					break;
+				}
+			}
 		}
 		return obj;
 	}
@@ -2878,6 +3030,8 @@ public class AppController extends Controller {
 		orderService.pushBySdk(ConfigUtils.getProperty("kaka.order.activity.manager.phone"), orderId, 2);
 		renderSuccess("成功",null);
 	}
+
+
 	@ActionKey("app/user/activityPros")
 	public void activityPros(){
 		JSONObject json= JSONObject.fromObject(getPara("info"));

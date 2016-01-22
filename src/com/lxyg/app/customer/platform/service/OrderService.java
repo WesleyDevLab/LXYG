@@ -72,9 +72,29 @@ public class OrderService {
 								productPay, new Date(), 1});
 			}
 		}
-
 		return true;
 	}
+
+	public boolean splice2Create_a(String orderId, String items) {
+		JSONArray array = JSONArray.fromObject(items);
+		if (array.size() > 0) {
+			for (int i = 0; i < array.size(); i++) {
+				JSONObject o = array.getJSONObject(i);
+				int productId = o.getInt("productId");
+				int productNum = o.getInt("productNum");
+				Record record=Db.findById("kk_product_activity",productId);
+				BigDecimal price = record.getBigDecimal("price");
+				Db.update(
+						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
+								+ "values(?,?,?,?,?,?,?,?)", new Object[]{
+								orderId, productId, productNum, price, 0,
+								price, new Date(), 2});
+				Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
+			}
+		}
+		return true;
+	}
+
 
 
 	public Page<Order> loadOrderByStatus(int status, String suid, int page) {

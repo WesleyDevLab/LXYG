@@ -278,14 +278,6 @@ public class AppControllerV2 extends Controller {
             m.put("title", obj.getString("title"));
         }
 
-        if (obj.containsKey("title2")) {
-            m.put("title2", obj.getString("title2"));
-        }
-
-        if (obj.containsKey("title3")) {
-            m.put("title3", obj.getString("title3"));
-        }
-
         if (obj.containsKey("shop_type")) {
             m.put("shop_type", obj.getInt("shop_type"));
             Record record = Db.findById("kk_shop_type", obj.getInt("shop_type"));
@@ -383,23 +375,23 @@ public class AppControllerV2 extends Controller {
      **/
     @ActionKey("app/user/v2/homePage")
     public void homePage_1() {
-        if (M.loadInfo() != 1) {
-            return;
-        }
+//        if (M.loadInfo() != 1) {
+//            return;
+//        }
         JSONObject json = JSONObject.fromObject(getPara("info"));
         if (!json.containsKey("s_uid")) {
             renderFaile("店铺id");
             return;
         }
         String s_uid = json.getString("s_uid");
-        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
+        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm,s.service_phone from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
         if (s == null) {
             renderFaile("异常！");
             return;
         }
         if (s.getActivity() != null) {
-            s.put("shopActivits", s.getActivity());
-            s.put("activitys", s.getActivity(s.getInt("shopId")));
+            s.put("shopActivits", s.banner(s.getInt("shopId"))); //顶部banner图
+            s.put("activitys", s.getActivity(s.getInt("shopId"))); //四块活动图
         }
         List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
         List<Map<String, Object>> types = new ArrayList<Map<String, Object>>();
@@ -585,7 +577,6 @@ public class AppControllerV2 extends Controller {
         if (f) {
             boolean s = o.save();
             if (s) {
-                net.sf.json.JSONArray pros = net.sf.json.JSONArray.fromObject(items);
                 if (array.size() > 0) {
                     for (int i = 0; i < array.size(); i++) {
                         JSONObject pro = array.getJSONObject(i);
@@ -678,7 +669,7 @@ public class AppControllerV2 extends Controller {
             pg = json.getInt("pg");
         }
         Record r = Db.findById("kk_product_type", typeId);
-        Page<Shop> shops = Shop.dao.paginate(pg, IConstant.PAGE_DATA, "select id as shopId,name,full_address,shop_type,is_norm,cover_img,uuid,title,title2,title3", "from kk_shop s where shop_type=? order by distance(?,?,s.lng,s.lat) asc", new Object[]{r.getInt("shop_type"), lng, lat,});
+        Page<Shop> shops = Shop.dao.paginate(pg, IConstant.PAGE_DATA, "select id as shopId,name,full_address,shop_type,is_norm,cover_img,uuid", "from kk_shop s where shop_type=? order by distance(?,?,s.lng,s.lat) asc", new Object[]{r.getInt("shop_type"), lng, lat,});
         renderSuccess("success", shops);
     }
 
@@ -827,7 +818,7 @@ public class AppControllerV2 extends Controller {
         }
         String lng = json.getString("lng");
         String lat = json.getString("lat");
-        List<Shop> s = Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng, lat);
+        List<Shop> s = Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time,service_phone from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng, lat);
         renderSuccess("获取成功", s);
     }
 
@@ -838,7 +829,7 @@ public class AppControllerV2 extends Controller {
         int areaCode = json.getInt("code");
         String lng = json.getString("lng");
         String lat = json.getString("lat");
-        List<Shop> shops = Shop.dao.find("SELECT s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone FROM kk_shop s LEFT JOIN kk_district d ON d.id = s.district_id WHERE d.area_id = ? ORDER BY  distance (?,?,d.lng,d.lat) ASC", areaCode, lng, lat);
+        List<Shop> shops = Shop.dao.find("SELECT s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone,s.service_phone FROM kk_shop s LEFT JOIN kk_district d ON d.id = s.district_id WHERE d.area_id = ? ORDER BY  distance (?,?,d.lng,d.lat) ASC", areaCode, lng, lat);
         renderSuccess("获取成功", shops);
     }
 
@@ -1009,4 +1000,13 @@ public class AppControllerV2 extends Controller {
         Record record=Db.findFirst("SELECT IFNULL((SELECT integral from kk_integral where u_uid=? and type=1 ),0) as jf ,IFNULL((SELECT integral from kk_integral where u_uid=? and type=2 ),0) as mg",u_id,u_id);
         renderSuccess("获取成功",record);
     }
+    @ActionKey("/app/user/v2/workTime")
+    public void workTime(){
+        log.info("workTime");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String u_id=obj.getString("s_uid");
+        Shop s=Shop.dao.findFirst("select work_time from kk_shop s where s.uuid=?",u_id);
+        renderSuccess("获取成功",s.getStr("work_time"));
+    }
+
 }

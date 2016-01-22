@@ -2,6 +2,7 @@ package com.lxyg.app.customer.platform.util;
 
 import com.lxyg.app.customer.platform.Queue.orderQueue;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,8 +69,12 @@ public interface IConstant {
 	public static String startTime = DateTools.str2Str(DateTools.createDate()
 			+ " 08:00:00");
 	public static String endtTime = DateTools.str2Str(DateTools.createDate()
-			+ " 22:00:00");
+			+ " 23:00:00");
 
+	public static Date startTime_d = DateTools.str2Date(DateTools.createDate()
+			+ " 08:00:00");
+	public static Date endtTime_d = DateTools.str2Date(DateTools.createDate()
+			+ " 23:00:00");
 
 	public static int send_type_jishi = 1;
 	public static int send_type_dingshi = 2;
@@ -273,7 +278,7 @@ public interface IConstant {
 	 String Title="乐享云购";
 	 String content_order="您有新的订单可以抢";
 	 String content_order_new="您有一笔新的订单";
-	 String content_order_Touser_send="【乐享云购】乐享云购提醒您，您的收货码:";
+	 String content_order_Touser_send="提醒您，您的收货码:";
 	 String content_order_Touser_finish="交易完成";
 	 String content_order_ToreturnCommission="您有一笔新的返佣金额：";
 	 String PUSH_ONE="alias_one";

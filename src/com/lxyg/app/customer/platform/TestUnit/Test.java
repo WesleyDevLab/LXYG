@@ -406,10 +406,7 @@ public class Test extends TestBefore {
             Db.save("kk_product_activity",record);
         }
     }
-    @org.junit.Test
-    public void updateImgUrl(){
 
-    }
 
     public void addSignLog(){
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
