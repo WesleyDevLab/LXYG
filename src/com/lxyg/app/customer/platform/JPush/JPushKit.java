@@ -61,7 +61,6 @@ public class JPushKit {
 					send_alias(masterSecretB,aB,alias,objs,content,Title);
 				}
 				if(plat.equals("user")){
-					System.out.println("+++++++"+masterSecretC);
 					send_alias(masterSecretC,aC,alias,objs,content,Title);
 				}
 			}
@@ -114,7 +113,8 @@ public class JPushKit {
 	}
 
 	public static void main(String[] args) {
-
+		Map<String,Object> map=new HashMap<>();
+		push("18837145615","shop","测试",map,"测试");
 	}
 
 }

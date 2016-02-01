@@ -184,9 +184,7 @@ public class alipayController extends Controller {
 	}
 
 	public void activtyOrder(String orderId,String payNo){
-		log.error("activtyOrder");
 		OrderActivity orderActivity=OrderActivity.dao.findFirst("select * from kk_order_activity oa where oa.order_id=?",orderId);
-		log.error(orderActivity);
 		if(orderActivity==null){
 			log.error("--异常--");
 			renderText("success");
@@ -317,40 +315,39 @@ public class alipayController extends Controller {
 				for(Record record:records){
 					goodsService.addProNum(record.getInt("product_id"),record.getInt("product_number"),shop.getInt("id"));
 				}
-
 				setAttr("code",10002);
 				setAttr("msg","退款成功");
 				renderJson();
 				return;
 			}
 
-			OrderActivity orderActivity=OrderActivity.dao.findFirst("select id,alipay_no,price,refuse_cause from kk_order_activity where order_id=? and order_status=? and pay_type=?",order_id,IConstant.OrderStatus.order_status_js,2);
-			if(orderActivity!=null&&o.getStr("alipay_no")!=null&&!orderActivity.getStr("alipay_no").equals("")){
-				Record r=loadWXconfig(orderActivity.getStr("u_uuid"));
-				net.sf.json.JSONObject res= Order.dao.isRefund(order_id, r);
-				if(!res.containsKey("flag")||!res.getBoolean("flag")){
-					renderFaile("退款异常,微信/支付宝 查询不到退款订单");
-					return;
-				}
-
-				Map<String,Object> resMap= WXUtil.wxRefund(res.getString("transaction_id"), order_id, r, res.getInt("cash_fee"));
-				if(!resMap.containsKey("return_code")||!resMap.get("return_code").toString().toUpperCase().equals("SUCCESS")){
-					renderFaile("退款失败");
-					return;
-				}
-				/**修改订单状态**/
-				orderActivity.set("order_status",IConstant.OrderStatus.order_status_js_success);
-				orderActivity.update();
-				/**退款后恢复库存数量**/
-				List<Record> records=OrderActivity.dao.getActivityOrderItem(order_id);
-				for(Record record:records){
-					Db.update("update kk_product_activity set surplus_num=surplus_num+? where id=?", record.getInt("product_number"), record.getInt("product_id"));
-				}
-				setAttr("code",10002);
-				setAttr("msg","退款成功");
-				renderJson();
-				return;
-			}
+//			OrderActivity orderActivity=OrderActivity.dao.findFirst("select id,alipay_no,price,refuse_cause from kk_order_activity where order_id=? and order_status=? and pay_type=?",order_id,IConstant.OrderStatus.order_status_js,2);
+//			if(orderActivity!=null&&o.getStr("alipay_no")!=null&&!orderActivity.getStr("alipay_no").equals("")){
+//				Record r=loadWXconfig(orderActivity.getStr("u_uuid"));
+//				net.sf.json.JSONObject res= Order.dao.isRefund(order_id, r);
+//				if(!res.containsKey("flag")||!res.getBoolean("flag")){
+//					renderFaile("退款异常,微信/支付宝 查询不到退款订单");
+//					return;
+//				}
+//
+//				Map<String,Object> resMap= WXUtil.wxRefund(res.getString("transaction_id"), order_id, r, res.getInt("cash_fee"));
+//				if(!resMap.containsKey("return_code")||!resMap.get("return_code").toString().toUpperCase().equals("SUCCESS")){
+//					renderFaile("退款失败");
+//					return;
+//				}
+//				/**修改订单状态**/
+//				orderActivity.set("order_status",IConstant.OrderStatus.order_status_js_success);
+//				orderActivity.update();
+//				/**退款后恢复库存数量**/
+//				List<Record> records=OrderActivity.dao.getActivityOrderItem(order_id);
+//				for(Record record:records){
+//					Db.update("update kk_product_activity set surplus_num=surplus_num+? where id=?", record.getInt("product_number"), record.getInt("product_id"));
+//				}
+//				setAttr("code",10002);
+//				setAttr("msg","退款成功");
+//				renderJson();
+//				return;
+//			}
 		}
 	}
 

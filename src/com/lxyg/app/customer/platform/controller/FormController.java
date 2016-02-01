@@ -278,18 +278,16 @@ public class FormController extends Controller {
         User to_user=User.dao.findFirst("select * from kk_user u where u.uuid=?",to_uid);
         if(user!=null && to_user!=null){
             String str=user.getStr("name")+"回复了您："+content;
-            String alias=to_user.getStr("phone")!=null?to_user.getStr("phone"):to_user.getStr("wechat_id");
-           new JPush(alias,"user",str, M.pushMap(form_id),"你有新的回复","alias_one").start();
+           new JPush("你有新的回复",str,user.getStr("uuid"),"alias_one", M.pushMap(form_id),"user").start();
         }
     }
     public static void pushBySDK(String u_uid,int form_id,String content){
         User user=User.dao.findFirst("select * from kk_user u where u.uuid=?",u_uid);
-        List<User> users=User.dao.find("SELECT u.phone, u.wechat_id FROM kk_form_replay fr LEFT JOIN kk_user u ON fr.u_uid = u.uuid WHERE form_id = ? AND u_uid != ? GROUP BY u_uid",form_id,u_uid);
+        List<User> users=User.dao.find("SELECT u.phone, u.wechat_id,u.uuid FROM kk_form_replay fr LEFT JOIN kk_user u ON fr.u_uid = u.uuid WHERE form_id = ? AND u_uid != ? GROUP BY u_uid",form_id,u_uid);
         if(user!=null&&users.size()!=0){
             String str=user.getStr("name")+"评论："+content;
             for(User to_user:users){
-                String alias=to_user.getStr("phone")!=null?to_user.getStr("phone"):to_user.getStr("wechat_id");
-                new JPush(alias,"user",str, M.pushMap(form_id),"你有新的评论","alias_one").start();
+                new JPush("你有新的评论",str,to_user.getStr("uuid"),"alias_one", M.pushMap(form_id),"user").start();
             }
         }
     }

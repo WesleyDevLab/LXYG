@@ -55,7 +55,7 @@
 			if(objs[i].orderId==orderId){
 				var items=objs[i].items;
 				for(var j=0;j<items.length;j++){
-					str+="<tr ><td>"+items[j].productName+"</td><td>"+items[j].productNum+"</td><td>￥"+items[j].product_price/100+"</td></tr>";
+					str+="<tr ><td>"+items[j].columns.name+"</td><td>"+items[j].columns.product_number+"</td><td>￥"+items[j].columns.product_price/100+"</td></tr>";
 				}
 				$("#pros").append(str);
 				$("#product").fadeIn();

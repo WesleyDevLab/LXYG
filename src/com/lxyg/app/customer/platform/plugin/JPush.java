@@ -2,6 +2,8 @@ package com.lxyg.app.customer.platform.plugin;
 
 import com.jfinal.plugin.IPlugin;
 import com.lxyg.app.customer.platform.JPush.JPushKit;
+import com.lxyg.app.customer.platform.model.Shop;
+import com.lxyg.app.customer.platform.model.User;
 
 import java.util.Map;
 
@@ -11,38 +13,21 @@ public class JPush implements IPlugin {
 	}
 	public String Content;
 	public String Title;
-	public String [] alias;
 	public boolean flag=false;
 	public String pushType="";
-	public String phone;
+	public String uid;
 	public Map<String,Object> map;
 	public String plat;
 
-	
-	public JPush(String content,String pushType) {
-		super();
+	public JPush(String Title,String content,String uid,String pushType,Map<String,Object> map,String plat) {
 		this.Content = content;
 		this.pushType=pushType;
-	}
-	
-	public JPush(String Title,String content,String phone,String pushType,Map<String,Object> map,String plat) {
-		super();
-		this.Content = content;
-		this.pushType=pushType;
-		this.phone=phone;
+		this.uid=uid;
 		this.map=map;
 		this.Title=Title;
 		this.plat=plat;
 	}
-	public JPush(String phone,String plat,String content,Map<String,Object> map,String Title,String pushType) {
-		super();
-		this.Content = content;
-		this.phone=phone;
-		this.map=map;
-		this.Title=Title;
-		this.plat=plat;
-		this.pushType=pushType;
-	}
+
 	public boolean stop() {
 		return true;
 	}
@@ -50,9 +35,22 @@ public class JPush implements IPlugin {
 	
 	public boolean start() {
 		if(pushType.equals("alias_one")){
-			JPushKit.push(phone, plat, Content, map, Title);
+			JPushKit.push(alias(plat,uid), plat, Content, map, Title);
 		}
 		return true;
+	}
+
+	public String alias(String plat,String uid){
+		String alias="";
+		if (plat.equals("user")){
+			User u=User.dao.getUser(uid);
+			alias=u.getStr("phone")!=null?u.getStr("phone"):u.getStr("wechat_id");
+		}
+		if (plat.equals("shop")){
+			Shop shop=Shop.dao.findBysuid(uid);
+			alias=shop.getStr("phone");
+		}
+		return alias;
 	}
 
 }

@@ -183,9 +183,12 @@
     function refuse(val){
         var order_id=val.value;
         $.post("${path}/order/getOrderInfo",{"order_id":order_id},function(data){
+
             if(data.data.pay_type==1){
-                //微信
-                <%--window.location.href="${path}/app/pay/alirefuseOrder?order_id="+order_id;--%>
+                //微信退款
+                $.getJSON("${path}/app/pay/weRefund",{"order_id":order_id},function(data){
+
+                });
             }
 
             else if(data.data.pay_type==2){

@@ -18,16 +18,11 @@ import com.lxyg.app.customer.platform.service.GoodsService;
 import com.lxyg.app.customer.platform.service.OrderService;
 import com.lxyg.app.customer.platform.weiapiUtil.WXUtil;
 import com.lxyg.app.customer.platform.util.*;
-import com.lxyg.app.customer.tencent.common.Util;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
 
-import javax.swing.*;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -519,6 +514,10 @@ public class AppController extends Controller {
 		log.info("loadShopInfo");
 		String info = getPara("info");
 		JSONObject json = JSONObject.fromObject(info);
+		if(!json.containsKey("uid")){
+			renderFaile("uid参数异常");
+			return;
+		}
 		String uid = json.getString("uid");
 		Shop s = new Shop().findFirst("select * from kk_shop where uuid=?", new Object[]{uid});
 		if (s != null) {
@@ -588,6 +587,10 @@ public class AppController extends Controller {
 		log.info("showGoodsList");
 		String info = getPara("info");
 		JSONObject json = JSONObject.fromObject(info);
+		if(!json.containsKey("uid")){
+			renderFaile("uid参数异常");
+			return;
+		}
 		String uid = json.getString("uid");
 		Shop s = new Shop().findFirst("select * from kk_shop where uuid=?", new Object[]{uid});
 		if (s != null) {
@@ -784,7 +787,11 @@ public class AppController extends Controller {
 		JSONObject obj = JSONObject.fromObject(getPara("info"));
 		int status = obj.getInt("orderStatus");
 		String uid = obj.getString("uid");
-		int page = obj.getInt("pg");
+
+		int page = 1;
+		if(obj.containsKey("pg")&&obj.getInt("pg")>0){
+			page=obj.getInt("pg");
+		}
 		Page<Order> o = null;//普通订单
 //		Page<OrderActivity> recordPage = null;//活动订单
 		if (status == 1) {
@@ -1973,7 +1980,7 @@ public class AppController extends Controller {
 			return;
 		}
 		String uid=json.getString("uid");
-		List<Record> rs= Db.find("select id as addressId,full_address,province_name,city_name,area_name,street,is_default,name,phone,lat,lng from kk_user_address ua where u_uuid =? order by is_default asc ", new Object[]{uid});
+		List<Record> rs= Db.find("select id as addressId,full_address,province_name,city_name,area_name,street,is_default,name,phone,lat,lng from kk_user_address ua where u_uuid =? order by is_default asc ", uid);
 		renderSuccess("获取用户地址信息成功", rs);
 	}
 	
@@ -1995,8 +2002,8 @@ public class AppController extends Controller {
 		}
 		int addressId=json.getInt("addressId");
 		String uuid=json.getString("uid");
-		Db.update("update kk_user_address set is_default=2 where is_default=1  and u_uuid=?", new Object[]{uuid});
-		Db.update("update kk_user_address set is_default=1 where is_default!=1 and id=? and u_uuid=?", new Object[]{addressId, uuid});
+		Db.update("update kk_user_address set is_default=2 where is_default=1  and u_uuid=?", uuid);
+		Db.update("update kk_user_address set is_default=1 where is_default!=1 and id=? and u_uuid=?", addressId, uuid);
 		renderSuccess("设为默认地址信息成功", null);
 	}
 	
@@ -2365,7 +2372,6 @@ public class AppController extends Controller {
 		}
 		String orderId=json.getString("orderId");
 		Order o= Order.dao.findByStatus(orderId, IConstant.OrderStatus.order_status_psz);
-		String userPhone=o.getStr("phone");
 		o.set("id", o.getInt("orderId"));
 		o.set("order_status", o.getInt("order_status")+1);
 		o.set("finish_time", new Date());
@@ -2374,7 +2380,7 @@ public class AppController extends Controller {
 			renderFaile("异常");
 			return;
 		}
-		new JPush(IConstant.Title, IConstant.content_order_Touser_finish, userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_ywc),"user").start();
+		new JPush(IConstant.Title, IConstant.content_order_Touser_finish, o.getStr("u_uuid"), IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_ywc),"user").start();
 		o.update();
 		renderSuccess("成功", o);
 	}
@@ -2503,39 +2509,45 @@ public class AppController extends Controller {
 			return;
 		}
 		String order_id=json.getString("orderId");
-		int type=0;
-		if(json.containsKey("type")){
-			 type=json.getInt("type");
-		}
+//		if(json.containsKey("type")){
+//			 type=json.getInt("type");
+//		}
 		String ip=json.getString("ip");
 		Record conf=loadWXconfig(uid);
 		Map<String,Object> map=new HashMap<String, Object>();
-		if(type!=2){
-			Order o= Order.dao.findById(false, order_id);
-			List<Record> rs=o.get("orderItems");
-			String attach="";
-			for(Record r:rs){
-				attach+=r.getInt("id");
-			}
-			map= WXUtil.loadPrepayid(conf, order_id, o.getBigDecimal("price").intValue(), ip, attach);
+
+		Order o= Order.dao.findById(false, order_id);
+		List<Record> rs=o.get("orderItems");
+		String attach="";
+		for(Record r:rs){
+			attach+=r.getInt("id");
 		}
-		if(type==2){
-			Record record= Db.findFirst("select * from kk_order_activity oa where oa.order_id=?", order_id);
-			List<Record> records= Db.find("select *,p.name from kk_order_activity_item oai left join kk_product p on oai.product_id=p.id where oai.order_id=?", order_id);
-			String attach="";
-			for(Record r:records){
-				attach+=r.getInt("id");
-			}
-			map= WXUtil.loadPrepayid(conf, order_id, record.getBigDecimal("price").intValue(), ip, attach);
-		}
+		map= WXUtil.loadPrepayid(conf, order_id, o.getBigDecimal("price").intValue(), ip, attach);
+
+//		if(type!=2){
+//			Order o= Order.dao.findById(false, order_id);
+//			List<Record> rs=o.get("orderItems");
+//			String attach="";
+//			for(Record r:rs){
+//				attach+=r.getInt("id");
+//			}
+//			map= WXUtil.loadPrepayid(conf, order_id, o.getBigDecimal("price").intValue(), ip, attach);
+//		}
+//		if(type==2){
+//			Record record= Db.findFirst("select * from kk_order_activity oa where oa.order_id=?", order_id);
+//			List<Record> records= Db.find("select *,p.name from kk_order_activity_item oai left join kk_product p on oai.product_id=p.id where oai.order_id=?", order_id);
+//			String attach="";
+//			for(Record r:records){
+//				attach+=r.getInt("id");
+//			}
+//			map= WXUtil.loadPrepayid(conf, order_id, record.getBigDecimal("price").intValue(), ip, attach);
+//		}
 		renderSuccess("获取成功", map);
 	}
 
 
 	public Record loadWXconfig(String uid){
 		User u= User.dao.getUser(uid);
-		Map<String,Object> map=new HashMap<String,Object>();
-
 		Record r=new Record();
 		if(u.getInt("login_ios_inhouse")==1){
 			r= Db.findFirst("select * from kk_config where app=? and version=?", "ios", "inhouse");
@@ -2690,10 +2702,6 @@ public class AppController extends Controller {
 			orderActivity.set("refuse_cause",cause);
 			orderActivity.update();
 			/**退款后恢复库存数量**/
-//			List<Record> records=OrderActivity.dao.getActivityOrderItem(orderId);
-//			for(Record record:records){
-//				Db.update("update kk_product_activity set surplus_num=surplus_num+? where id=?",record.getInt("product_number"),record.getInt("product_id"));
-//			}
 			renderSuccess("拒收成功",null);
 			return;
 		}
@@ -2752,11 +2760,9 @@ public class AppController extends Controller {
 			renderFaile("购买产品异常");
 			return;
 		}
-
 			/*检测活动是否有效**/
 		int activityId=json.getInt("activity_id");
-		JSONObject obj=checkActivity(activityId, uid,items);
-
+		JSONObject obj=orderService.checkActivity(activityId, uid, items);
 		if(obj.containsKey("code")&&obj.getInt("code")==10001){
 			renderFaile(obj.getString("msg"));
 			return;
@@ -2765,7 +2771,10 @@ public class AppController extends Controller {
 		Order o=new Order();
 		o.set("order_no",M.getOrderNo());
 		o.set("order_id",M.getOrderId());
-		int sendType = json.getInt("sendType");
+		int sendType =1;
+		if(json.containsKey("sendType")){
+			sendType=json.getInt("sendType");
+		}
 		int addressId=json.getInt("address_id");
 		int order_status= IConstant.OrderStatus.order_status_chushi;
 		if(json.getInt("pay_type")==3){
@@ -2844,7 +2853,7 @@ public class AppController extends Controller {
 			/**下单*/
 			boolean save=order.save();
 			if(save){
-				orderService.splice2Create_a(order.getStr("order_id"), items);
+				orderService.splice2Create_a(order.getStr("order_id"), items,activityId);
 				/**下单后 程序推送**/
 				Map<String,Object> pu=new HashMap<String,Object>();
 				pu.put("orderId",order.getStr("order_id"));
@@ -2962,51 +2971,7 @@ public class AppController extends Controller {
 //	}
 
 
-	public JSONObject checkActivity(int activity_id,String uid,String items){
-		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activity_id);
-		JSONObject obj=new JSONObject();
-		if(record==null){
-			obj.put("msg","活动不存在");
-			obj.put("code",10001);
-			return obj;
-		}
 
-		switch (record.getInt("activity_type")){
-			case 2:
-				Date now=new Date();
-				Date start=record.getDate("start_time");
-				Date end=record.getDate("end_time");
-				if(start.before(now)&&end.after(now)){
-					obj.put("msg","");
-					obj.put("code",10002);
-				}else{
-					obj.put("msg","活动未开始或已过期");
-					obj.put("code",10001);
-				}
-				break;
-			case 4:
-				Record record1=Db.findFirst("select count(*) as count from kk_order o where o.u_uuid =? ",uid);
-				if(record1.getLong("count")>0){
-					obj.put("msg","您不是新用户");
-					obj.put("code",10001);
-				}
-				break;
-		}
-
-		if(record.getInt("limit_e")>0){
-			JSONArray array = JSONArray.fromObject(items);
-			for(int i=0;i<array.size();i++) {
-				JSONObject oritem = array.getJSONObject(i);
-				int productNum = oritem.getInt("productNum");
-				if(productNum>record.getInt("limit_e")){
-					obj.put("msg","超出限购数量");
-					obj.put("code",10001);
-					break;
-				}
-			}
-		}
-		return obj;
-	}
 
 	@ActionKey("app/user/activityOrderPay")
 	public void activityOrderPay(){

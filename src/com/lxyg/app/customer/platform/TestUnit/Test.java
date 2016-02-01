@@ -6,8 +6,10 @@ import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.lxyg.app.customer.platform.JPush.JPushKit;
 import com.lxyg.app.customer.platform.model.*;
 
+import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.*;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
@@ -26,10 +28,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.net.URL;
+
 import static com.lxyg.app.customer.platform.TestUnit.Test.download;
 
 /**
@@ -158,7 +159,6 @@ public class Test extends TestBefore {
         filePath+= loadUUID.getUUID()+".jpg";
         byte[] buffer = image2byte("d://aa.jpg");
         boolean result = upYun.writeFile(filePath, buffer, true);
-        System.out.println(result);
     }
 
     public static byte[] image2byte(String path){
@@ -247,7 +247,6 @@ public class Test extends TestBefore {
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         Date date=new Date();
         date.setTime(date.getTime()-7*1000*60*60*24);
-        System.out.println(sdf.format(date));
     }
     public void test1(){
         Record activity=Db.findById("kk_shop_activity", 1);
@@ -259,11 +258,10 @@ public class Test extends TestBefore {
     public void category(){
        Record rS=Db.findFirst("SELECT ( SELECT  pc.id FROM kk_product_category pc WHERE pc. name LIKE ? LIMIT 0,1 ) AS cid, " +
                "( SELECT pt.id FROM kk_product_type pt WHERE pt.name LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. name LIKE ? LIMIT 0,1) AS bid", "%粮油调味%", "%方便速食%", "%双汇%");
-        System.out.println(rS);
     }
 
     public void readExcel(){
-        String path = "D://kk_product_new.xls";
+        String path = "D://nh_1.xls";
         File file = new File(path);
         if (!file.exists()) {
                 return;
@@ -323,36 +321,42 @@ public class Test extends TestBefore {
                     }
                     objects[k]=value;
                 }
+                String str="";
                 for(Object object:objects){
-                    System.out.print(object.toString() + "   ");
+                    Record record=Db.findFirst("select id from kk_product where name like ?",object.toString());
+                    if(record==null){
+                        System.out.println(object.toString());
+                        continue;
+                    }
+                    str+=record.getInt("id")+",";
                 }
-                Record record=new Record();
-                record.set("p_category_name",objects[0]);
-                record.set("p_type_name",objects[1]);
-                record.set("p_brand_name",objects[2]);
-
-                Record r=Db.findFirst("SELECT ( SELECT pc.id FROM kk_product_category pc WHERE pc. name LIKE ? LIMIT 0,1) AS cid, " +
-                        "( SELECT pt.id FROM kk_product_type pt WHERE pt.name LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. name LIKE ? LIMIT 0,1) AS bid", "%" + objects[0] + "%", "%" + objects[1] + "%", "%" + objects[2] + "%");
-                record.set("p_category_id",r.getInt("cid"));
-                record.set("p_type_id",r.getInt("tid"));
-                record.set("p_brand_id",r.getInt("bid"));
-
-                record.set("name",objects[3]);
-                record.set("txm_code",objects[4]);
-                record.set("p_unit_name",objects[5]);
-                record.set("p_unit_num",objects[6]);
-                record.set("min_stock_all",objects[7]);
-                record.set("min_stock_shop",objects[8]);
-                record.set("supplier_price",objects[9]);
-                record.set("box_specification",objects[10]);
-                record.set("min_quantity",objects[11]);
-                record.set("quantity",objects[12]);
-                record.set("p_desc",objects[13]);
-                Db.save("kk_product_data",record);
-//               Db.update("insert into kk_product_data(p_category_name,p_type_name,p_brand_name,name,txm_code,p_unit_name,p_unit_num" +
-//                      "min_stock_all,min_stock_shop,supplier_price,box_specification,min_quantity,quantity,p_desc) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", objects);
-//                Db.update("insert into kk_product_data(p_type_name) values(?)", objects);
-                System.out.print("\n");
+//                Record record=new Record();
+//                record.set("p_category_name",objects[0]);
+//                record.set("p_type_name",objects[1]);
+//                record.set("p_brand_name",objects[2]);
+//
+//                Record r=Db.findFirst("SELECT ( SELECT pc.id FROM kk_product_category pc WHERE pc. name LIKE ? LIMIT 0,1) AS cid, " +
+//                        "( SELECT pt.id FROM kk_product_type pt WHERE pt.name LIKE ? LIMIT 0,1) AS tid, ( SELECT pb.id FROM kk_product_brand pb WHERE pb. name LIKE ? LIMIT 0,1) AS bid", "%" + objects[0] + "%", "%" + objects[1] + "%", "%" + objects[2] + "%");
+//                record.set("p_category_id",r.getInt("cid"));
+//                record.set("p_type_id",r.getInt("tid"));
+//                record.set("p_brand_id",r.getInt("bid"));
+//
+//                record.set("name",objects[3]);
+//                record.set("txm_code",objects[4]);
+//                record.set("p_unit_name",objects[5]);
+//                record.set("p_unit_num",objects[6]);
+//                record.set("min_stock_all",objects[7]);
+//                record.set("min_stock_shop",objects[8]);
+//                record.set("supplier_price",objects[9]);
+//                record.set("box_specification",objects[10]);
+//                record.set("min_quantity",objects[11]);
+//                record.set("quantity",objects[12]);
+//                record.set("p_desc",objects[13]);
+//                Db.save("kk_product_data",record);
+////               Db.update("insert into kk_product_data(p_category_name,p_type_name,p_brand_name,name,txm_code,p_unit_name,p_unit_num" +
+////                      "min_stock_all,min_stock_shop,supplier_price,box_specification,min_quantity,quantity,p_desc) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", objects);
+////                Db.update("insert into kk_product_data(p_type_name) values(?)", objects);
+//                System.out.print("\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -438,4 +442,25 @@ public class Test extends TestBefore {
         r1.set("mg",mg);
         Db.save("kk_login_sign",r1);
     }
+  public void insertExcel(){
+      String s_uid="";
+      List<Record> records=Db.find("select o.create_time,o.price,o.order_id from kk_order o");
+      for(Record record:records){
+          String order_id=record.getStr("order_id");
+          List<Record> records1=Db.find("select product_id,product_number,product_price,is_norm from kk_order_item oi where oi.order_id=?",order_id);
+          for(Record record1:records1){
+              int norm=record1.getInt("is_norm");
+              if(norm==1){
+                  List<Record> records2=Db.find("select p.name,pi.product_price,product_number from kk_order_item oi left join kk_product p on oi.product_id=p.id");
+              }
+              if (norm==2){
+                  List<Record> records2=Db.find("select p.name,pi.product_price,product_number from kk_order_item oi left join kk_product_activity p on oi.product_id=p.id");
+              }
+          }
+      }
+
+  }
+
+
+
 }

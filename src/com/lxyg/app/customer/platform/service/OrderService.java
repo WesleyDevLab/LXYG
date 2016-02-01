@@ -17,6 +17,7 @@ public class OrderService {
 	private static Order orderDao = new Order();
 	private static Shop shopDao=new Shop();
 	private static final Logger log = Logger.getLogger(OrderService.class);
+	private GoodsService goodsService=new GoodsService();
 
 	public boolean splice2Create_1(String orderId, String items,int cashPay) {
 		int allPrice=0;
@@ -66,16 +67,14 @@ public class OrderService {
 				int productPay=g.getBigDecimal("price").intValue();
 
 				Db.update(
-						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
-								+ "values(?,?,?,?,?,?,?,?)", new Object[]{
-								orderId, productId, productNum, price, cash,
-								productPay, new Date(), 1});
+						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm,activity_id) "
+								+ "values(?,?,?,?,?,?,?,?,?)", orderId, productId, productNum, price, cash, productPay, new Date(), 1,-1);
 			}
 		}
 		return true;
 	}
 
-	public boolean splice2Create_a(String orderId, String items) {
+	public boolean splice2Create_a(String orderId, String items,int activity_id) {
 		JSONArray array = JSONArray.fromObject(items);
 		if (array.size() > 0) {
 			for (int i = 0; i < array.size(); i++) {
@@ -85,14 +84,50 @@ public class OrderService {
 				Record record=Db.findById("kk_product_activity",productId);
 				BigDecimal price = record.getBigDecimal("price");
 				Db.update(
-						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm) "
-								+ "values(?,?,?,?,?,?,?,?)", new Object[]{
+						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm,activity_id) "
+								+ "values(?,?,?,?,?,?,?,?,?)",
 								orderId, productId, productNum, price, 0,
-								price, new Date(), 2});
+								price, new Date(), 2,activity_id);
 				Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId);
 			}
 		}
 		return true;
+	}
+
+	public boolean splice2Create_b(String orderId, String items,int shop_id) {
+		JSONArray array = JSONArray.fromObject(items);
+		if (array.size() > 0) {
+			for (int i = 0; i < array.size(); i++) {
+				JSONObject o = array.getJSONObject(i);
+				int productId = o.getInt("productId");
+				int productNum = o.getInt("productNum");
+				int isNorm = o.getInt("is_norm");
+				int activity_id = o.getInt("activity_id");
+				if(isNorm==2){
+					Record record=Db.findById("kk_product_activity",productId);
+					BigDecimal price = record.getBigDecimal("price");
+					Db.update(
+							"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm,activity_id) "
+									+ "values(?,?,?,?,?,?,?,?,?)", orderId, productId, productNum, price, 0, price, new Date(), 2,activity_id);
+					Db.update("update kk_product_activity set surplus_num=surplus_num-? where id=?",productNum,productId); //减少库存
+				}
+				if(isNorm==1){
+					Goods g = new Goods().findById(productId);
+					BigDecimal price = g.getBigDecimal("price");
+					BigDecimal cash = g.getBigDecimal("cash_pay");
+					int productPay=g.getBigDecimal("price").intValue();
+
+					Db.update(
+							"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm,activity_id) "
+									+ "values(?,?,?,?,?,?,?,?,?)",
+									orderId, productId, productNum, price, cash, productPay, new Date(), 1,-1);
+
+					goodsService.reduceProNum(productId, productNum, shop_id); //减少库存
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 
@@ -262,72 +297,72 @@ public class OrderService {
 //	}
 
 
-	/**定时送下单**/
-	public static Map<String, Object> orderDSS_2(List<Shop> shops,
-			String orderId, double lng, double lat) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		/**
-		 * 遍历所有的店
-		 * */
-		List<Integer> pros = new ArrayList<Integer>();// 遍历添加下单的产品
-		for (Shop s : shops) {
-			List<Integer> pIds = RegularUtil.getIntArray(s.getStr("pros")
-					.split(","));
-			/**
-			 * 防止重复产品下单
-			 * */
-			pIds= RegularUtil.minus(pros, pIds);
-			if (pIds.size()==0) {
-				continue;
-			}
-			Order nOrder = orderDao.createOrder(pIds, orderId, "",
-					IConstant.OrderStatus.order_status_kqd);
-			List<Record> rs = nOrder.get("orderItems");
-			new OrderCache().save(s.getStr("s_uid"), nOrder.getStr("order_id"),
-					rs, lat, lng, IConstant.orderAction.order_type_dingshisong);
-			
-			new JPush(IConstant.Title, IConstant.content_order,
-					s.getStr("phone"), IConstant.PUSH_ONE, M.pushMap(
-							nOrder.getStr("order_id"),
-							IConstant.OrderStatus.order_status_kqd),"shop").start();
-			pros.addAll(pIds);
-		}
-		result.put("code", 10002);
-		result.put("msg", "立即送抢单");
-		return result;
-	}
-	/**立即送**/
-	public static Map<String,Object> orderLJS_2(List<Shop> shops,String orderId){
-		Map<String,Object> result=new HashMap<String, Object>();
-			/**
-			 * 遍历所有的店
-			 * */
-		List<Integer> pros=new ArrayList<Integer>();//遍历添加下单的产品
-		for(Shop s:shops){
-			List<Integer> pIds= RegularUtil.getIntArray(s.getStr("pros").split(","));
-			/**
-			 * 防止重复产品下单
-			 * */
-			pIds= RegularUtil.minus(pros, pIds);
-			if (pIds.size()==0) {
-				continue;
-			}
-			Order nOrder = orderDao.createOrder(pIds, orderId,
-					s.getStr("s_uid"),
-					IConstant.OrderStatus.order_status_dfh);
-			
-			new JPush(IConstant.Title, IConstant.content_order_new,
-					s.getStr("phone"), IConstant.PUSH_ONE,
-					M.pushMap(nOrder.getStr("order_id"),
-							IConstant.OrderStatus.order_status_dfh),"shop")
-					.start();
-			
-			pros.addAll(pIds);
-		}
-		result.put("code", 10002);
-		result.put("msg", "立即送-count=1-推送");
-		return result;
-	}
+//	/**定时送下单**/
+//	public static Map<String, Object> orderDSS_2(List<Shop> shops,
+//			String orderId, double lng, double lat) {
+//		Map<String, Object> result = new HashMap<String, Object>();
+//		/**
+//		 * 遍历所有的店
+//		 * */
+//		List<Integer> pros = new ArrayList<Integer>();// 遍历添加下单的产品
+//		for (Shop s : shops) {
+//			List<Integer> pIds = RegularUtil.getIntArray(s.getStr("pros")
+//					.split(","));
+//			/**
+//			 * 防止重复产品下单
+//			 * */
+//			pIds= RegularUtil.minus(pros, pIds);
+//			if (pIds.size()==0) {
+//				continue;
+//			}
+//			Order nOrder = orderDao.createOrder(pIds, orderId, "",
+//					IConstant.OrderStatus.order_status_kqd);
+//			List<Record> rs = nOrder.get("orderItems");
+//			new OrderCache().save(s.getStr("s_uid"), nOrder.getStr("order_id"),
+//					rs, lat, lng, IConstant.orderAction.order_type_dingshisong);
+//
+//			new JPush(IConstant.Title, IConstant.content_order,
+//					s.getStr("phone"), IConstant.PUSH_ONE, M.pushMap(
+//							nOrder.getStr("order_id"),
+//							IConstant.OrderStatus.order_status_kqd),"shop").start();
+//			pros.addAll(pIds);
+//		}
+//		result.put("code", 10002);
+//		result.put("msg", "立即送抢单");
+//		return result;
+//	}
+//	/**立即送**/
+//	public static Map<String,Object> orderLJS_2(List<Shop> shops,String orderId){
+//		Map<String,Object> result=new HashMap<String, Object>();
+//			/**
+//			 * 遍历所有的店
+//			 * */
+//		List<Integer> pros=new ArrayList<Integer>();//遍历添加下单的产品
+//		for(Shop s:shops){
+//			List<Integer> pIds= RegularUtil.getIntArray(s.getStr("pros").split(","));
+//			/**
+//			 * 防止重复产品下单
+//			 * */
+//			pIds= RegularUtil.minus(pros, pIds);
+//			if (pIds.size()==0) {
+//				continue;
+//			}
+//			Order nOrder = orderDao.createOrder(pIds, orderId,
+//					s.getStr("s_uid"),
+//					IConstant.OrderStatus.order_status_dfh);
+//
+//			new JPush(IConstant.Title, IConstant.content_order_new,
+//					s.getStr("phone"), IConstant.PUSH_ONE,
+//					M.pushMap(nOrder.getStr("order_id"),
+//							IConstant.OrderStatus.order_status_dfh),"shop")
+//					.start();
+//
+//			pros.addAll(pIds);
+//		}
+//		result.put("code", 10002);
+//		result.put("msg", "立即送-count=1-推送");
+//		return result;
+//	}
 
 	/***
 	 * 记录完成订单的订单
@@ -408,39 +443,39 @@ public class OrderService {
 		return b;
 	}
 
-	public void fb_splice2order(String order_id){
-		List<Integer> pids=new ArrayList<Integer>();
-		String str="";
-		Order order = new Order().findById(false, order_id);
-		List<Record> orderItems=order.get("orderItems");
-		for(Record record:orderItems){
-			if(record.getInt("is_norm")==2){
-				int productId=record.getInt("product_id");
-				FBGoods fb=FBGoods.dao.findbyId(productId);
-				if(fb!=null){
-					pids.add(productId);
-					str+=productId+",";
-				}
-			}
-		}
-		if(pids.size()!=0){
-			str=str.substring(0,str.length()-1);
-			List<Record> records= Db.find("select * from kk_product_fb where id in (" + str + ") group by s_uid");
-			for(Record record:records){
-				Record r= Db.findFirst("select group_concat(fb.id) as pids,fb.* from kk_product_fb fb where fb.s_uid=? and fb.id in (" + str + ") and fb.hide=0 ", record.getStr("s_uid"));
-				String pid=r.getStr("pids");
-				Order horder=Order.dao.createOrderFB(pid.split(","), order_id, record.getStr("s_uid"), IConstant.OrderStatus.order_status_dfh);
-
-				Shop shop=Shop.dao.findBysuid(record.getStr("s_uid"));
-				new JPush(IConstant.Title, IConstant.content_order_new,
-						shop.getStr("phone"), IConstant.PUSH_ONE,
-						M.pushMap(horder.getStr("order_id"),
-								IConstant.OrderStatus.order_status_dfh),"shop")
-						.start();
-				pushBySdk(shop.getStr("phone"),horder.getStr("order_id"),1);
-			}
-		}
-	}
+//	public void fb_splice2order(String order_id){
+//		List<Integer> pids=new ArrayList<Integer>();
+//		String str="";
+//		Order order = new Order().findById(false, order_id);
+//		List<Record> orderItems=order.get("orderItems");
+//		for(Record record:orderItems){
+//			if(record.getInt("is_norm")==2){
+//				int productId=record.getInt("product_id");
+//				FBGoods fb=FBGoods.dao.findbyId(productId);
+//				if(fb!=null){
+//					pids.add(productId);
+//					str+=productId+",";
+//				}
+//			}
+//		}
+//		if(pids.size()!=0){
+//			str=str.substring(0,str.length()-1);
+//			List<Record> records= Db.find("select * from kk_product_fb where id in (" + str + ") group by s_uid");
+//			for(Record record:records){
+//				Record r= Db.findFirst("select group_concat(fb.id) as pids,fb.* from kk_product_fb fb where fb.s_uid=? and fb.id in (" + str + ") and fb.hide=0 ", record.getStr("s_uid"));
+//				String pid=r.getStr("pids");
+//				Order horder=Order.dao.createOrderFB(pid.split(","), order_id, record.getStr("s_uid"), IConstant.OrderStatus.order_status_dfh);
+//
+//				Shop shop=Shop.dao.findBysuid(record.getStr("s_uid"));
+//				new JPush(IConstant.Title, IConstant.content_order_new,
+//						shop.getStr("phone"), IConstant.PUSH_ONE,
+//						M.pushMap(horder.getStr("order_id"),
+//								IConstant.OrderStatus.order_status_dfh),"shop")
+//						.start();
+//				pushBySdk(shop.getStr("phone"),horder.getStr("order_id"),1);
+//			}
+//		}
+//	}
 
 
 //	public Map<String, Object> splice2Create_2(String order_id) {
@@ -576,76 +611,76 @@ public class OrderService {
 //	}
 
 
-	/**定时送下单**/
-	public static Map<String, Object> orderDSS(List<Shop> shops,
-											   String orderId, double lng, double lat) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		/**
-		 * 遍历所有的店
-		 * */
-		List<Integer> pros = new ArrayList<Integer>();// 遍历添加下单的产品
-		for (Shop s : shops) {
-			List<Integer> pIds = RegularUtil.getIntArray(s.getStr("pros")
-					.split(","));
-			/**
-			 * 防止重复产品下单
-			 * */
-			pIds= RegularUtil.minus(pros, pIds);
-			if (pIds.size()==0) {
-				continue;
-			}
-			Order nOrder = orderDao.createOrder(pIds, orderId, "",
-					IConstant.OrderStatus.order_status_kqd);
-			List<Record> rs = nOrder.get("orderItems");
-			new OrderCache().save(s.getStr("s_uid"), nOrder.getStr("order_id"),
-					rs, lat, lng, IConstant.orderAction.order_type_dingshisong);
-
-			new JPush(IConstant.Title, IConstant.content_order,
-					s.getStr("phone"), IConstant.PUSH_ONE, M.pushMap(
-					nOrder.getStr("order_id"),
-					IConstant.OrderStatus.order_status_kqd),"shop").start();
-			pros.addAll(pIds);
-
-			pushBySdk(s.getStr("phone"), nOrder.getStr("order_id"), 1);
-
-		}
-		result.put("code", 10002);
-		result.put("msg", "立即送抢单");
-		return result;
-	}
-	/**立即送**/
-	public static Map<String,Object> orderLJS(List<Shop> shops,String orderId){
-		Map<String,Object> result=new HashMap<String, Object>();
-		/**
-		 * 遍历所有的店
-		 * */
-		List<Integer> pros=new ArrayList<Integer>();//遍历添加下单的产品
-		for(Shop s:shops){
-			List<Integer> pIds= RegularUtil.getIntArray(s.getStr("pros").split(","));
-			/**
-			 * 防止重复产品下单
-			 * */
-			pIds= RegularUtil.minus(pros, pIds);
-			if (pIds.size()==0) {
-				continue;
-			}
-			Order nOrder = orderDao.createOrder(pIds, orderId,
-					s.getStr("s_uid"),
-					IConstant.OrderStatus.order_status_dfh);
-
-			new JPush(IConstant.Title, IConstant.content_order_new,
-					s.getStr("phone"), IConstant.PUSH_ONE,
-					M.pushMap(nOrder.getStr("order_id"),
-							IConstant.OrderStatus.order_status_dfh),"shop")
-					.start();
-
-			pushBySdk(s.getStr("phone"), nOrder.getStr("order_id"),1);
-			pros.addAll(pIds);
-		}
-		result.put("code", 10002);
-		result.put("msg", "立即送-count=1-推送");
-		return result;
-	}
+//	/**定时送下单**/
+//	public static Map<String, Object> orderDSS(List<Shop> shops,
+//											   String orderId, double lng, double lat) {
+//		Map<String, Object> result = new HashMap<String, Object>();
+//		/**
+//		 * 遍历所有的店
+//		 * */
+//		List<Integer> pros = new ArrayList<Integer>();// 遍历添加下单的产品
+//		for (Shop s : shops) {
+//			List<Integer> pIds = RegularUtil.getIntArray(s.getStr("pros")
+//					.split(","));
+//			/**
+//			 * 防止重复产品下单
+//			 * */
+//			pIds= RegularUtil.minus(pros, pIds);
+//			if (pIds.size()==0) {
+//				continue;
+//			}
+//			Order nOrder = orderDao.createOrder(pIds, orderId, "",
+//					IConstant.OrderStatus.order_status_kqd);
+//			List<Record> rs = nOrder.get("orderItems");
+//			new OrderCache().save(s.getStr("s_uid"), nOrder.getStr("order_id"),
+//					rs, lat, lng, IConstant.orderAction.order_type_dingshisong);
+//
+//			new JPush(IConstant.Title, IConstant.content_order,
+//					s.getStr("phone"), IConstant.PUSH_ONE, M.pushMap(
+//					nOrder.getStr("order_id"),
+//					IConstant.OrderStatus.order_status_kqd),"shop").start();
+//			pros.addAll(pIds);
+//
+//			pushBySdk(s.getStr("phone"), nOrder.getStr("order_id"), 1);
+//
+//		}
+//		result.put("code", 10002);
+//		result.put("msg", "立即送抢单");
+//		return result;
+//	}
+//	/**立即送**/
+//	public static Map<String,Object> orderLJS(List<Shop> shops,String orderId){
+//		Map<String,Object> result=new HashMap<String, Object>();
+//		/**
+//		 * 遍历所有的店
+//		 * */
+//		List<Integer> pros=new ArrayList<Integer>();//遍历添加下单的产品
+//		for(Shop s:shops){
+//			List<Integer> pIds= RegularUtil.getIntArray(s.getStr("pros").split(","));
+//			/**
+//			 * 防止重复产品下单
+//			 * */
+//			pIds= RegularUtil.minus(pros, pIds);
+//			if (pIds.size()==0) {
+//				continue;
+//			}
+//			Order nOrder = orderDao.createOrder(pIds, orderId,
+//					s.getStr("s_uid"),
+//					IConstant.OrderStatus.order_status_dfh);
+//
+//			new JPush(IConstant.Title, IConstant.content_order_new,
+//					s.getStr("phone"), IConstant.PUSH_ONE,
+//					M.pushMap(nOrder.getStr("order_id"),
+//							IConstant.OrderStatus.order_status_dfh),"shop")
+//					.start();
+//
+//			pushBySdk(s.getStr("phone"), nOrder.getStr("order_id"),1);
+//			pros.addAll(pIds);
+//		}
+//		result.put("code", 10002);
+//		result.put("msg", "立即送-count=1-推送");
+//		return result;
+//	}
 
 	public static void pushBySdk(String phone,String order_id,int type){
 		String str="";
@@ -707,11 +742,7 @@ public class OrderService {
 	public boolean  updateOrderStatus(Order o,JSONObject json){
 		if(o.getInt("order_status")== IConstant.OrderStatus.order_status_dfh){
 			o.set("send_goods_time", new Date());
-			String userPhone=o.getStr("phone");
-			if(userPhone==null||userPhone.equals("")){
-				userPhone=o.getStr("wechat_id");
-			}
-			new JPush(IConstant.Title, IConstant.content_order_Touser_send +o.getStr("receive_code") , userPhone, IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_psz),"user").start();
+			new JPush(IConstant.Title, IConstant.content_order_Touser_send +o.getStr("receive_code") , o.getStr("u_uuid"), IConstant.PUSH_ONE, M.pushMap(o.getStr("order_id"), IConstant.OrderStatus.order_status_psz),"user").start();
 			if(o.getInt("address_id")!=0){
 				Record r= Db.findFirst("select * from kk_user_address where id=?", new Object[]{o.getInt("address_id")});
 				if(r!=null){
@@ -772,5 +803,89 @@ public class OrderService {
 			orderActivity.put("orderActivityItems",OrderActivity.dao.getActivityOrderItem(orderActivity.getStr("order_id")));
 		}
 		return orderActivityPage;
+	}
+
+
+
+	public JSONObject checkActivity(int activity_id,String uid,String items){
+		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activity_id);
+		JSONObject obj=new JSONObject();
+		if(record==null){
+			obj.put("msg","活动不存在");
+			obj.put("code",10001);
+			return obj;
+		}
+		JSONArray array=new JSONArray();
+		if(record.getInt("limit_e")>0){
+			array = JSONArray.fromObject(items);
+			for(int i=0;i<array.size();i++) {
+				JSONObject oritem = array.getJSONObject(i);
+					int productNum = oritem.getInt("productNum");
+					if(productNum>record.getInt("limit_e")){
+						obj.put("msg","超出限购数量");
+						obj.put("code",10001);
+						break;
+					}
+			}
+		}
+
+		switch (record.getInt("activity_type")){
+			case 2:
+				Date now=new Date();
+				Date start=record.getDate("start_time");
+				Date end=record.getDate("end_time");
+				if(start.before(now)&&end.after(now)){
+					obj.put("msg","");
+					obj.put("code",10002);
+				}else{
+					obj.put("msg","活动未开始或已过期");
+					obj.put("code",10001);
+				}
+				break;
+			case 4:
+				Record r=Db.findFirst("SELECT count(*) as count FROM kk_order o LEFT JOIN kk_order_item oi ON o.order_id = oi.order_id WHERE oi.product_id IN ( SELECT id FROM kk_product_activity pa WHERE pa.activity_id = ? ) AND o.order_status IN (" + IConstant.OrderStatus.order_status_dfh + ","+ IConstant.OrderStatus.order_status_psz + "," + IConstant.OrderStatus.order_status_ywc + "," + IConstant.OrderStatus.order_status_js_success + ") and o.u_uuid=?",activity_id,uid);
+				if(r.getLong("count")>0){
+					obj.put("msg","您不是新用户");
+					obj.put("code",10001);
+				}
+				break;
+		}
+		return obj;
+	}
+
+	public JSONObject checkActivity(String uid,int activityId,int proId,int proNum){
+		JSONObject obj=new JSONObject();
+		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activityId);
+		log.error("record:"+record);
+		if(record==null||proNum>record.getInt("limit_e")){
+			obj.put("msg","活动不存在");
+			obj.put("code",10001);
+			return obj;
+		}
+		switch (record.getInt("activity_type")){
+			case 2:
+				Date now=new Date();
+				Date start=record.getDate("start_time");
+				Date end=record.getDate("end_time");
+				if(start.before(now)&&end.after(now)){
+					obj.put("msg","");
+					obj.put("code",10002);
+				}else{
+					obj.put("msg","您不是新用户");
+					obj.put("code",10001);
+				}
+				break;
+			case 4:
+				Record r=Db.findFirst("SELECT count(*) as count FROM kk_order o LEFT JOIN kk_order_item oi ON o.order_id = oi.order_id WHERE oi.product_id IN ( SELECT id FROM kk_product_activity pa WHERE pa.activity_id = ? ) AND o.order_status IN (" + IConstant.OrderStatus.order_status_dfh + ","+ IConstant.OrderStatus.order_status_psz + "," + IConstant.OrderStatus.order_status_ywc + "," + IConstant.OrderStatus.order_status_js_success + ") and o.u_uuid=?",activityId,uid);
+				if(r.getLong("count")>0){
+					obj.put("msg","您不是新用户");
+					obj.put("code",10001);
+				}
+				break;
+			default:
+				obj.put("msg","");
+				obj.put("code",10002);
+		}
+		return obj;
 	}
 }

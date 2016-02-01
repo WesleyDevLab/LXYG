@@ -36,7 +36,7 @@ public class Order extends Model<Order> {
 
 	private static final String sql_all_select = "SELECT o.id AS orderId, o.order_no, o.order_id, o.order_status, o.create_time, o.modify_time, "
 			+ "o.finish_time, o.price, o.cash_pay,o.order_type, o.u_uuid, o.s_uuid AS shop_id, o.address_id, o.shop_name, o.pay_type, "
-			+ "o.pay_name, o.send_type, o.send_id, o.send_name, o.address, o.send_time,o.receive_code,o.is_rob,o.send_goods_time ,o.let_order_time,o.refuse_time,o.refuse_cause,o.original_order_id,o.remark,ua.full_address, ua.province_name, "
+			+ "o.pay_name, o.send_type, o.send_id, o.send_name, o.address, o.send_time,o.receive_code,o.is_rob,o.send_goods_time ,o.let_order_time,o.refuse_time,o.refuse_cause,o.original_order_id,o.remark,o.send_goods_type,ua.full_address, ua.province_name, "
 			+ "ua.city_name, ua.area_name, ua.street, ua.lat, ua.lng ,ua.name ,ua.phone,u.name as user_name, u.phone as user_phone,s.phone as shop_phone  ";
 	private static final String sql_all_from = "FROM kk_order o LEFT JOIN kk_user_address ua ON o.address_id = ua.id left join kk_user u on o.u_uuid=u.uuid left join kk_shop s on o.s_uuid=s.uuid where 1=1 ";
 
@@ -76,8 +76,8 @@ public class Order extends Model<Order> {
 	}
 
 	public List<Record> getOrderItems(String orderId) {
-		List<Record> records= Db.find("select oi.id as orderItemId,oi.product_id,oi.product_number,oi.product_price,oi.cash_pay,oi.product_pay,oi.is_norm,p.name,p.cover_img "
-				+ "from kk_order_item oi left join kk_product p on oi.product_id =p.id  where oi.order_id =? ", orderId);
+		List<Record> records= Db.find("select oi.id as orderItemId,oi.product_id,oi.product_number,oi.product_price,oi.cash_pay,oi.product_pay,oi.is_norm,oi.activity_id  "
+				+ "from kk_order_item oi where oi.order_id =? ", orderId);
 		for(Record record:records){
 			if(record.getInt("is_norm")==1){
 				Goods f= Goods.dao.findById(record.getInt("product_id"));
@@ -115,7 +115,6 @@ public class Order extends Model<Order> {
 		}
 		return maps;
 	}
-
 
 	public List<Order> getSpliceOrder(String order_id){
 		return dao.find(sql_all_select + sql_all_from + " and o.original_order_id=?", order_id);

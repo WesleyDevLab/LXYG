@@ -87,6 +87,39 @@ public class GoodsService{
 		}
 		return true;
 	}
+	/**判断库存是否足够*/
+	public boolean isProEnough(int proId,int proNum,int shopId,int is_norm){
+		if(is_norm==1){
+			Record record=Db.findFirst("select * from kk_shop_product ps where ps.shop_id=? and product_id=?",shopId,proId);
+			if(record.getInt("product_number")<=0||record.getInt("product_number")<proNum){
+				return false;
+			}
+		}
+		if(is_norm==2){
+			Record record=Db.findFirst("select * from kk_product_activity pa where pa.id=?",proId);
+			if(record.getInt("surplus_num")<=0||record.getInt("surplus_num")<proNum){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public int getPrice(int proId,int proNum,int is_norm){
+		int price = 0;
+		if(is_norm==1){
+			Goods g = new Goods().findById(proId);
+			int pric = g.getBigDecimal("price").intValue();
+			price = pric * proNum;
+		}
+
+		if(is_norm==2){
+			Record record=Db.findFirst("select * from kk_product_activity pa where pa.id=?",proId);
+			int pric = record.getBigDecimal("price").intValue();
+			price = pric * proNum;
+		}
+		return price;
+	}
+
 	/**增加库存*/
 	public void addProNum(int proId,int proNum,int shopId){
 		Db.update("update kk_shop_product set product_number=product_number+? where product_id=? and shop_id=?",proNum,proId,shopId);

@@ -50,7 +50,6 @@ public class OrderController extends Controller {
 		}
 		Map<String,Object> map=new HashMap<String, Object>();
 		String str=getPara("searchItem");
-		
 		if(str!=null&&!str.equals("")){
 			try {
 				map= JsonUtils.obj2map(str);
@@ -139,7 +138,7 @@ public class OrderController extends Controller {
 			obj.put("price",o.getBigDecimal("price"));
 			SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			obj.put("create_time", sdf.format(o.getDate("create_time")));
-			obj.put("items",Order.dao.getOrderItemsByMap(o.getStr("order_id")));
+			obj.put("items",Order.dao.getOrderItems(order_id));
 			obj.put("orderId",o.getStr("order_id"));
 			obj.put("shop_id",o.getStr("shop_id"));
 			objs.add(obj);
@@ -186,6 +185,7 @@ public class OrderController extends Controller {
 			renderJson();
 		}
 	}
+
 
 	public void loadOrderInfo(){
 		log.info("loadOrderInfo");

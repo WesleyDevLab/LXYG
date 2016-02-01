@@ -184,3 +184,6 @@ ALTER TABLE  kk_login_sign add mg int(2) not null default 1;
 ALTER TABLE  kk_integral add type int(2) not null default 1;
 
 ALTER TABLE  kk_product_brand add sort_id int(6) not null default 100;
+
+Alter Table kk_order_item add activity_id int(11) not null default 0;
+Alter Table kk_order add send_goods_type varchar(15) ;

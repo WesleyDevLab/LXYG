@@ -96,7 +96,7 @@ function check(str,page) {
 	                  "<td>"+order.shop_name+"</td>"+
 	                  "<td>"+order.shop_phone+"</td>"+
 	                  "<td>"+order.pay_name+"</td>"+
-	                  "<td>"+order.cash_pay+"</td>"+
+	                  "<td>"+order.create_time+"</td>"+
 	                  status+
 	                  "<td>￥ "+order.price/100+"</td>"+
 					  "<td><span  style='color:steelblue' >"+order.sep+"</span><a id="+order.order_id+"  style='color:firebrick'   href='javascript:void(0)' onclick='detail(this.id)'>详细信息</a></td></tr>"
@@ -135,7 +135,7 @@ function searchItem(){
 	if(payMode!=undefined && payMode!=0) {
 	   str+="payType:"+payMode+",";
 	}
-	//str+="type:web,";
+	str+="desc:desc,";
 	if(str.length>1){
 	   str=str.substr(0,str.length-1);
 	   str+="}";
@@ -260,7 +260,7 @@ function compareTime(startDate, endDate) {
 									<th>商铺</th>
 									<th>商铺电话</th>
 									<th>付款方式</th>
-									<th>优惠券</th>
+									<th>下单时间</th>
 									<th>订单状态</th>
 									<th>付款金额</th>
 									<th>订单分析</th>

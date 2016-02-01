@@ -240,6 +240,29 @@ public class WXUtil {
 		return res;
 	}
 
+	public static Map<String,Object> orderQuery(String order_id,String key){
+		Map<String,Object> map=new HashMap<String,Object>();
+		map.put("appid",APPID);
+		map.put("mch_id",MCH_ID);
+		map.put("nonce_str",RandomStringGenerator.getRandomStringByLength(32));
+		map.put("out_trade_no",order_id);
+		String sign= Signature.getSign(map,key);
+		map.put("sign",sign);
+		String postData= M.mapToXML(map);
+		String str = postSend(order_query, postData);
+		Map res=new HashMap();
+		try {
+			res=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
 
 
 
@@ -309,8 +332,8 @@ public class WXUtil {
 //	}
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-		String str="<xml><return_code><![CDATA[SUCCESS]]></return_code>";
-
+		Map m=orderQuery("1009280584201601282954205678","d4624c36b6795d1lxygcf0547af5443d");
+		System.out.println(m);
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
 		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");

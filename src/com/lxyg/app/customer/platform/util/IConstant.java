@@ -104,6 +104,22 @@ public interface IConstant {
 			return map.get(key);
 		}
 	}
+
+	class sendGoodsType{
+		public static int send_type_1 =1;
+		public static int send_type_2=2;
+		public static String send_type_1_String = "送货上门";
+		public static String send_type_2_String = "到店自取";
+		private static Map<Integer, String> map = new HashMap<Integer, String>();
+		static {
+			map.put(send_type_1, send_type_1_String);
+			map.put(send_type_2, send_type_2_String);
+		}
+		public static String get(int key) {
+			return map.get(key);
+		}
+	}
+
 	
 	//-1 初始订单 0 支付完成   1 可抢单 2 待发货 3 待收货 4 已完成 5 拒收 6 让单 7 流单;
 	 class OrderStatus {
