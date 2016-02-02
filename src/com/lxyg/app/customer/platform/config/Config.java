@@ -76,6 +76,7 @@ public class Config extends JFinalConfig {
 	public void configInterceptor(Interceptors me) {
 		me.add(new SessionInViewInterceptor());
 		me.add(new visitInterceptor());
+
 	}
 	
 	/**

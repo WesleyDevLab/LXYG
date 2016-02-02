@@ -853,11 +853,11 @@ public class OrderService {
 		return obj;
 	}
 
-	public JSONObject checkActivity(String uid,int activityId,int proId,int proNum){
+	public JSONObject checkActivity(String uid,int activityId,int proId,int proNum,JSONArray array){
 		JSONObject obj=new JSONObject();
 		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activityId);
 		log.error("record:"+record);
-		if(record==null||proNum>record.getInt("limit_e")){
+		if(record==null){
 			obj.put("msg","活动不存在");
 			obj.put("code",10001);
 			return obj;
@@ -876,12 +876,22 @@ public class OrderService {
 				}
 				break;
 			case 4:
+				if(array.size()>1){
+					obj.put("msg","限购1件");
+					obj.put("code",10001);
+					break;
+				}
 				Record r=Db.findFirst("SELECT count(*) as count FROM kk_order o LEFT JOIN kk_order_item oi ON o.order_id = oi.order_id WHERE oi.product_id IN ( SELECT id FROM kk_product_activity pa WHERE pa.activity_id = ? ) AND o.order_status IN (" + IConstant.OrderStatus.order_status_dfh + ","+ IConstant.OrderStatus.order_status_psz + "," + IConstant.OrderStatus.order_status_ywc + "," + IConstant.OrderStatus.order_status_js_success + ") and o.u_uuid=?",activityId,uid);
 				if(r.getLong("count")>0){
 					obj.put("msg","您不是新用户");
 					obj.put("code",10001);
+					break;
 				}
-				break;
+				if(proNum>record.getInt("limit_e")){
+					obj.put("msg","限购"+record.getInt("limit_e")+"个");
+					obj.put("code",10001);
+					break;
+				}
 			default:
 				obj.put("msg","");
 				obj.put("code",10002);

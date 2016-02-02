@@ -1,5 +1,7 @@
 package com.lxyg.app.customer.platform.util;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+
 import java.security.MessageDigest;
 
 public class MD5 {
@@ -31,6 +33,7 @@ public class MD5 {
 		return null;
 	}
 	public static void main(String[] args) {
+		System.out.println(getMd5String("111111"));
 		
 	}
 }

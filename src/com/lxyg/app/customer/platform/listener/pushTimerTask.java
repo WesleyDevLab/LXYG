@@ -31,7 +31,6 @@ public class pushTimerTask{
         }
     }
     public static void end(){
-
         timerTask.cancel();
     }
 }

@@ -2432,12 +2432,7 @@ public class AppController extends Controller {
 			return;
 		}
 		User u= User.dao.findFirst("select * from kk_user where wechat_id=?", new Object[]{wechat_id});
-		if(u!=null){
-			Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 2});
-			if(r==null){
-				User.dao.getCash(u.getStr("uuid"),2);
-			}
-		}else{
+		if(u==null){
 			Shop s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
 			u=new User();
 			u.set("name", weName);
@@ -2450,6 +2445,11 @@ public class AppController extends Controller {
 			u.set("head_img", head);
 			u.set("phone", "");
 			u.save();
+
+			Record r= Db.findFirst("select * from kk_user_cash where u_uuid=? and cash_id=?", new Object[]{u.getStr("uuid"), 2});
+			if(r==null){
+				User.dao.getCash(u.getStr("uuid"),2);
+			}
 		}
 		if(json.containsKey("version")){
 			String version=json.getString("version");

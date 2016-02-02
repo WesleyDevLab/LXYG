@@ -442,21 +442,19 @@ public class Test extends TestBefore {
         r1.set("mg",mg);
         Db.save("kk_login_sign",r1);
     }
+    @org.junit.Test
   public void insertExcel(){
-      String s_uid="";
-      List<Record> records=Db.find("select o.create_time,o.price,o.order_id from kk_order o");
+      String sql="SELECT * FROM kk_visit v WHERE v.device LIKE 'pc' AND url LIKE '%http://lexiangyungou.cn:8080/LXYG/pageTo/updateProduct%' AND visit_time BETWEEN '2016-01-22' AND '2016-02-02' GROUP BY url ORDER BY id DESC";
+      List<Record> records =Db.find(sql);
       for(Record record:records){
-          String order_id=record.getStr("order_id");
-          List<Record> records1=Db.find("select product_id,product_number,product_price,is_norm from kk_order_item oi where oi.order_id=?",order_id);
-          for(Record record1:records1){
-              int norm=record1.getInt("is_norm");
-              if(norm==1){
-                  List<Record> records2=Db.find("select p.name,pi.product_price,product_number from kk_order_item oi left join kk_product p on oi.product_id=p.id");
-              }
-              if (norm==2){
-                  List<Record> records2=Db.find("select p.name,pi.product_price,product_number from kk_order_item oi left join kk_product_activity p on oi.product_id=p.id");
+          String url=record.getStr("url").substring(50,record.getStr("url").length());
+          String str2="";
+          for(int i=0;i<url.length();i++){
+              if(url.charAt(i)>=48 && url.charAt(i)<=57){
+                  str2+=url.charAt(i);
               }
           }
+          System.out.println(str2);
       }
 
   }

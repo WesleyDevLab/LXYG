@@ -17,6 +17,7 @@ public class visitInterceptor implements Interceptor {
 		String device="";
 		String user_id = "0";
 		String session_id="";
+		String macAddress = "";
 		HttpServletRequest req=ai.getController().getRequest();
 		
 		Manager m=ai.getController().getSessionAttr("manager");
@@ -36,7 +37,6 @@ public class visitInterceptor implements Interceptor {
 		if(req.getCookies() !=null){
 			for(Cookie c:req.getCookies()){
 				if(c.getName().equals("JSESSIONID")){
-					
 					session_id=c.getValue();
 				}
 			}
@@ -48,7 +48,6 @@ public class visitInterceptor implements Interceptor {
 		new VisitThread(ip,device,user_id,session_id,url).start();
 		ai.invoke();
 	}
-
 }
 
 class VisitThread extends Thread{
@@ -57,17 +56,21 @@ class VisitThread extends Thread{
 	String user_id;
 	String session_id;
 	String url;
+	String mac_address;
 	public VisitThread(String ip,String device,String user_id,String session_id,String url){
 		this.ip=ip;
 		this.device=device;
 		this.user_id=user_id;
 		this.session_id=session_id;
 		this.url=url;
-		
+//		if(device.equals("pc")){
+//		   this.mac_address=GetMacAddress.getMacAddress(ip);
+//		}
+
 	}
 	@Override
 	public void run() {
-		Db.update("insert into kk_visit(ip,device,user_id,session_id,url,visit_time) values(?,?,?,?,?,?)", new Object[]{ip, device, user_id, session_id, url, new Date()});
+		Db.update("insert into kk_visit(ip,device,user_id,session_id,url,visit_time,mac_address) values(?,?,?,?,?,?,?)", ip, device, user_id, session_id, url, new Date(),mac_address);
 		super.run();
 	}
 	

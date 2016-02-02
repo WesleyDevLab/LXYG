@@ -98,7 +98,7 @@ public class User extends Model<User> {
 	
 	
 	/**
-	 *领取电子现金券
+	 *领取电子现金券  o1SiNt3qbVZzp44JUxboiMtCiYPM
 	 * **/
 	public void getCash(String uid,int cash_id){
 		Record re= Db.findFirst("select * from kk_cash_item where cash_item_status=1 and cash_id=?", new Object[]{cash_id});

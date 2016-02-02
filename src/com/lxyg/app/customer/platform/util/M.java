@@ -13,6 +13,8 @@ import sun.awt.GlobalCursorManager;
 import java.awt.geom.Point2D;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -252,9 +254,12 @@ public class M {
 
 
 
-    public static void main(String[] args){
-		BigDecimal b1=new BigDecimal(1);
-		BigDecimal b2=new BigDecimal(100);
-		System.out.println(Math.round(b1.intValue()/100));
-    }
+
+
+	public static void main(String[] args){
+		try {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

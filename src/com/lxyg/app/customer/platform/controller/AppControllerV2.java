@@ -702,7 +702,7 @@ public class AppControllerV2 extends Controller {
                 }
                 //活动产品
                 if(activityId>0){
-                    JSONObject obj = orderService.checkActivity(uid,activityId,productId,productNum);
+                    JSONObject obj = orderService.checkActivity(uid,activityId,productId,productNum,array);
                     if(obj.containsKey("code")&&obj.getInt("code")==10001){
                         renderFaile(obj.getString("msg"));
                         return;
