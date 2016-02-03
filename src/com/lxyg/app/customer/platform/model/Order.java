@@ -459,5 +459,18 @@ public class Order extends Model<Order> {
 		return jsonObject;
 	}
 
+	public boolean recordfinshOrder(Order o) {
+		String orderId = o.getStr("order_id");
+		String shopId = o.getStr("s_uuid");
+		int allPrice =o.getBigDecimal("price").intValue()/100;
+		shopDao.updateBalance(shopId,allPrice,1);
+		shopDao.createBalanceLog(shopId,allPrice,0,IConstant.balanceType.getType(o.getInt("pay_type")),orderId);
+		/**
+		 * 积分
+		 * */
+		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"),1);
+		return true;
+	}
+
 
 }

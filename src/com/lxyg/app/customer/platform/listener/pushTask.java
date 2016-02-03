@@ -12,13 +12,13 @@ import java.util.TimerTask;
 public class pushTask extends TimerTask {
     private String content;
     public pushTask(String content){
+
         this.content=content;
     };
-    public pushTask(){
-    };
+
     @Override
     public void run() {
-//        JPushKit.send_all(content);
+
     }
 
 }

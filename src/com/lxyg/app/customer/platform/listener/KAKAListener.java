@@ -14,6 +14,7 @@ public class KAKAListener  implements ServletContextListener {
 //		pushTimerTask.begin();
 //		letOrderGoListener.begin();
 //		pushManagerListener.begin();
+		orderAutoFinishListener.begin();
 	}
 
 

@@ -415,7 +415,7 @@ public final class DateTools extends SimpleDateFormat{
 	 * @return int
 	 * @throws ParseException ParseException
 	 */
-	public int getDaysOperationDate(Date srcDate, Date destDate) throws ParseException{
+	public static int getDaysOperationDate(Date srcDate, Date destDate) throws ParseException{
 		return (int)StrictMath.abs((srcDate.getTime() - destDate.getTime()) / 30);
 	}
 
