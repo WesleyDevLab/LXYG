@@ -214,7 +214,7 @@ public class PageController extends Controller {
 		if(isParaExists("pg")){
 			page=getParaToInt("pg");
 		}
-		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select * ","from kk_product_activity pa where pa.activity_id=?",act_id);
+		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select * ","from kk_product_activity pa where pa.activity_id=? and hide=1",act_id);
 		setAttr("products",recordPage);
 		setAttr("sa_id",act_id);
 		render("/activity/activityPros.jsp");

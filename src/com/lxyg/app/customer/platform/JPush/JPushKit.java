@@ -64,6 +64,7 @@ public class JPushKit {
 					send_alias(masterSecretC,aC,alias,objs,content,Title);
 				}
 			}
+
 			if(r.getInt("login_ios_inapp")==1 ){
 				//如果是商家  则使用商家的key
 				if(plat.equals("shop")){

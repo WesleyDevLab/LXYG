@@ -377,7 +377,9 @@ public class OrderService {
 		/**
 		 * 积分
 		 * */
-		new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"),1);
+		if(allCash==0){
+			new User().addIntegral(Math.round(allPrice),o.getStr("u_uuid"),1);
+		}
 //		int allPay = allPrice-allCash;
 //		int shopAccount = 0;
 //		int shopCommission = 0;
@@ -424,8 +426,6 @@ public class OrderService {
 //			shopAccount=allPay;
 //			Shop.dao.createBalanceLog(shopId, shopAccount, allPay, IConstant.balanceType.balance_type_in_xf, orderId);
 //		}
-
-
 		return true;
 	}
 

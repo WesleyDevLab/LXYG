@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="IKAnalyzer2012FF_u1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/lucence/IKAnalyzer2012FF_u1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/lucence/lucene-core-4.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/lucence/lucene-highlighter-4.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/web/WEB-INF/lib/lucence/lucene-queryparser-4.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

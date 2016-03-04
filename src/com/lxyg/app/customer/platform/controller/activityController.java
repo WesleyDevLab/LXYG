@@ -174,11 +174,10 @@ public class activityController extends Controller{
         int p_id=getParaToInt("ap_id");
         Record record=Db.findById("kk_product_activity","id",p_id);
         if(record!=null&&record.getInt("id")!=0){
-            Db.delete("kk_product_activity",record);
-            renderSuccess("删除成共",null);
+            record.set("hide",0);
+            Db.update("kk_product_activity",record);
+            renderSuccess("删除成功",null);
             return;
         }
     }
-
-
 }

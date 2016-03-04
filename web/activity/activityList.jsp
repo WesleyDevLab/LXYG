@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: 秦帅
-  Date: 2015/12/1
-  Time: 15:43
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/common/taglibs.jsp" %>

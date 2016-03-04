@@ -400,7 +400,7 @@ public class AppControllerV2 extends Controller {
             renderSuccess("暂无上货", s);
             return;
         }
-        recommGoods = Goods.dao.find("SELECT  p.id AS productId, p.name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time, s.uuid " +
+        recommGoods = Goods.dao.find("SELECT  p.id AS productId, p.name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time,ps.product_number,s.uuid " +
                 "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND s.uuid=? GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6", s.getStr("uuid"));
         s.put("recommGoods", recommGoods);
         String[] sorts = s.getStr("sort").split(",");
@@ -415,7 +415,7 @@ public class AppControllerV2 extends Controller {
             obj.put("is_norm", record.getInt("is_norm"));
             types.add(obj);
             m.put("type", r);
-            List<Goods> g = new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time  " +
+            List<Goods> g = new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time,ps.product_number  " +
                     "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
                     "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=?  GROUP BY p.id order by ps.sort_id desc, is_recomm desc LIMIT 0,6", sorts[i], s.getStr("uuid"));
             if (g.size() != 0) {
@@ -494,8 +494,8 @@ public class AppControllerV2 extends Controller {
         /**配送**/
         if (addressId != 0 && !shopId.equals("")) {
             Record r = Db.findById("kk_user_address", addressId);
-            map.put("address", r.get("full_address"));
             map.put("shop_name", shop.get("name"));
+            map.put("address", r.get("full_address"));
             map.put("rec_name",r.getStr("name"));
             map.put("rec_phone", r.getStr("phone"));
             /**
@@ -544,11 +544,13 @@ public class AppControllerV2 extends Controller {
                 allPrice += pric * productNum;
             }
         }
+
+
         /***代金劵
          * 抵扣**/
         if (json.containsKey("cashPay") && json.getInt("cashPay") != 0 && payType != 3) {
             Record r = Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
-                    "where uc.u_uuid=? and c.cash_status=1", new Object[]{uid});
+                    "where uc.u_uuid=? and c.cash_status=1",uid);
             if (r.getBigDecimal("cash").intValue() != 0) {
                 Record record = Db.findFirst("select count(*) as count from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop.getInt("id"));
                 if (record.getLong("count") > 0) {
@@ -598,7 +600,7 @@ public class AppControllerV2 extends Controller {
                     SdkMessage.sendUser(shop.getStr("phone"), str);
                 }
                 /**下单后 程序推送**/
-                Map<String,Object> pu=new HashMap<String,Object>();
+                Map<String,Object> pu=new HashMap<>();
                 pu.put("orderId",orderId);
                 JPushKit.push(shop.getStr("phone"),"shop",IConstant.content_order_new,pu,"");
             }
@@ -670,7 +672,7 @@ public class AppControllerV2 extends Controller {
             order.put("address", r.get("full_address"));
             order.put("rec_name",r.getStr("name"));
             order.put("rec_phone",r.getStr("phone"));
-            order.put("shop_name", shop.get("phone"));
+            order.put("shop_name", shop.get("name"));
             order.put("address_id",addressId);
 
             JSONObject jsonObject = JSONObject.fromObject(shop.getStr("scope"));
@@ -684,6 +686,7 @@ public class AppControllerV2 extends Controller {
             }
         }
         /***价格总额  库存**/
+        List<String> ls=new ArrayList<>();
         int allPrice = 0; //普通产品价格
         int actPrice=0;//活动产品价格
         net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
@@ -695,10 +698,9 @@ public class AppControllerV2 extends Controller {
                 int isNorm = o.getInt("is_norm");
                 int activityId=o.getInt("activity_id");
                 //库存
-                boolean flag = goodsService.isProEnough(productId, productNum, shop.getInt("id"), isNorm);
-                if (!flag) {
-                    renderFaile("库存不够");
-                    return;
+               Map<String,Object> map = goodsService.isProEnough_map(productId, productNum, shop.getInt("id"), isNorm);
+                if(map.containsKey("code")&&Integer.parseInt(map.get("code").toString())==10001){
+                    ls.add(map.get("name").toString());
                 }
                 //活动产品
                 if(activityId>0){
@@ -734,12 +736,22 @@ public class AppControllerV2 extends Controller {
                 }
             }
         }
+        /** 库存***/
+        if(ls.size()!=0){
+            String msg="";
+            for(String str:ls){
+                msg+=str+",";
+            }
+            renderFaile("抱歉，您的订单"+msg+"库存不足");
+            return;
+        }
+
         allPrice=allPrice+actPrice;
         if (allPrice != json.getInt("price")) {
             renderFaile("总金额异常");
             return;
         }
-
+        order.put("cash_pay",json.getInt("cashPay")*100);
         order.put("order_no", orderNo);
         order.put("order_id", orderId);
         order.put("order_status", orderStatus);
@@ -871,9 +883,6 @@ public class AppControllerV2 extends Controller {
         if (s.getInt("is_norm") == 2) {
             fbGoodses = FBGoods.dao.findBySID(uid, pg);
         }
-//        if(s.getInt("is_norm")==1){
-//            Page<Goods> goods=Goods.dao.
-//        }
         renderSuccess("获取成功", fbGoodses);
     }
 
@@ -947,7 +956,7 @@ public class AppControllerV2 extends Controller {
             products = Goods.dao.findByTxm(s_uid, json.getString("txm_code"), pg);
         }
         if (json.containsKey("p_name") && !json.getString("p_name").equals("")) {
-            products = Goods.dao.findByName(s_uid, json.getString("p_name"), pg);
+            products = Goods.dao.findByName_1(s_uid, json.getString("p_name"), pg);
         }
         renderSuccess("获取成功", products);
     }

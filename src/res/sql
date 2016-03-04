@@ -187,3 +187,14 @@ ALTER TABLE  kk_product_brand add sort_id int(6) not null default 100;
 
 Alter Table kk_order_item add activity_id int(11) not null default 0;
 Alter Table kk_order add send_goods_type varchar(15) ;
+
+Alter Table kk_product_activity add hide int(2) default 1;
+
+
+DROP TABLE if EXISTS kk_push_msg;
+CREATE TABLE kk_push_msg(
+  id int(11) NOT null AUTO_INCREMENT,
+  content VARCHAR(255) not null,
+  s_uid VARCHAR(17),
+  PRIMARY  KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

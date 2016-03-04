@@ -10,7 +10,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class GoodsService{
@@ -103,6 +105,27 @@ public class GoodsService{
 		}
 		return true;
 	}
+
+	/**判断库存是否足够*/
+	public Map<String,Object> isProEnough_map(int proId,int proNum,int shopId,int is_norm){
+		Map<String,Object> map=new HashMap<>();
+		if(is_norm==1){
+			Record record=Db.findFirst("select p.name,ps.product_number from kk_shop_product ps left join kk_product p on ps.product_id=p.id where ps.shop_id=? and product_id=?",shopId,proId);
+			if(record.getInt("product_number")<=0||record.getInt("product_number")<proNum){
+				map.put("code",10001);
+				map.put("name",record.getStr("name"));
+			}
+		}
+		if(is_norm==2){
+			Record record=Db.findFirst("select name,surplus_num from kk_product_activity pa where pa.id=?",proId);
+			if(record.getInt("surplus_num")<=0||record.getInt("surplus_num")<proNum){
+				map.put("code",10001);
+				map.put("name",record.getStr("name"));
+			}
+		}
+		return map;
+	}
+
 
 	public int getPrice(int proId,int proNum,int is_norm){
 		int price = 0;

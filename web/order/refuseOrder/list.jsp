@@ -187,7 +187,6 @@
             if(data.data.pay_type==1){
                 //微信退款
                 $.getJSON("${path}/app/pay/weRefund",{"order_id":order_id},function(data){
-
                 });
             }
 

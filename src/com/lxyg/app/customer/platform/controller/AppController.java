@@ -3005,7 +3005,7 @@ public class AppController extends Controller {
 			page=json.getInt("pg");
 		}
 		int actType_id = json.getInt("activityId");
-		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select id as productId,name,title,price,cash_pay,cover_img,p_unit_name,create_time,limit_num,surplus_num,p_type_id,p_type_name,p_brand_id,p_brand_name","from kk_product_activity pa where pa.activity_id=?",actType_id);
+		Page<Record> recordPage=Db.paginate(page,IConstant.PAGE_DATA,"select id as productId,name,title,price,cash_pay,cover_img,p_unit_name,create_time,limit_num,surplus_num,p_type_id,p_type_name,p_brand_id,p_brand_name","from kk_product_activity pa where pa.activity_id=? and pa.hide=1",actType_id);
 		renderSuccess("获取成功",recordPage);
 	}
 

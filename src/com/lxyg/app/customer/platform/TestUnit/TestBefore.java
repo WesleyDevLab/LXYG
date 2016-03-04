@@ -4,6 +4,7 @@ import com.alibaba.druid.wall.WallFilter;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.lxyg.app.customer.platform.model.Goods;
 import org.junit.After;
 import org.junit.BeforeClass;
 
@@ -17,17 +18,17 @@ public class TestBefore {
     /**
      * 数据连接地址
      */
-    private static final String URL ="jdbc:mysql://rdsf0grfx0586yt46rn1o.mysql.rds.aliyuncs.com/app";
+    private static final String URL ="jdbc:mysql://localhost:3306/lxyg?&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8";
 
     /**
      * 数据库账号
      */
-    private static final String USERNAME ="approot";
+    private static final String USERNAME ="root";
 
     /**
      * 数据库密码
      */
-    private static final String PASSWORD ="mcf8899";
+    private static final String PASSWORD ="root";
 
     /**
      * 数据库驱动
@@ -67,6 +68,8 @@ public class TestBefore {
 //.setDevMode(true)
 //.setShowSql(true) //是否打印sql语句
         ;
+
+        activeRecord.addMapping("kk_product",Goods.class);
 
 //映射数据库的表和继承与model的实体
 //只有做完该映射后，才能进行junit测试

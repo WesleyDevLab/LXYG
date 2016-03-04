@@ -58,6 +58,28 @@ public class Goods extends Model<Goods> {
 		}
 		return goods;
 	}
+
+	public Page<Goods> findByName_1(String s_uid,String p_name,int pg){
+		Shop s=Shop.dao.findBysuid(s_uid);
+		p_name="%"+p_name+"%";
+		String sql="( SELECT p.id AS productId, p. name, p.title, price, p_type_id, p_brand_id, p_type_name, p_brand_name, p.cover_img, p_unit_id, p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id WHERE p.p_type_name LIKE ? AND ps.shop_id = ? ) UNION ( SELECT p.id AS productId, p. name, p.title, price, p_type_id, p_brand_id, p_type_name, p_brand_name, p.cover_img, p_unit_id, p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id WHERE p.p_brand_name LIKE ? AND ps.shop_id = ? ) UNION ( SELECT p.id AS productId, p. name, p.title, price, p_type_id, p_brand_id, p_type_name, p_brand_name, p.cover_img, p_unit_id, p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id WHERE p. name LIKE ? AND ps.shop_id = ? ) limit ?,?";
+		List<Goods> goodses=Goods.dao.find(sql,p_name,s.getInt("id"),p_name,s.getInt("id"),p_name,s.getInt("id"),(pg-1)*IConstant.PAGE_DATA,IConstant.PAGE_DATA);
+		Record record=Db.findFirst("SELECT count(*) as count from kk_product p where p.p_type_name LIKE ? or p.p_brand_name LIKE ? or p.name LIKE ?  ",p_name,p_name,p_name);
+		System.out.println(record);
+		for(Goods g:goodses){
+			g.put("productImgs",g.getProductImgs());
+		}
+		int totalpage=0;
+		int totalrecord=Integer.parseInt(record.getLong("count").toString());
+		if(totalrecord%IConstant.PAGE_DATA==0){
+			totalpage = totalrecord/IConstant.PAGE_DATA;
+		}else{
+			totalpage = totalrecord/IConstant.PAGE_DATA + 1;
+		}
+		Page<Goods> Goods=new Page<Goods>(goodses,pg,IConstant.PAGE_DATA,totalpage,totalrecord);
+		return Goods;
+	}
+
 	public Page<Goods> findByTxm(String s_uid,String code,int pg){
 		Page<Goods> goods=dao.paginate(pg,IConstant.PAGE_DATA,"SELECT p.id AS productId, p. name, p.title, price, p_type_id, p_brand_id, p_type_name, p_brand_name, p.cover_img, p_unit_id, p_unit_name, p.descripation, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.cash_pay, p.market_price",
 				"FROM kk_shop_product ps LEFT JOIN kk_product p ON ps.product_id = p.id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE s.uuid = ? AND p.code = ?",new Object[]{s_uid,code});
