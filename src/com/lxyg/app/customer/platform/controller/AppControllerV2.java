@@ -16,6 +16,7 @@ import com.lxyg.app.customer.platform.util.*;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -586,7 +587,6 @@ public class AppControllerV2 extends Controller {
                     }
                 }
                 /**下单后短信推送**/
-                if (payType == 3) {
                     String str = ",收货人:" + o.getStr("name");
                     str += ",联系电话：" + o.getStr("phone");
                     str += ",收获地址:" + o.getStr("address");
@@ -597,8 +597,7 @@ public class AppControllerV2 extends Controller {
                     }
                     str += "】";
                     str += "总价:" + o.getInt("price") / 100 + "元";
-                    SdkMessage.sendUser(shop.getStr("phone"), str);
-                }
+                    SdkMessage.send(shop.getStr("phone"), str);
                 /**下单后 程序推送**/
                 Map<String,Object> pu=new HashMap<>();
                 pu.put("orderId",orderId);
@@ -769,22 +768,6 @@ public class AppControllerV2 extends Controller {
         boolean save=order.save();
         if (save){
             orderService.splice2Create_b(orderId, items, shop.getInt("id"));
-                //短信推送
-            String str = ",收货人:" + order.getStr("name");
-            str += ",联系电话：" + order.getStr("phone");
-            str += ",收获地址:" + order.getStr("address");
-            str += ",支付方式：" + order.getStr("pay_name");
-            str += ",购买产品：【";
-            for (Record r : order.getOrderItems(order.getStr("uuid"))) {
-                str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
-            }
-            str += "】";
-            str += "总价:" + order.getInt("price") / 100 + "元";
-            SdkMessage.sendUser(shop.getStr("phone"), str);
-            /**下单后 程序推送**/
-            Map<String,Object> pu=new HashMap<>();
-            pu.put("orderId",orderId);
-            JPushKit.push(shop.getStr("phone"),"shop",IConstant.content_order_new,pu,"");
             renderSuccess("下单成功",order);
             return;
         }
@@ -803,6 +786,24 @@ public class AppControllerV2 extends Controller {
         }
         order.set("send_goods_type", IConstant.sendGoodsType.get(sendGoodsType));
         order.update();
+
+        /**短信推送*/
+        Shop shop = new Shop().findFirst("select id,scope,name,phone from kk_shop s where s.uuid=?",order.getStr("s_uuid"));
+        String str = "收货人:" + order.getStr("rec_name");
+        str += ",联系电话：" + order.getStr("rec_phone");
+        str += ",收获地址:" + order.getStr("address");
+        str += ",配送方式：" + order.getStr("send_goods_type");
+        str += ",购买产品：【";
+        for (Record r : order.getOrderItems(order.getStr("order_id"))) {
+            str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
+        }
+        str += "】";
+        str += "总价:" + order.getBigDecimal("price").divide(new BigDecimal(100)) + "元";
+        SdkMessage.send(shop.getStr("phone"), str);
+        /**下单后 程序推送**/
+        Map<String,Object> pu=new HashMap<>();
+        pu.put("orderId",orderId);
+        JPushKit.push(shop.getStr("phone"),"shop",IConstant.content_order_new,pu,"");
         renderSuccess("操作成功", order);
     }
 
@@ -1200,5 +1201,4 @@ public class AppControllerV2 extends Controller {
         Shop s=Shop.dao.findFirst("select work_time from kk_shop s where s.uuid=?",u_id);
         renderSuccess("获取成功",s.getStr("work_time"));
     }
-
 }

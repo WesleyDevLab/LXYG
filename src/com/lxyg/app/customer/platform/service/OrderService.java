@@ -370,7 +370,7 @@ public class OrderService {
 	public boolean recordfinshOrder(Order o) {
 		String orderId = o.getStr("order_id");
 		String shopId = o.getStr("shop_id");
-		int allPrice =o.getBigDecimal("price").intValue()/100;
+		int allPrice =o.getBigDecimal("price").intValue();
 		int allCash = o.getBigDecimal("cash_pay").intValue();
 		shopDao.updateBalance(shopId,allPrice,1);
 		shopDao.createBalanceLog(shopId,allPrice,0,IConstant.balanceType.getType(o.getInt("pay_type")),orderId);
@@ -732,10 +732,10 @@ public class OrderService {
 		if(phone.contains(",")){
 			String[] ps=phone.split(",");
 			for(String p:ps){
-				SdkMessage.sendUser(p, IConstant.content_order_new + str);
+				SdkMessage.send(p, IConstant.content_order_new + str);
 			}
 		}else{
-			SdkMessage.sendUser(phone, IConstant.content_order_new+str);
+			SdkMessage.send(phone, IConstant.content_order_new+str);
 		}
 	}
 
@@ -747,7 +747,7 @@ public class OrderService {
 				Record r= Db.findFirst("select * from kk_user_address where id=?", new Object[]{o.getInt("address_id")});
 				if(r!=null){
 					String phone=r.get("phone");
-					SdkMessage.sendUser(phone, IConstant.content_order_Touser_send + o.getStr("receive_code"));
+					SdkMessage.send(phone, IConstant.content_order_Touser_send + o.getStr("receive_code"));
 				}
 			}
 		}

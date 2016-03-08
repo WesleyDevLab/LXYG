@@ -138,7 +138,7 @@ public class AppController extends Controller {
 			sql = "update kk_reg set code=?,password=?,create_time=? where phone=?";
 			obj = new Object[]{code, "", new Date(), phone};
 		}
-		boolean b = SdkMessage.send(phone, code);
+		boolean b = SdkMessage.send(phone, IConstant.code+code);
 		if (b) {
 			int i = Db.update(sql, obj);
 			if (i > 0) {
@@ -1643,7 +1643,7 @@ public class AppController extends Controller {
 			sql="update kk_reg set code=?,password=?,create_time=? where phone=?";
 			obj=new Object[]{code,"",new Date(),phone};
 		}
-		boolean b = SdkMessage.send(phone, code);
+		boolean b = SdkMessage.send(phone, IConstant.code+code);
 		if(b){
 			int i= Db.update(sql, obj);
 			if(i>0){
@@ -2870,7 +2870,7 @@ public class AppController extends Controller {
 					}
 					str += "】";
 					str += "总价:" + o.getInt("price") / 100 + "元";
-					SdkMessage.sendUser(shop.getStr("phone"), str);
+					SdkMessage.send(shop.getStr("phone"), str);
 				}
 				IConstant.orderQueue.remove();//从队列移除第一个项目
 			}

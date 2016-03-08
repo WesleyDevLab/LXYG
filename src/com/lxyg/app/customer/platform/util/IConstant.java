@@ -289,9 +289,10 @@ public interface IConstant {
 			return balance_type_in_xf;
 		}
 	}
-	
 
-	 String Title="乐享云购";
+
+	String code="蜂域提醒你，你的验证码: ";
+	 String Title="蜂域提醒您，";
 	 String content_order="您有新的订单可以抢";
 	 String content_order_new="您有一笔新的订单";
 	 String content_order_Touser_send="提醒您，您的收货码:";

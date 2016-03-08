@@ -236,7 +236,8 @@ public class SdkMessage {
 	private  static boolean needstatus = true;// 是否需要状态报告，需要true，不需要false
 	private  static String product = null;// 产品ID
 	private  static String extno = null;// 扩展码
-	public static boolean sendUser(String phone,String content){
+
+	public static boolean send(String phone,String content){
 		try {
 			String res=HttpSender.batchSend(url,account,pswd,phone,content,needstatus,product,extno);
 		} catch (Exception e) {
@@ -244,17 +245,11 @@ public class SdkMessage {
 		}
 		return true;
 	}
-	public static boolean send(String phone,String content){
-		try {
-			String res=HttpSender.batchSend(url,account,pswd,phone,"蜂域提醒你，你的验证码:"+content,needstatus,product,extno);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return true;
+
+	public static void main(String[] args) {
+		send("18625838770","收货人:秦帅,联系电话：18625838770,收获地址:河南省郑州市金水区金水东路北侧,中兴路西侧,心怡路东侧,配送方式：送货上门,购买产品：【美年达葡萄味550ml*1,】总价:2.5元");
 	}
-		public static void main(String[] args) {
-			send("18625838770","455098");
-		}
+
 }
 
 

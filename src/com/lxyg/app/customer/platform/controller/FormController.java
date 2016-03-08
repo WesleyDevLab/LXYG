@@ -105,7 +105,7 @@ public class FormController extends Controller {
         int form_id=json.getInt("form_id");
         boolean b=Form.dao.delForm(form_id);
         if(b){
-            renderSuccess(isSuccess( b),null);
+            renderSuccess(isSuccess(b),null);
         }else{
             renderFaile("异常");
             return;
