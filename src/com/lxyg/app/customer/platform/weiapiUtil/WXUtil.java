@@ -42,7 +42,6 @@ public class WXUtil {
 	private static final String refund_query="https://api.mch.weixin.qq.com/pay/refundquery";
 	private static final String order_query="https://api.mch.weixin.qq.com/pay/orderquery";
 	private static final String certPath= Path.class.getClassLoader().getResource("").getPath()+"res" + File.separator +"apiclient_cert.p12";
-
 	private static final String notify_url="www.lexiangyungou.cn:8080/LXYG/app/pay/wxpayNotify";
 
 
@@ -64,7 +63,6 @@ public class WXUtil {
 		params.put("sign", sign);
 		String postData= M.mapToXML(params);
 		String str=HttpKit.post(pay_order_url, new String(postData.getBytes(),"ISO8859-1"));
-		System.out.println(str);
 		Map<String, Object> map=new HashMap<String, Object>();
 		try {
 			 map=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
@@ -332,8 +330,8 @@ public class WXUtil {
 //	}
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-		Map m=orderQuery("1009280584201601282954205678","d4624c36b6795d1lxygcf0547af5443d");
-		System.out.println(m);
+//		Map m=orderQuery("1009280584201601282954205678","d4624c36b6795d1lxygcf0547af5443d");
+//		System.out.println(m);
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
 		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");

@@ -177,7 +177,7 @@ public class SdkMessage {
 //		String value="";
 //		try {
 //			value = msgHttp.smsOperation(msgHttp.getSend("sdkwhzzkkjy", "474680",
-//					phone, "【乐享云购】 乐享云购提醒你，你的验证码:"+label));
+//					phone, "(乐享云购】 乐享云购提醒你，你的验证码:"+label));
 //		} catch (IOException e) {
 //			log.error("error:", e);
 //		}
@@ -198,7 +198,7 @@ public class SdkMessage {
 //		String value="";
 //		try {
 //			value = msgHttp.smsOperation(msgHttp.getSend("sdkwhzzkkjy", "474680",
-//					phone,"【乐享云购】"+label));
+//					phone,"(乐享云购】"+label));
 //		} catch (IOException e) {
 //			log.error("error:", e);
 //		}
@@ -219,7 +219,7 @@ public class SdkMessage {
 //			System.out.println(phone+"_");
 //			try {
 //				 value = msgHttp.smsOperation(msgHttp.getSend("sdkwhzzkkjy", "474680",
-//						phone, "【乐享云购】 尊敬的商家、乐享云购商家版手机店铺请点击  http://dwz.cn/1hsBJG 下载试用。 苹果版稍后发布。本月18号下午2点在德亿大酒店召开：如何用软件赚互联网的钱发布会。请准时出席。【乐享云购】"));
+//						phone, "(乐享云购】 尊敬的商家、乐享云购商家版手机店铺请点击  http://dwz.cn/1hsBJG 下载试用。 苹果版稍后发布。本月18号下午2点在德亿大酒店召开：如何用软件赚互联网的钱发布会。请准时出席。(乐享云购】"));
 //			} catch (IOException e) {
 //				log.error("error:", e);
 //			}
@@ -240,16 +240,18 @@ public class SdkMessage {
 	public static boolean send(String phone,String content){
 		try {
 			String res=HttpSender.batchSend(url,account,pswd,phone,content,needstatus,product,extno);
+			System.out.println(res);
 		} catch (Exception e) {
+			log.error("短信异常",e);
 			e.printStackTrace();
 		}
 		return true;
 	}
 
 	public static void main(String[] args) {
-		send("18625838770","收货人:秦帅,联系电话：18625838770,收获地址:河南省郑州市金水区金水东路北侧,中兴路西侧,心怡路东侧,配送方式：送货上门,购买产品：【美年达葡萄味550ml*1,】总价:2.5元");
+		//send("13917416360","收货人:xxx");
+		send("18625838770","收货人:秦帅,联系电话：18625838770,收获地址:河南省郑州市金水区金水东路北侧,中兴路西侧,心怡路东侧,配送方式：送货上门,购买产品：(美年达葡萄味550ml*1)总价:2.5元");
 	}
-
 }
 
 

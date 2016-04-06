@@ -10,7 +10,7 @@ public class SendSms {
 
 	public static void main(String[] args) {
 		String s = new SendSms().sendSms("huichengyuzhou@qq.com",
-				"huichengyuzhou", "18538557277", "上午好！【乐享云购】");
+				"huichengyuzhou", "18538557277", "上午好！(乐享云购】");
 		System.out.println(s);
 	}
 

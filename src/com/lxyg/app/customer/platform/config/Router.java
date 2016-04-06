@@ -34,6 +34,7 @@ public class Router extends Routes {
 		add("/finance", FinanceController.class);
 		add("/form",FormController.class);
 		add("/activity",activityController.class);
+		add("/synch",synchDataController.class);
 	}
 
 }

@@ -33,7 +33,15 @@ public class Goods extends Model<Goods> {
 				"p_type_id,p_brand_id,p_category_name,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +
 				"hide,index_show,server_id,server_name,payment,create_time,cash_pay,market_price,code from kk_product p where p.id=? ",new Object[]{productId});
 		gs.put("productImgs", gs.getProductImgs());
-	    return gs;
+		return gs;
+	}
+
+	public Goods findById(int productId,int shop_id){
+		Goods gs=new Goods().findFirst("select p.id as productId,name,title,price,p_category_id," +
+				"p_type_id,p_brand_id,p_category_name,p_type_name,p_brand_name,cover_img,p_unit_id,p_unit_name,descripation," +
+				"hide,index_show,server_id,server_name,payment,p.create_time,cash_pay,market_price,code,ps.product_number  from kk_product p right join kk_shop_product ps on p.id=ps.product_id where p.id=? and ps.shop_id=? ",productId,shop_id);
+		gs.put("productImgs", gs.getProductImgs());
+		return gs;
 	}
 
 	public Goods findById_lazy(int productId){

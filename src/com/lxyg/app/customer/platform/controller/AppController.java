@@ -1812,27 +1812,28 @@ public class AppController extends Controller {
 		int page=json.getInt("pg");
 		String s_uid=json.getString("shopId");
 		Shop s=Shop.dao.findBysuid(s_uid);
+		int shopId=s.getInt("id");
 		if(s==null){
 			return;
 		}
 		if(json.containsKey("catId")&&json.getInt("catId")>0){
 			int catId=json.getInt("catId");
 			if(json.getInt("typeId")==0){
-				gs=new Goods().paginate(page,IConstant.PAGE_DATA,"select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay","from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-						"where p.p_category_id=? and ps.shop_id=?  order by ps.sort_id desc",new Object[]{catId,s.getInt("id")});
+				gs=new Goods().paginate(page,IConstant.PAGE_DATA,"select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number","from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+						"where p.p_category_id=? and ps.shop_id=?  order by ps.sort_id desc",catId,shopId);
 			}
 		}
 
 		if(json.containsKey("typeId")&&json.getInt("typeId")>0){
 			int typeId=json.getInt("typeId");
-			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_type_id=? and ps.shop_id=?  order by ps.sort_id desc",new Object[]{typeId,s.getInt("id")});
+			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+					"where p.p_type_id=? and ps.shop_id=?  order by ps.sort_id desc",typeId,shopId);
 		}
 
 		if(json.containsKey("brandId")&&json.getInt("brandId")>1){
 			int brandId=json.getInt("brandId");
-			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_brand_id=? and ps.shop_id=? order by ps.sort_id desc",new Object[]{brandId,s.getInt("id")});
+			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
+					"where p.p_brand_id=? and ps.shop_id=? order by ps.sort_id desc",brandId,s.getInt("id"));
 		}
 
 
@@ -1853,6 +1854,25 @@ public class AppController extends Controller {
 		Goods gs=new Goods().findById(productId);
 		renderSuccess("load成功", gs);
 	}
+
+	/**
+	 * @author M
+	 * c端 首页展示 产品详情页
+	 * */
+	@ActionKey("app/user/showProductInfo_1")
+	public void showProduct(){
+		log.info("product_1");
+		try {
+			JSONObject json = JSONObject.fromObject(getPara("info"));
+			int productId = json.getInt("productId");
+			Shop shop = Shop.dao.findBysuid(json.getString("s_uid"));
+			Goods gs = new Goods().findById(productId, shop.getInt("id"));
+			renderSuccess("load成功", gs);
+		}catch (Exception e){
+			renderFaile("异常："+e.toString());
+		}
+	}
+
 
 	@ActionKey("/app/user/categorys_1")
 	public void homeCategory() {
@@ -2864,11 +2884,11 @@ public class AppController extends Controller {
 					str += ",联系电话：" + o.getStr("phone");
 					str += ",收获地址:" + o.getStr("address");
 					str += ",支付方式：" + o.getStr("pay_name");
-					str += ",购买产品：【";
+					str += ",购买产品：(";
 					for (Record r : o.getOrderItems(o.getStr("uuid"))) {
 						str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
 					}
-					str += "】";
+					str += ")";
 					str += "总价:" + o.getInt("price") / 100 + "元";
 					SdkMessage.send(shop.getStr("phone"), str);
 				}

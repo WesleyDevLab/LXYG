@@ -131,6 +131,29 @@ public class OrderService {
 	}
 
 
+	public boolean splice2Create_c(String orderId, String items,int shop_id) {
+		JSONArray array = JSONArray.fromObject(items);
+		if (array.size() > 0) {
+			for (int i = 0; i < array.size(); i++) {
+				JSONObject o = array.getJSONObject(i);
+				int productId = o.getInt("productId");
+				int productNum = o.getInt("productNum");
+				Goods g = new Goods().findById(productId);
+				BigDecimal price = g.getBigDecimal("price");
+				BigDecimal cash = g.getBigDecimal("cash_pay");
+				int productPay=g.getBigDecimal("price").intValue();
+				Db.update(
+						"insert into kk_order_item(order_id,product_id,product_number,product_price,cash_pay,product_pay,create_time,is_norm,activity_id) "
+								+ "values(?,?,?,?,?,?,?,?,?)",
+						orderId, productId, productNum, price, cash, productPay, new Date(), 1,-1);
+				goodsService.reduceProNum(productId, productNum, shop_id); //减少库存
+			}
+			return true;
+		}
+		return false;
+	}
+
+
 
 	public Page<Order> loadOrderByStatus(int status, String suid, int page) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -691,11 +714,11 @@ public class OrderService {
 			str+=",联系电话："+o.getStr("phone");
 			str+=",收获地址:"+o.getStr("address");
 			str+=",支付方式："+o.getStr("pay_name");
-			str+=",购买产品：【";
+			str+=",购买产品：(";
 			for(Record r:o.getOrderItems(order_id)){
 				str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
 			}
-			str+="】";
+			str+=")";
 			str+="总价:"+o.getBigDecimal("price").intValue()/100+"元";
 
 			if(shop!=null){
@@ -708,11 +731,11 @@ public class OrderService {
 			str+=",联系电话："+o.getStr("phone");
 			str+=",收获地址:"+o.getStr("address");
 			str+=",支付方式："+o.getStr("pay_name");
-			str+=",购买产品：【";
+			str+=",购买产品：(";
 			for(Record r:o.getOrderItems(order_id)){
 				str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
 			}
-			str+="】";
+			str+=")";
 			str+="总价:"+o.getBigDecimal("price").intValue()/100+"元";
 		}
 		if(type==2){
@@ -722,7 +745,7 @@ public class OrderService {
 			str+=",联系电话："+record.getStr("phone");
 			str+=",收获地址:"+record.getStr("full_address");
 			str+=",支付方式："+record.getStr("pay_name");
-			str+=",购买产品：【";
+			str+=",购买产品：(";
 			for(Record r:records){
 				str+=r.getStr("name")+"*"+r.getInt("product_number")+",";
 			}

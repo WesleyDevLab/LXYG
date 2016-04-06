@@ -591,11 +591,11 @@ public class AppControllerV2 extends Controller {
                     str += ",联系电话：" + o.getStr("phone");
                     str += ",收获地址:" + o.getStr("address");
                     str += ",支付方式：" + o.getStr("pay_name");
-                    str += ",购买产品：【";
+                    str += ",购买产品：(";
                     for (Record r : o.getOrderItems(o.getStr("uuid"))) {
                         str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
                     }
-                    str += "】";
+                    str += ")";
                     str += "总价:" + o.getInt("price") / 100 + "元";
                     SdkMessage.send(shop.getStr("phone"), str);
                 /**下单后 程序推送**/
@@ -793,11 +793,11 @@ public class AppControllerV2 extends Controller {
         str += ",联系电话：" + order.getStr("rec_phone");
         str += ",收获地址:" + order.getStr("address");
         str += ",配送方式：" + order.getStr("send_goods_type");
-        str += ",购买产品：【";
+        str += ",购买产品：(";
         for (Record r : order.getOrderItems(order.getStr("order_id"))) {
             str += r.getStr("name") + "*" + r.getInt("product_number") + ",";
         }
-        str += "】";
+        str += ")";
         str += "总价:" + order.getBigDecimal("price").divide(new BigDecimal(100)) + "元";
         SdkMessage.send(shop.getStr("phone"), str);
         /**下单后 程序推送**/
@@ -899,7 +899,7 @@ public class AppControllerV2 extends Controller {
         }
         String lat = obj.getString("lat");
         String lng = obj.getString("lng");
-        Page<Goods> recommGoods = Goods.dao.paginate(pg, IConstant.PAGE_DATA, "SELECT p.id AS productId, p. name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time", "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 GROUP BY p.id ORDER BY is_recomm DESC, distance ( ?, ?, s.lng, s.lat ) ASC", lng, lat);
+        Page<Goods> recommGoods = Goods.dao.paginate(pg, IConstant.PAGE_DATA, "SELECT p.id AS productId, p. name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time,ps.product_number", "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 GROUP BY p.id ORDER BY is_recomm DESC, distance ( ?, ?, s.lng, s.lat ) ASC", lng, lat);
         renderSuccess("获取成功", recommGoods);
     }
 
@@ -1201,4 +1201,5 @@ public class AppControllerV2 extends Controller {
         Shop s=Shop.dao.findFirst("select work_time from kk_shop s where s.uuid=?",u_id);
         renderSuccess("获取成功",s.getStr("work_time"));
     }
+
 }
