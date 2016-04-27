@@ -9,6 +9,7 @@ import com.lxyg.app.customer.platform.util.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
+import com.lxyg.app.customer.platform.classUtil.*;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -790,7 +791,7 @@ public class OrderService {
 	}
 
 	public int getReduceCash(int shop_id,int allPrice){
-		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop_id);
+		Record record=Db.findFirst("select price_rule from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop_id);
 		int reduce=0;
 		net.sf.json.JSONObject o = net.sf.json.JSONObject.fromObject(record.getStr("price_rule"));
 		net.sf.json.JSONArray array = o.getJSONArray("rule");
@@ -876,49 +877,62 @@ public class OrderService {
 		return obj;
 	}
 
-	public JSONObject checkActivity(String uid,int activityId,int proId,int proNum,JSONArray array){
-		JSONObject obj=new JSONObject();
-		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activityId);
-		log.error("record:"+record);
-		if(record==null){
-			obj.put("msg","活动不存在");
-			obj.put("code",10001);
-			return obj;
-		}
-		switch (record.getInt("activity_type")){
-			case 2:
-				Date now=new Date();
-				Date start=record.getDate("start_time");
-				Date end=record.getDate("end_time");
-				if(start.before(now)&&end.after(now)){
-					obj.put("msg","");
-					obj.put("code",10002);
-				}else{
-					obj.put("msg","您不是新用户");
-					obj.put("code",10001);
-				}
-				break;
-			case 4:
-				if(array.size()>1){
-					obj.put("msg","限购1件");
-					obj.put("code",10001);
-					break;
-				}
-				Record r=Db.findFirst("SELECT count(*) as count FROM kk_order o LEFT JOIN kk_order_item oi ON o.order_id = oi.order_id WHERE oi.product_id IN ( SELECT id FROM kk_product_activity pa WHERE pa.activity_id = ? ) AND o.order_status IN (" + IConstant.OrderStatus.order_status_dfh + ","+ IConstant.OrderStatus.order_status_psz + "," + IConstant.OrderStatus.order_status_ywc + "," + IConstant.OrderStatus.order_status_js_success + ") and o.u_uuid=?",activityId,uid);
-				if(r.getLong("count")>0){
-					obj.put("msg","您不是新用户");
-					obj.put("code",10001);
-					break;
-				}
-				if(proNum>record.getInt("limit_e")){
-					obj.put("msg","限购"+record.getInt("limit_e")+"个");
-					obj.put("code",10001);
-					break;
-				}
-			default:
-				obj.put("msg","");
-				obj.put("code",10002);
-		}
-		return obj;
-	}
+//	public JSONObject checkActivity(String uid,int activityId,int proId,int proNum,JSONArray array){
+//		JSONObject obj=new JSONObject();
+//		Record record=Db.findFirst("select * from kk_shop_activity sa where sa.id=?",activityId);
+//		if(record==null){
+//			obj.put("msg","活动不存在");
+//			obj.put("code",10001);
+//			return obj;
+//		}
+//		switch (record.getInt("activity_type")){
+//			case 2:
+//				Date now=new Date();
+//				Date start=record.getDate("start_time");
+//				Date end=record.getDate("end_time");
+//				if(start.before(now)&&end.after(now)){
+//					obj.put("msg","");
+//					obj.put("code",10002);
+//				}else{
+//					obj.put("msg","您不是新用户");
+//					obj.put("code",10001);
+//				}
+//				break;
+//			case 4:
+//				if(array.size()>1){
+//					obj.put("msg","限购1件");
+//					obj.put("code",10001);
+//					break;
+//				}
+//				Record r=Db.findFirst("SELECT count(*) as count FROM kk_order o LEFT JOIN kk_order_item oi ON o.order_id = oi.order_id WHERE oi.product_id IN ( SELECT id FROM kk_product_activity pa WHERE pa.activity_id = ? ) AND o.order_status IN (" + IConstant.OrderStatus.order_status_dfh + ","+ IConstant.OrderStatus.order_status_psz + "," + IConstant.OrderStatus.order_status_ywc + "," + IConstant.OrderStatus.order_status_js_success + ") and o.u_uuid=?",activityId,uid);
+//				if(r.getLong("count")>0){
+//					obj.put("msg","您不是新用户");
+//					obj.put("code",10001);
+//					break;
+//				}
+//				if(proNum>record.getInt("limit_e")){
+//					obj.put("msg","限购"+record.getInt("limit_e")+"个");
+//					obj.put("code",10001);
+//					break;
+//				}
+//			default:
+//				obj.put("msg","");
+//				obj.put("code",10002);
+//		}
+//		return obj;
+//	}
+
+//	public JSONObject checkActivity_1(String uid,int activityId,int proId,int proNum,JSONArray array){
+//		JSONObject obj=new JSONObject();
+//		Record record=Db.findFirst("select activity_type,start_time,end_time,limit_e from kk_shop_activity sa where sa.id=?",activityId);
+//		if(record==null){
+//			obj.put("msg","活动不存在");
+//			obj.put("code",10001);
+//			return obj;
+//		}
+//		int activityType=record.getInt("activity_type");
+//		ActivityAnaylze anaylze=ActivityAnaylzeCreate.activityAnaylze(uid,activityId,array,proNum);
+//		obj= anaylze.result(record);
+//		return obj;
+//	}
 }

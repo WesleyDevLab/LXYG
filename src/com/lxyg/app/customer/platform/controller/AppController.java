@@ -1699,7 +1699,7 @@ public class AppController extends Controller {
 		User u=new User();
 		if(!json.containsKey("uid")){
 			if(!lat.equals("")&&!lng.equals("")){
-				s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
+				s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.title from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
 			}else{
 				renderFaile("定位错误");
 				return;
@@ -1711,7 +1711,7 @@ public class AppController extends Controller {
 				renderFaile("登录错误！");
 				return;
 			}
-			s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
+			s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.title from kk_shop s where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
 		}
 		List<Map<String,Object>> maps=new ArrayList<Map<String,Object>>();
 		List<Record> rs= Db.find("select id as typeId,name,img from kk_product_type  where sort_id<=8 order by sort_id asc");
@@ -1746,6 +1746,7 @@ public class AppController extends Controller {
 	 * **/
 	@ActionKey("app/user/homePage1")
 	public void homePage_1(){
+		log.info("homePage_1");
 		JSONObject json= JSONObject.fromObject(getPara("info"));
 		String lat=json.getString("lat");
 		String lng=json.getString("lng");
@@ -1754,7 +1755,7 @@ public class AppController extends Controller {
 		User u=new User();
 		if(!json.containsKey("uid")){
 			if(!lat.equals("")&&!lng.equals("")){
-				s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
+				s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.title from kk_shop s ORDER BY dis asc", new Object[]{lng,lat});
 			}else{
 				renderFaile("定位错误");
 				return;
@@ -1766,7 +1767,7 @@ public class AppController extends Controller {
 				renderFaile("登录错误！");
 				return;
 			}
-			s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img from kk_shop s where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
+			s=new Shop().findFirst("SELECT distance(?,?,s.lng,s.lat) as dis,s.id as shopId,s.name,s.uuid,s.cover_img,s.title from kk_shop s where s.uuid=?", new Object[]{lng,lat,u.getStr("shop_id")});
 		}
 
 		List<Record> rs= Db.find("select id as typeId,name,img from kk_product_type  where sort_id<=8 order by sort_id asc");
@@ -1820,24 +1821,21 @@ public class AppController extends Controller {
 			int catId=json.getInt("catId");
 			if(json.getInt("typeId")==0){
 				gs=new Goods().paginate(page,IConstant.PAGE_DATA,"select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number","from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-						"where p.p_category_id=? and ps.shop_id=?  order by ps.sort_id desc",catId,shopId);
+						"where p.p_category_id=? and ps.shop_id=? and p.server_id=1 order by ps.sort_id desc",catId,shopId);
 			}
 		}
 
 		if(json.containsKey("typeId")&&json.getInt("typeId")>0){
 			int typeId=json.getInt("typeId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_type_id=? and ps.shop_id=?  order by ps.sort_id desc",typeId,shopId);
+					"where p.p_type_id=? and ps.shop_id=? and p.server_id=1  order by ps.sort_id desc",typeId,shopId);
 		}
 
 		if(json.containsKey("brandId")&&json.getInt("brandId")>1){
 			int brandId=json.getInt("brandId");
 			gs=new Goods().paginate(page, IConstant.PAGE_DATA, "select p.id as productId,p.name,p.title,p.price,p.cover_img,p.cash_pay,ps.product_number", "from kk_product p right join kk_shop_product ps on ps.product_id=p.id " +
-					"where p.p_brand_id=? and ps.shop_id=? order by ps.sort_id desc",brandId,s.getInt("id"));
+					"where p.p_brand_id=? and ps.shop_id=? and p.server_id=1 order by ps.sort_id desc",brandId,s.getInt("id"));
 		}
-
-
-
 		renderSuccess("load成功", gs);
 	}
 

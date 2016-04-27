@@ -28,8 +28,10 @@ public class loginInterceptor implements Interceptor {
 	   	 String t=req.getHeader("t");
 	   	 String ver=req.getHeader("ver");
 	   	 String sign=req.getHeader("sign");
+
 		 String eMd5="appid="+appid+"&chnl="+chnl+"&dev="+dev+"&m="+m+"&os="+os+"&t="+t+"&ver="+ver+"&secret="+sec;
 		 String emd5_ios="os="+os+"&dev="+dev+"&ver="+ver+"&chnl="+chnl+"&t="+t+"&appid="+appid+"&m="+m+"&secret="+sec;
+
 	 if(sign==null||sign.equals("")){
 		 obj.put("code",10001);
     	 obj.put("msg", " 签名错误！");

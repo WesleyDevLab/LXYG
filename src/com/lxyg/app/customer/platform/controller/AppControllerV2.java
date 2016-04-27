@@ -8,6 +8,9 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.JPush.JPushKit;
+import com.lxyg.app.customer.platform.classUtil.StrategyContext;
+import com.lxyg.app.customer.platform.classUtil.VerifyOrder;
+import com.lxyg.app.customer.platform.classUtil.VerifyOrderCreate;
 import com.lxyg.app.customer.platform.interceptor.loginInterceptor;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.service.GoodsService;
@@ -381,7 +384,7 @@ public class AppControllerV2 extends Controller {
             return;
         }
         String s_uid = json.getString("s_uid");
-        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm,s.service_phone from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
+        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm,s.service_phone,s.title from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
         if (s == null) {
             renderFaile("异常！");
             return;
@@ -418,7 +421,7 @@ public class AppControllerV2 extends Controller {
             m.put("type", r);
             List<Goods> g = new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time,ps.product_number  " +
                     "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
-                    "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=?  GROUP BY p.id order by ps.sort_id desc, is_recomm desc LIMIT 0,6", sorts[i], s.getStr("uuid"));
+                    "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=? and p.server_id=1  GROUP BY p.id order by ps.sort_id desc, is_recomm desc LIMIT 0,6", sorts[i], s.getStr("uuid"));
             if (g.size() != 0) {
                 m.put("products", g);
                 maps.add(m);
@@ -648,6 +651,7 @@ public class AppControllerV2 extends Controller {
                 orderStatus = IConstant.OrderStatus.order_status_chushi;
             }
         }
+
         /**配送方式*/
         int sendType = 1; //配送方式
         if(json.containsKey("sendType")&&json.getInt("sendType")!=0){
@@ -664,6 +668,12 @@ public class AppControllerV2 extends Controller {
             order.put("remark", json.getString("remark"));
         }
         /**是否在配送区域内**/
+
+
+
+        VerifyOrder verifyOrder;
+        JSONObject resultObject;
+
         Shop shop = new Shop().findFirst("select id,scope,name from kk_shop s where s.uuid=?",suid);
         if (shop.getStr("scope") != null) {
             int addressId=json.getInt("addressId");
@@ -674,82 +684,49 @@ public class AppControllerV2 extends Controller {
             order.put("shop_name", shop.get("name"));
             order.put("address_id",addressId);
 
-            JSONObject jsonObject = JSONObject.fromObject(shop.getStr("scope"));
-            List objs = JsonUtils.json2list(jsonObject.getString("scope"));
-            Point[] points = Point.list2point(objs);
-            Point p = new Point(r.getDouble("lat"), r.getDouble("lng"));
-            boolean flag = Point.inPolygon(p, points);
-            if (!flag) {
-                renderFaile("超过指定区域,暂时无法下单");
+            verifyOrder=new VerifyOrderCreate().verifyOrder(shop.getStr("scope"),r.getDouble("lat"),r.getDouble("lng")); //配送区域
+            resultObject=verifyOrder.GoResult();
+            if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
+                renderFaile(resultObject.getString("msg"));
                 return;
             }
+
         }
         /***价格总额  库存**/
-        List<String> ls=new ArrayList<>();
-        int allPrice = 0; //普通产品价格
-        int actPrice=0;//活动产品价格
         net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
-        if (array.size() > 0) {
-            for (int i = 0; i < array.size(); i++) {
-                JSONObject o = array.getJSONObject(i);
-                int productId = o.getInt("productId");
-                int productNum = o.getInt("productNum");
-                int isNorm = o.getInt("is_norm");
-                int activityId=o.getInt("activity_id");
-                //库存
-               Map<String,Object> map = goodsService.isProEnough_map(productId, productNum, shop.getInt("id"), isNorm);
-                if(map.containsKey("code")&&Integer.parseInt(map.get("code").toString())==10001){
-                    ls.add(map.get("name").toString());
-                }
-                //活动产品
-                if(activityId>0){
-                    JSONObject obj = orderService.checkActivity(uid,activityId,productId,productNum,array);
-                    if(obj.containsKey("code")&&obj.getInt("code")==10001){
-                        renderFaile(obj.getString("msg"));
-                        return;
-                    }
-                }
-                //价格总额
-                if(isNorm==1){
-                    allPrice+=goodsService.getPrice(productId, productNum, isNorm);
-                }
-                if(isNorm==2){
-                    actPrice+=goodsService.getPrice(productId, productNum, isNorm);
-                }
-            }
 
-            /***总价 减去代金券**/
-            if (json.containsKey("cashPay") && json.getInt("cashPay") != 0 && payType != 3) {
-                Record r = Db.findFirst("select IFNULL(sum(cash),0) as cash,u_uuid from kk_user_cash uc left join kk_cash c on uc.cash_id=c.id  " +
-                        "where uc.u_uuid=? and c.cash_status=1",uid);
-                if (r.getBigDecimal("cash").intValue() != 0) {
-                    Record record = Db.findFirst("select count(*) as count from kk_shop_activity sa where sa.shop_id=? and activity_type=7", shop.getInt("id"));
-                    if (record.getLong("count") > 0) {
-                        int reduce = orderService.getReduceCash(shop.getInt("id"), allPrice);
-                        allPrice = allPrice - reduce;
-                        /***
-                         * 总价减去活动区间红包可优惠代金券
-                         * */
-                        User.dao.reduceCash(uid, reduce);
-                    }
-                }
-            }
+        //库存是否充足
+        StringBuffer stringBuffer=new StringBuffer();
+        verifyOrder=new VerifyOrderCreate().verifyOrder(array,shop.getInt("id"));
+        resultObject= verifyOrder.GoResult();
+        if(resultObject!=null&&resultObject.getInt("code")==10001){
+            stringBuffer.append(resultObject.getString("msg")).append("、");
         }
-        /** 库存***/
-        if(ls.size()!=0){
-            String msg="";
-            for(String str:ls){
-                msg+=str+",";
-            }
-            renderFaile("抱歉，您的订单"+msg+"库存不足");
+
+
+        if(stringBuffer.length()!=0){
+            renderFaile("抱歉，您的订单"+stringBuffer.substring(0,stringBuffer.length()-1)+"库存不足");
             return;
         }
 
-        allPrice=allPrice+actPrice;
+        //是否是活动产品
+        verifyOrder=new VerifyOrderCreate().verifyOrder(uid,array);
+        resultObject=verifyOrder.GoResult();
+        if(resultObject!=null&&resultObject.getInt("code")==10001){
+            renderFaile(resultObject.getString("msg"));
+        }
+
+
+        //计算订单总价
+        StrategyContext context=new VerifyOrderCreate().StrategtContext(json.getInt("cashPay"),array,uid,shop.getInt("id"));
+        int allPrice=context.ContextInterface();
+
         if (allPrice != json.getInt("price")) {
             renderFaile("总金额异常");
             return;
         }
+
+
         order.put("cash_pay",json.getInt("cashPay")*100);
         order.put("order_no", orderNo);
         order.put("order_id", orderId);
@@ -1118,6 +1095,8 @@ public class AppControllerV2 extends Controller {
         renderSuccess("获取成功", goodCategories);
     }
 
+    /**首页八块分类*/
+
     @ActionKey("/app/user/v2/homeCategory")
     public void homeCategory_1() {
         log.info("homeCategory");
@@ -1201,5 +1180,34 @@ public class AppControllerV2 extends Controller {
         Shop s=Shop.dao.findFirst("select work_time from kk_shop s where s.uuid=?",u_id);
         renderSuccess("获取成功",s.getStr("work_time"));
     }
+
+    /**非标店铺*/
+    @ActionKey("/app/user/v2/fbShops")
+    public void fb_shops(){
+        log.info("fb_shops");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String s_uid=obj.getString("s_uid");
+        int page=1;
+        if(obj.containsKey("pg")){
+            page=obj.getInt("pg");
+        }
+        Page<Record> records=Db.paginate(page,IConstant.PAGE_DATA,"select name,cover_img,fb_uid,sale_num,send_price,delivery_price,delivery_time,full_address"," from kk_shop_fb where s_uid=?",s_uid);
+        renderSuccess("获取成功",records);
+    }
+    /**非标产品*/
+    @ActionKey("/app/user/v2/fbProducts")
+    public void fb_products(){
+        log.info("fb_products");
+        JSONObject obj = JSONObject.fromObject(getPara("info"));
+        String fb_uid=obj.getString("fb_uid");
+        int page=1;
+        if(obj.containsKey("pg")){
+            page=obj.getInt("pg");
+        }
+        Page<Goods> goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,"select id as productId,uid,name,price,cover_img"," from kk_product where server_id=2 and fb_uid=?", fb_uid);
+        renderSuccess("获取成功",goodsPage);
+    }
+
+
 
 }

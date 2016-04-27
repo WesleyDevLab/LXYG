@@ -198,3 +198,31 @@ CREATE TABLE kk_push_msg(
   s_uid VARCHAR(17),
   PRIMARY  KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+Drop Table if EXISTS  kk_shop_fb;
+CREATE TABLE kk_shop_fb(
+  id int(11) NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) not NULL ,
+  s_uid VARCHAR(17)  not NULL ,
+  cover_img VARCHAR(255)  not NULL ,
+  link_man VARCHAR(255),
+  phone VARCHAR(11)  not NULL ,
+  password VARCHAR(17),
+  full_address VARCHAR(255),
+  lat DOUBLE,
+  lng DOUBLE,
+  create_time DATETIME NOT NULL,
+  fb_uid VARCHAR(17) not null,
+  hide int(2) not NULL  DEFAULT 0,
+  title VARCHAR(255),
+  sale_num int(17) not null DEFAULT 0,
+  send_price int(10) not null DEFAULT 0,
+  delivery_price int(10) not null DEFAULT 0,
+  delivery_time int(10) not null DEFAULT 0,
+  PRIMARY KEY (id)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+Alter Table kk_product add fb_uid VARCHAR(17);
+Alter Table kk_product add sale_num int(10) not null DEFAULT 0
+
+Alter table kk_shop add title varchar(255) DEFAULT null;

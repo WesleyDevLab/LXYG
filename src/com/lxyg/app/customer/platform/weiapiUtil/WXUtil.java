@@ -31,10 +31,12 @@ import static com.lxyg.app.customer.platform.weiapiUtil.HttpRequest.postSend;
 public class WXUtil {
 	private static final Logger log=Logger.getLogger(WXUtil.class);
 	private static final String port="APP";
-	public static final String MCH_ID = "1281748701";
-	public static final String APPID = "wx2d2b54b6349d8ef7";
-	private static final String SECRET="d4624c36b6795d1d99dcf0547af5443d";
-	public static final String KEY="d4624c36b6795d1lxygcf0547af5443d";
+
+	public static final String MCH_ID = "1333446001";
+	public static final String APPID = "wxb4f60b20fb9c382d";//wx2d2b54b6349d8ef7
+	private static final String SECRET="6be5e3b18f52866654a3520d7cf2e6d9";
+	public static final String KEY="d4624c36b6795hhlxygcf0547af5443d";
+
 	private static final String body="fengyu";
 	public static final String token_url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid="+ WXUtil.APPID+"&secret="+ WXUtil.SECRET;
 	private static final String pay_order_url="https://api.mch.weixin.qq.com/pay/unifiedorder";
@@ -63,6 +65,7 @@ public class WXUtil {
 		params.put("sign", sign);
 		String postData= M.mapToXML(params);
 		String str=HttpKit.post(pay_order_url, new String(postData.getBytes(),"ISO8859-1"));
+		System.out.println(str);
 		Map<String, Object> map=new HashMap<String, Object>();
 		try {
 			 map=XMLParser.getMapFromXML(new String(str.getBytes(),"UTF-8"));
@@ -334,7 +337,7 @@ public class WXUtil {
 //		System.out.println(m);
 		//System.out.println(new File("").getAbsolutePath());
 		//createMenu();
-		//loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
+		loadPrepayid("fdfafc67d2a446d9",93000,"121.42.192.108","123");
 		//Record record=new Record();
 		//wxRefund("1008760584201512292384335393","0f0929d278b248aa",record,2);
 	}
