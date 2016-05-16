@@ -128,9 +128,7 @@ public class XmlUtils {
 		xml = "<message type=\"chat\" to=\"test@txyfxtox1/yunfengApp\" from=\"zhangbei@txyfxtox1/yunfengApp\"><body>{\"content\":\"http://res.xtox.net:8887/yuxintong/2014/6/4/fb4d0f2c-255e-4a0f-9c93-13f60447a645.mp3\",\"type\":1,\"length\":8}</body></message>";
 		Document doc = xu.loadStringDoc(xml);
 		String result = xu.parseMessage(doc, xml);
-		System.out.println(result);
 		JSONObject obj = (JSONObject) JsonUtils.json2pojo(result);
-		System.out.println(obj.get("type"));
 		String content = "";
 		Integer type = (Integer)obj.get("type");
 		if(type==1){

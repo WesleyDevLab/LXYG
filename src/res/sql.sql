@@ -199,6 +199,8 @@ CREATE TABLE kk_push_msg(
   PRIMARY  KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+
+
 Drop Table if EXISTS  kk_shop_fb;
 CREATE TABLE kk_shop_fb(
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -223,6 +225,15 @@ CREATE TABLE kk_shop_fb(
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 Alter Table kk_product add fb_uid VARCHAR(17);
-Alter Table kk_product add sale_num int(10) not null DEFAULT 0
+Alter Table kk_product add sale_num int(10) not null DEFAULT 0;
 
 Alter table kk_shop add title varchar(255) DEFAULT null;
+
+ALTER TABLE `kk_product_fb` ADD COLUMN `sale_num`  int(255) NULL DEFAULT 0 COMMENT '月售' AFTER `s_uid`;
+ALTER TABLE `kk_product_fb` ADD COLUMN `zan_num`  int(255) NULL DEFAULT 0 COMMENT '好评数' AFTER `sale_num`;
+ALTER TABLE `kk_product_fb` ADD COLUMN `fb_category`  int(10) NULL DEFAULT 0 COMMENT '非标产品分类' AFTER `zan_num`;
+ALTER TABLE `kk_product_fb` ADD COLUMN `fb_category_name`  varchar(70) NULL DEFAULT NULL COMMENT '非标产品分类text' AFTER `fb_category`;
+
+ALTER TABLE `kk_shop` ADD COLUMN `push_phone`  varchar(255) NULL DEFAULT NULL COMMENT '店铺title' AFTER `work_time`;
+
+ALTER TABLE kk_shop add COLUMN off INT(4) not null DEFAULT 0;

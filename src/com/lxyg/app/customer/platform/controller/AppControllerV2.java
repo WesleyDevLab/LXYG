@@ -674,7 +674,14 @@ public class AppControllerV2 extends Controller {
         VerifyOrder verifyOrder;
         JSONObject resultObject;
 
-        Shop shop = new Shop().findFirst("select id,scope,name from kk_shop s where s.uuid=?",suid);
+        Shop shop = new Shop().findFirst("select id,scope,name,off from kk_shop s where s.uuid=?",suid);
+        verifyOrder=new VerifyOrderCreate().verifyOrder(shop);
+        resultObject=verifyOrder.GoResult();
+        if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
+            renderFaile(resultObject.getString("msg"));
+            return;
+        }
+
         if (shop.getStr("scope") != null) {
             int addressId=json.getInt("addressId");
             Record r = Db.findById("kk_user_address", addressId);
@@ -1176,6 +1183,10 @@ public class AppControllerV2 extends Controller {
     public void workTime(){
         log.info("workTime");
         JSONObject obj = JSONObject.fromObject(getPara("info"));
+        if(!obj.containsKey("s_uid")){
+            renderFaile("无法获取店铺");
+            return;
+        }
         String u_id=obj.getString("s_uid");
         Shop s=Shop.dao.findFirst("select work_time from kk_shop s where s.uuid=?",u_id);
         renderSuccess("获取成功",s.getStr("work_time"));

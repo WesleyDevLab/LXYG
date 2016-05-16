@@ -46,7 +46,6 @@ public class synchDataController extends Controller {
     public void push(){
         Order o=new Order(); //生成新的订单
         JSONObject obj = JSONObject.fromObject(getPara("info"));
-        System.out.println(obj);
         String push_order_no=obj.getString("push_id");
         int price=obj.getInt("price");
         String suid=obj.getString("shopId");

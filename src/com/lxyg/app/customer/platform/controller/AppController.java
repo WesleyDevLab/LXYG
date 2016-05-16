@@ -2502,7 +2502,7 @@ public class AppController extends Controller {
 		}
 		Map<String,Object> map=new HashMap<String, Object>();
 		try {
-			map= WXUtil.loadPrepayid(order_id, o.getBigDecimal("price").intValue(), ip, attach);
+			map= WXUtil.TloadPrepayid(order_id, o.getBigDecimal("price").intValue(), ip, attach);
 		} catch (IOException e) {
 			log.error("",e);
 		} catch (ExecutionException e) {

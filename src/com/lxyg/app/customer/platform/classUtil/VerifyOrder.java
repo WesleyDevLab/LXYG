@@ -3,6 +3,7 @@ package com.lxyg.app.customer.platform.classUtil;
 import com.alibaba.fastjson.*;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.model.Shop;
 import com.lxyg.app.customer.platform.service.GoodsService;
 import com.lxyg.app.customer.platform.util.JsonUtils;
 import com.lxyg.app.customer.platform.util.Point;
@@ -103,7 +104,6 @@ class verifyOrder_inScope extends VerifyOrder{
     }
     JSONObject object=new JSONObject();
     public JSONObject GoResult(){
-        System.out.println(scope+"_"+lat+"_"+lng);
         JSONObject jsonObject = JSONObject.fromObject(scope);
         List objs = JsonUtils.json2list(jsonObject.getString("scope"));
         Point[] points = Point.list2point(objs);
@@ -112,6 +112,20 @@ class verifyOrder_inScope extends VerifyOrder{
         if (!flag) {
             object.put("code",10001);
             object.put("msg","不在配送范围内");
+        }
+        return object;
+    }
+}
+class verifyOrder_on extends VerifyOrder{
+    private int status;
+    public verifyOrder_on(Shop shop){
+        this.status=shop.getInt("off");
+    }
+    JSONObject object=new JSONObject();
+    public JSONObject GoResult(){
+        if(status>0){
+            object.put("code",10001);
+            object.put("msg","店铺维护中，暂停下单，请到实体店购买。");
         }
         return object;
     }

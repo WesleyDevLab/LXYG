@@ -1,6 +1,7 @@
 package com.lxyg.app.customer.platform.classUtil;
 
 import com.jfinal.plugin.activerecord.Record;
+import com.lxyg.app.customer.platform.model.Shop;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
 
@@ -10,6 +11,8 @@ import net.sf.json.JSONArray;
 public class VerifyOrderCreate {
     static VerifyOrder verifyOrder=null;
     static StrategyContext context;
+
+
     public VerifyOrder verifyOrder(JSONArray array,int shopId){
         verifyOrder=new verifyOrder_isProEnough(array,shopId);
         return verifyOrder;
@@ -25,6 +28,11 @@ public class VerifyOrderCreate {
         return verifyOrder;
     }
 
+    public VerifyOrder verifyOrder(Shop shop){
+        verifyOrder=new verifyOrder_on(shop);
+        return verifyOrder;
+    }
+
     public StrategyContext StrategtContext(int cashPay,JSONArray jsonArray,String uid,int shopId){
         if(cashPay>0){
             context=new StrategyContext(new StrategyCashPay(jsonArray,uid,shopId));
@@ -36,6 +44,8 @@ public class VerifyOrderCreate {
     }
 
     public JSONObject GoResult(){
+        VerifyOrderCreate vc=new VerifyOrderCreate();
+
         return verifyOrder.GoResult();
     }
 

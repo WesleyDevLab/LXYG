@@ -109,7 +109,7 @@
             var img_urls = new Array();
             for (var i = 0; i < files.length; i++) {
                 var ext = '.' + files[i].name.split('.').pop();
-                var path = '/app/' + Math.uuid(16, "") + ext;
+                var path = '/platform_1/' + Math.uuid(16, "") + ext;
                 uploadImg(path, files[i]);
                 var img_url = "http://lxyg8.b0.upaiyun.com" + path;
                 img_urls[i] = img_url;
