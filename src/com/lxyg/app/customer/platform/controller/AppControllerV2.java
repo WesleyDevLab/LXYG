@@ -671,63 +671,59 @@ public class AppControllerV2 extends Controller {
 
 
 
-        VerifyOrder verifyOrder;
+//        VerifyOrder verifyOrder;
         JSONObject resultObject;
+        net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
 
-        Shop shop = new Shop().findFirst("select id,scope,name,off from kk_shop s where s.uuid=?",suid);
-        verifyOrder=new VerifyOrderCreate().verifyOrder(shop);
-        resultObject=verifyOrder.GoResult();
+        Shop shop = new Shop().findFirst("select id,scope,name,off,s.uuid from kk_shop s where s.uuid=?",suid);
+
+//        verifyOrder=new VerifyOrderCreate().verifyOrder(shop);
+        resultObject=new VerifyOrderCreate().GoResult(array,shop,json.getInt("addressId"));
         if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
             renderFaile(resultObject.getString("msg"));
             return;
         }
 
-        if (shop.getStr("scope") != null) {
-            int addressId=json.getInt("addressId");
-            Record r = Db.findById("kk_user_address", addressId);
-            order.put("address", r.get("full_address"));
-            order.put("rec_name",r.getStr("name"));
-            order.put("rec_phone",r.getStr("phone"));
-            order.put("shop_name", shop.get("name"));
-            order.put("address_id",addressId);
 
-            verifyOrder=new VerifyOrderCreate().verifyOrder(shop.getStr("scope"),r.getDouble("lat"),r.getDouble("lng")); //配送区域
-            resultObject=verifyOrder.GoResult();
-            if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
-                renderFaile(resultObject.getString("msg"));
-                return;
-            }
-
-        }
-        /***价格总额  库存**/
-        net.sf.json.JSONArray array = net.sf.json.JSONArray.fromObject(items);
-
-        //库存是否充足
-        StringBuffer stringBuffer=new StringBuffer();
-        verifyOrder=new VerifyOrderCreate().verifyOrder(array,shop.getInt("id"));
-        resultObject= verifyOrder.GoResult();
-        if(resultObject!=null&&resultObject.getInt("code")==10001){
-            stringBuffer.append(resultObject.getString("msg")).append("、");
-        }
-
-
-        if(stringBuffer.length()!=0){
-            renderFaile("抱歉，您的订单"+stringBuffer.substring(0,stringBuffer.length()-1)+"库存不足");
-            return;
-        }
-
-        //是否是活动产品
-        verifyOrder=new VerifyOrderCreate().verifyOrder(uid,array);
-        resultObject=verifyOrder.GoResult();
-        if(resultObject!=null&&resultObject.getInt("code")==10001){
-            renderFaile(resultObject.getString("msg"));
-        }
+//        resultObject=verifyOrder.GoResult();
+//
+//        if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
+//            renderFaile(resultObject.getString("msg"));
+//            return;
+//        }
+//
+//        if (shop.getStr("scope") != null) {
+//            int addressId=json.getInt("addressId");
+//            verifyOrder=new VerifyOrderCreate().verifyOrder(shop.getStr("scope"),addressId); //配送区域
+//            resultObject=verifyOrder.GoResult();
+//            if(resultObject.containsKey("code")&&resultObject.getInt("code")==10001){
+//                renderFaile(resultObject.getString("msg"));
+//                return;
+//            }
+//
+//        }
+//
+//
+//        //库存是否充足
+//
+//        verifyOrder=new VerifyOrderCreate().verifyOrder(array,shop.getInt("id"));
+//        resultObject= verifyOrder.GoResult();
+//        if(resultObject!=null&&resultObject.getInt("code")==10001){
+//            renderFaile(resultObject.getString("msg") + "库存不足");
+//        }
+//
+//
+//        //是否是活动产品
+//        verifyOrder=new VerifyOrderCreate().verifyOrder(uid,array);
+//        resultObject=verifyOrder.GoResult();
+//        if(resultObject!=null&&resultObject.getInt("code")==10001){
+//            renderFaile(resultObject.getString("msg"));
+//        }
 
 
         //计算订单总价
         StrategyContext context=new VerifyOrderCreate().StrategtContext(json.getInt("cashPay"),array,uid,shop.getInt("id"));
         int allPrice=context.ContextInterface();
-
         if (allPrice != json.getInt("price")) {
             renderFaile("总金额异常");
             return;
@@ -748,6 +744,16 @@ public class AppControllerV2 extends Controller {
         order.put("price",allPrice);
         order.put("receive_code",receive_code);
         order.put("send_goods_type", IConstant.sendGoodsType.get(1));
+
+        //订单配送地址
+        Record r = Db.findById("kk_user_address", json.getInt("addressId"));
+        order.put("address", r.get("full_address"));
+        order.put("rec_name",r.getStr("name"));
+        order.put("rec_phone",r.getStr("phone"));
+        order.put("shop_name", shop.get("name"));
+        order.put("address_id",json.getInt("addressId"));
+
+
         //订单项目
         boolean save=order.save();
         if (save){

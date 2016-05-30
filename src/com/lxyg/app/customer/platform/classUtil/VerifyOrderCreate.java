@@ -15,6 +15,7 @@ public class VerifyOrderCreate {
 
     public VerifyOrder verifyOrder(JSONArray array,int shopId){
         verifyOrder=new verifyOrder_isProEnough(array,shopId);
+
         return verifyOrder;
     }
 
@@ -23,13 +24,13 @@ public class VerifyOrderCreate {
         return verifyOrder;
     }
 
-    public VerifyOrder verifyOrder(String scope,double lat,double lng){
-        verifyOrder=new verifyOrder_inScope(scope,lat,lng);
+    public VerifyOrder verifyOrder(String scope,int addressId){
+        verifyOrder=new verifyOrder_inScope(scope,addressId);
         return verifyOrder;
     }
 
     public VerifyOrder verifyOrder(Shop shop){
-        verifyOrder=new verifyOrder_on(shop);
+        verifyOrder=new verifyOrder_ShopIsOn(shop);
         return verifyOrder;
     }
 
@@ -44,12 +45,36 @@ public class VerifyOrderCreate {
     }
 
     public JSONObject GoResult(){
-        VerifyOrderCreate vc=new VerifyOrderCreate();
 
         return verifyOrder.GoResult();
     }
 
+    public JSONObject GoResult(JSONArray orderItem,Shop shop,int addressId){
 
+        VerifyOrder verifyOrder=new verifyOrder_ShopIsOn(shop);
+        JSONObject obj=verifyOrder.GoResult();
+        if(obj.containsKey("code")&&obj.getInt("code")==10001){
+            return verifyOrder.GoResult();
+        }
 
+        verifyOrder=new verifyOrder_isProEnough(orderItem,shop.getInt("id"));
+        obj=verifyOrder.GoResult();
+        if(obj.containsKey("code")&&obj.getInt("code")==10001){
+            return verifyOrder.GoResult();
+        }
+
+        verifyOrder=new verifyOrder_checkActivity(shop.getStr("uuid"),orderItem);
+        obj=verifyOrder.GoResult();
+        if(obj.containsKey("code")&&obj.getInt("code")==10001){
+            return verifyOrder.GoResult();
+        }
+
+        verifyOrder=new verifyOrder_inScope(shop.getStr("scope"),addressId);
+        obj=verifyOrder.GoResult();
+        if(obj.containsKey("code")&&obj.getInt("code")==10001){
+            return verifyOrder.GoResult();
+        }
+        return verifyOrder.GoResult();
+    }
 
 }

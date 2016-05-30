@@ -6,14 +6,17 @@ import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Transaction;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.lxyg.app.customer.platform.JPush.JPushKit;
+import com.lxyg.app.customer.platform.classUtil.OrderPayLog;
 import com.lxyg.app.customer.platform.model.*;
 
 import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.*;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
+import org.apache.log4j.helpers.Transform;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -448,7 +451,6 @@ public class Test extends TestBefore {
         Db.save("kk_login_sign", r1);
     }
 
-    @org.junit.Test
     public void searchName() {
         int s_uid=5;
         String p_name="雪碧";
@@ -465,5 +467,15 @@ public class Test extends TestBefore {
         System.out.println(totalpage);
         System.out.println(totalrecord);
         //Page<Record> Goods=new Page<Record>(goodses,pg,IConstant.PAGE_DATA,totalpage,totalrecord);
+    }
+
+    private OrderPayLog log=new OrderPayLog();
+
+    @org.junit.Test
+    @Before(Tx.class)
+    public void addLog(){
+        Order order=Order.dao.findById(true,"b7fef46a4114479d");
+        log.addPayLog(order,"1005140584201601192788567329",new Date(),0);
+        log.addRefuseLog(order, "1005140584201601192788567329", new Date(), 0);
     }
 }

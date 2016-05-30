@@ -13,6 +13,7 @@ import com.lxyg.app.customer.alipay.config.AlipayConfig;
 import com.lxyg.app.customer.alipay.util.AlipayNotify;
 import com.lxyg.app.customer.alipay.util.UtilDate;
 import com.lxyg.app.customer.alipay.util.alipayRefund;
+import com.lxyg.app.customer.platform.classUtil.OrderPayLog;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.service.GoodsService;
 import com.lxyg.app.customer.platform.service.OrderService;
@@ -40,6 +41,7 @@ public class alipayController extends Controller {
 	private static Shop shopDao=new Shop();
 	private static OrderService orderService=new OrderService();
 	private static Order orderDao=new Order();
+	private static OrderPayLog orderPayLog=new OrderPayLog();
 	public void renderFaile(String value){
 		setAttr("code", 10001);
 		setAttr("msg", value);
@@ -67,15 +69,15 @@ public class alipayController extends Controller {
 				 params.put(name, valueStr);
 			}
 			log.error("------:"+params.toString());
-			String alipayNo=params.get("trade_no").toString();
+			String alipayNo=params.get("trade_no");
 			boolean b= AlipayNotify.verify(params);
-			log.info(b);
+			log.error(b);
 			if(true){
 				String orderId="";
 				orderId=request.getParameter("orderId");
 				if(params.containsKey("out_trade_no")){
 					orderId=request.getParameter("out_trade_no");
-					Order o=new Order().dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
+					Order o= Order.dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
 					if(o.getLong("count")!=0){
 						OrderC(orderId, alipayNo);
 						return;
@@ -112,17 +114,17 @@ public class alipayController extends Controller {
 				params.put(name, valueStr);
 			}
 			log.error("------:"+params.toString());
-			String alipayNo=params.get("trade_no").toString();
+			String alipayNo=params.get("trade_no");
 			boolean b= AlipayNotify.verify(params);
 			log.error(b);
 			if(true){
 				if(params.containsKey("out_trade_no")){
-
-					String order_id=params.get("out_trade_no").toString();
-
+					String order_id=params.get("out_trade_no");
 					Order order=Order.dao.findFirst("select * from kk_order where order_id=?",order_id);
 					order.set("order_status",IConstant.OrderStatus.order_status_js_success);
 					order.update();
+
+					orderPayLog.addRefuseLog(order,alipayNo,new Date(),0);
 
 					List<Record> records=order.getOrderItems(order_id);
 					Shop shop =Shop.dao.findBysuid(order.getStr("s_uuid"));
@@ -160,8 +162,8 @@ public class alipayController extends Controller {
 			if(map.get("result_code").toString().equals("SUCCESS")){
 				String orderId=map.get("out_trade_no").toString();
 				String wxPayNo=map.get("transaction_id").toString();
+				Order o=Order.dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
 
-				Order o=new Order().dao.findFirst("select count(*) as count from kk_order o where o.order_id=?",orderId);
 				if(o.getLong("count")!=0){
 					OrderC(orderId, wxPayNo);
 					return;
@@ -172,13 +174,13 @@ public class alipayController extends Controller {
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		renderText("success");
 	}
@@ -213,17 +215,19 @@ public class alipayController extends Controller {
 	public void OrderC(String orderId,String payNo){
 		log.error("OrderC");
 		Order o=new Order().findById(true, orderId);
-
 		if(o==null){
-			log.error("--异常--");	
-			renderText("success");
+			log.error("--异常--");
+			orderPayLog.addPayLog(o,payNo,new Date(),2);
+			renderText("faile");
 			return;
 		}
 		if(o.getInt("order_status")!=-1){
-			log.error("--订单状态异常--");	
-			renderText("success");
+			log.error("--订单状态异常--");
+			orderPayLog.addPayLog(o, payNo, new Date(),1);
+			renderText("faile");
 			return;
 		}
+
 		boolean ub=false;
 		if(o.getStr("alipay_no")==null){
 			log.error("--订单状态修改   正常状态--");	
@@ -232,6 +236,7 @@ public class alipayController extends Controller {
 			o.set("alipay_no",payNo);
 			o.set("pay_time", new Date());
 			ub=o.update();
+			orderPayLog.addPayLog(o, payNo, new Date(),0);
 		}
 		if(ub){
 			renderText("success");
@@ -309,6 +314,9 @@ public class alipayController extends Controller {
 				/**修改订单状态**/
 				o.set("order_status",IConstant.OrderStatus.order_status_js_success);
 				o.update();
+
+
+				orderPayLog.addRefuseLog(o,o.getStr("alipay_no"),new Date(),0);
 				/**退款后恢复库存数量**/
 				List<Record> records=o.getOrderItems(order_id);
 				Shop shop =Shop.dao.findBysuid(o.getStr("s_uuid"));

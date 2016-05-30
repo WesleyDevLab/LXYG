@@ -5,6 +5,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.lxyg.app.customer.platform.model.Goods;
+import com.lxyg.app.customer.platform.model.Order;
 import org.junit.After;
 import org.junit.BeforeClass;
 
@@ -70,6 +71,7 @@ public class TestBefore {
         ;
 
         activeRecord.addMapping("kk_product",Goods.class);
+        activeRecord.addMapping("kk_order",Order.class);
 
 //映射数据库的表和继承与model的实体
 //只有做完该映射后，才能进行junit测试

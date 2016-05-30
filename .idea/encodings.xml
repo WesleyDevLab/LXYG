@@ -5,6 +5,7 @@
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/TestUnit/Test.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/classUtil/ActivityAnaylze.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/classUtil/ActivityAnaylzeCreate.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/classUtil/OrderPayLog.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/classUtil/VerifyOrder.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/controller/FinanceController.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lxyg/app/customer/platform/controller/FormController.java" charset="UTF-8" />

@@ -237,3 +237,5 @@ ALTER TABLE `kk_product_fb` ADD COLUMN `fb_category_name`  varchar(70) NULL DEFA
 ALTER TABLE `kk_shop` ADD COLUMN `push_phone`  varchar(255) NULL DEFAULT NULL COMMENT '店铺title' AFTER `work_time`;
 
 ALTER TABLE kk_shop add COLUMN off INT(4) not null DEFAULT 0;
+
+CREATE TABLE kk_order_log
