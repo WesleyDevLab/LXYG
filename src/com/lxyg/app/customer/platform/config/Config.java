@@ -6,7 +6,6 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
 import com.lxyg.app.customer.platform.interceptor.visitInterceptor;
-import com.lxyg.app.customer.platform.listener.pushTimerTask;
 import com.lxyg.app.customer.platform.model.*;
 import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.ConfigUtils;
@@ -40,6 +39,8 @@ public class Config extends JFinalConfig {
 			C3p0Plugin c3 = new C3p0Plugin(getProperty("url"), getProperty("username"), getProperty("password").trim());
 			c3.setDriverClass(getProperty("driverClassName"));
 			me.add(c3);
+
+
 			// 配置ActiveRecord插件
 			ActiveRecordPlugin arp = new ActiveRecordPlugin(c3);
 			arp.addMapping("kk_product", Goods.class);
@@ -64,6 +65,13 @@ public class Config extends JFinalConfig {
 			// 配置极光推送插件
 			JPush jpush=new JPush();
 			me.add(jpush);
+
+
+		C3p0Plugin c31 = new C3p0Plugin(getProperty("urlForSybase"), getProperty("usernameForSybase"), getProperty("passwordForSybase").trim());
+		c31.setDriverClass(getProperty("driverClassName"));
+		me.add(c31);
+
+
 
 	}
 		// 配置C3p0数据库连接池插件

@@ -10,34 +10,33 @@ import org.junit.After;
 import org.junit.BeforeClass;
 
 /**
- * Created by ÇØË§ on 2015/10/23.
+ * Created by ç§¦å¸… on 2015/10/23.
  */
 public class TestBefore {
     protected static DruidPlugin dp;
     protected static ActiveRecordPlugin activeRecord;
-
     /**
-     * Êı¾İÁ¬½ÓµØÖ·
+     * æ•°æ®è¿æ¥åœ°å€
      */
     private static final String URL ="jdbc:mysql://localhost:3306/lxyg?&autoReconnect=true&useUnicode=true&characterEncoding=UTF-8";
 
     /**
-     * Êı¾İ¿âÕËºÅ
+     * æ•°æ®åº“è´¦å·
      */
     private static final String USERNAME ="root";
 
     /**
-     * Êı¾İ¿âÃÜÂë
+     * æ•°æ®åº“å¯†ç 
      */
     private static final String PASSWORD ="root";
 
     /**
-     * Êı¾İ¿âÇı¶¯
+     * æ•°æ®åº“é©±åŠ¨
      */
     private static final String DRIVER ="com.mysql.jdbc.Driver";
 
     /**
-     * Êı¾İ¿âÀàĞÍ£¨Èçmysql£¬oracle£©
+     * æ•°æ®åº“ç±»å‹ï¼ˆå¦‚mysqlï¼Œoracleï¼‰
      */
     private static final String DATABASE_TYPE ="mysql";
 
@@ -48,7 +47,7 @@ public class TestBefore {
     public static void setUpBeforeClass() throws Exception {
         dp=new DruidPlugin(URL,USERNAME,PASSWORD);
 
-       // dp.addFilter(new StatFilter());
+        // dp.addFilter(new StatFilter());
 
         dp.setInitialSize(3);
         dp.setMinIdle(2);
@@ -67,14 +66,14 @@ public class TestBefore {
         activeRecord = new ActiveRecordPlugin(dp);
         activeRecord.setDialect(new MysqlDialect());
 //.setDevMode(true)
-//.setShowSql(true) //ÊÇ·ñ´òÓ¡sqlÓï¾ä
+//.setShowSql(true) //æ˜¯å¦æ‰“å°sqlè¯­å¥
         ;
 
         activeRecord.addMapping("kk_product",Goods.class);
         activeRecord.addMapping("kk_order",Order.class);
 
-//Ó³ÉäÊı¾İ¿âµÄ±íºÍ¼Ì³ĞÓëmodelµÄÊµÌå
-//Ö»ÓĞ×öÍê¸ÃÓ³Éäºó£¬²ÅÄÜ½øĞĞjunit²âÊÔ
+//æ˜ å°„æ•°æ®åº“çš„è¡¨å’Œç»§æ‰¿ä¸modelçš„å®ä½“
+//åªæœ‰åšå®Œè¯¥æ˜ å°„åï¼Œæ‰èƒ½è¿›è¡Œjunitæµ‹è¯•
 //        activeRecord.addMapping("f_user", FUser.class)
 //                .addMapping("f_content", FContent.class)
 //                .addMapping("f_content_type", FContentType.class)

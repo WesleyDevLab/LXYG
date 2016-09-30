@@ -63,6 +63,7 @@ class VisitThread extends Thread{
 		this.user_id=user_id;
 		this.session_id=session_id;
 		this.url=url;
+
 //		if(device.equals("pc")){
 //		   this.mac_address=GetMacAddress.getMacAddress(ip);
 //		}

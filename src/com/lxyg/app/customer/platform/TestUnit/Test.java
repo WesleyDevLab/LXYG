@@ -1,41 +1,30 @@
 package com.lxyg.app.customer.platform.TestUnit;
 
-import com.alibaba.fastjson.JSON;
-import com.google.gson.JsonArray;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
-import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
-import com.jfinal.plugin.activerecord.tx.Transaction;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.lxyg.app.customer.platform.JPush.JPushKit;
 import com.lxyg.app.customer.platform.classUtil.OrderPayLog;
 import com.lxyg.app.customer.platform.model.*;
 
-import com.lxyg.app.customer.platform.plugin.JPush;
 import com.lxyg.app.customer.platform.util.*;
 import net.minidev.json.JSONObject;
 import net.sf.json.JSONArray;
-import org.apache.log4j.helpers.Transform;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.json.JSONException;
-import sun.misc.BASE64Decoder;
 
 import javax.imageio.stream.FileImageInputStream;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.net.URL;
 
-import static com.lxyg.app.customer.platform.TestUnit.Test.download;
 
 /**
 

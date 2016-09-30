@@ -166,6 +166,7 @@ public class AppControllerV2 extends Controller {
         renderSuccess("修改成功", r);
     }
 
+
     @ActionKey("app/v2/updateFBProductImg")
     public void updateFBProductImg() {
         int sid = checkUUID();
@@ -1001,18 +1002,25 @@ public class AppControllerV2 extends Controller {
         }
         String lng = json.getString("lng");
         String lat = json.getString("lat");
-        List<Shop> s = Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time,service_phone from kk_shop s where distance(?,?,s.lng,s.lat)<=1000 ", lng, lat);
+        List<Shop> s = Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time,service_phone from kk_shop s where distance(?,?,s.lng,s.lat)<=0 ", lng, lat);
+        if(s.size()==0){
+            s=Shop.dao.find("select name,link_man,phone,full_address,lat,lng,uuid as s_uid,create_time,service_phone from kk_shop s where distance(?,?,s.lng,s.lat)<=0 ", lng, lat);
+        }
+        if (s.size()==0){
+            renderFaile("不在范围内");
+            return;
+        }
         renderSuccess("获取成功", s);
     }
 
     @ActionKey("/app/user/v2/shopList")
     public void loadShopByArea() {
-        log.info("loadShopByArea");
+        log.info("shopList");
         JSONObject json = JSONObject.fromObject(getPara("info"));
         int areaCode = json.getInt("code");
         String lng = json.getString("lng");
         String lat = json.getString("lat");
-        List<Shop> shops = Shop.dao.find("SELECT s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone,s.service_phone FROM kk_shop s LEFT JOIN kk_district d ON d.id = s.district_id WHERE d.area_id = ? ORDER BY  distance (?,?,d.lng,d.lat) ASC", areaCode, lng, lat);
+        List<Shop> shops = Shop.dao.find("SELECT s.uuid AS s_uid, s.name,s.link_man, s.full_address, s.phone,s.service_phone FROM kk_shop s LEFT JOIN kk_district d ON d.id = s.district_id WHERE d.area_id = ? ", areaCode);
         renderSuccess("获取成功", shops);
     }
 
@@ -1224,6 +1232,7 @@ public class AppControllerV2 extends Controller {
         Page<Goods> goodsPage=Goods.dao.paginate(page,IConstant.PAGE_DATA,"select id as productId,uid,name,price,cover_img"," from kk_product where server_id=2 and fb_uid=?", fb_uid);
         renderSuccess("获取成功",goodsPage);
     }
+
 
 
 
