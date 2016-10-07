@@ -5,6 +5,7 @@ import com.jfinal.aop.Before;
 import com.jfinal.aop.ClearInterceptor;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
@@ -273,8 +274,9 @@ public class FormController extends Controller {
         renderSuccess("获取成功",Form.dao.myForms(page,json.getString("uid")));
     }
 
+
     public static void pushBySDK(String u_uid,int form_id,String to_uid,String content){
-        User user=User.dao.findFirst("select * from kk_user u where u.uuid=?",u_uid);
+        User user=User.dao.findFirst("select T* from kk_user u where u.uuid=?",u_uid);
         User to_user=User.dao.findFirst("select * from kk_user u where u.uuid=?",to_uid);
         if(user!=null && to_user!=null){
             String str=user.getStr("name")+"回复了您："+content;

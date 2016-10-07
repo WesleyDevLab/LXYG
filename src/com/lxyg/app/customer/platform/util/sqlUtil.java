@@ -1,19 +1,9 @@
 package com.lxyg.app.customer.platform.util;
 
-import com.alibaba.druid.util.JdbcUtils;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.apache.commons.dbcp2.BasicDataSourceFactory;
 
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.*;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Created by 秦帅 on 2016/6/28.

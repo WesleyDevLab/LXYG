@@ -21,7 +21,7 @@ public class TestBefore_sybase {
         String URL="jdbc:sybase:Tds:116.255.198.151:5000/hytmaindb?charset=cp936";
         String USERNAME="sa";
         String PASSWORD="";
-        String driver="com.sybase.jdbc3.jdbc.SybDriver";
+        String driver="com.sybase.jdbc4.jdbc.SybDriver";
 
         dp=new DruidPlugin(URL,USERNAME,PASSWORD);
         dp.setDriverClass(driver);

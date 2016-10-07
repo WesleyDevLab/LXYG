@@ -4,6 +4,7 @@ import com.jfinal.config.*;
 import com.jfinal.ext.interceptor.SessionInViewInterceptor;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
+import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.render.ViewType;
 import com.lxyg.app.customer.platform.interceptor.visitInterceptor;
 import com.lxyg.app.customer.platform.model.*;
@@ -67,12 +68,26 @@ public class Config extends JFinalConfig {
 			me.add(jpush);
 
 
-		C3p0Plugin c31 = new C3p0Plugin(getProperty("urlForSybase"), getProperty("usernameForSybase"), getProperty("passwordForSybase").trim());
-		c31.setDriverClass(getProperty("driverClassName"));
-		me.add(c31);
+		String URL="jdbc:sybase:Tds:116.255.198.151:5000/hytmaindb?charset=cp936";
+		String USERNAME="sa";
+		String PASSWORD="";
+		String driver="com.sybase.jdbc4.jdbc.SybDriver";
 
+		DruidPlugin dp=new DruidPlugin(URL,USERNAME,PASSWORD);
+		dp.setDriverClass(driver);
+		dp.setInitialSize(3);
+		dp.setMinIdle(2);
+		dp.setMaxActive(5);
+		dp.setMaxWait(60000);
+		dp.setTimeBetweenEvictionRunsMillis(120000);
+		dp.setMinEvictableIdleTimeMillis(120000);
 
-
+//		C3p0Plugin c31 = new C3p0Plugin(URL, USERNAME, PASSWORD.trim());
+//		c3.setDriverClass(driver);
+//		me.add(c3);
+		me.add(dp);
+		ActiveRecordPlugin arp1 = new ActiveRecordPlugin("sybase",dp);
+		me.add(arp1);
 	}
 		// 配置C3p0数据库连接池插件
 
