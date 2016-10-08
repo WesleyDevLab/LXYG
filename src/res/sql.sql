@@ -238,4 +238,16 @@ ALTER TABLE `kk_shop` ADD COLUMN `push_phone`  varchar(255) NULL DEFAULT NULL CO
 
 ALTER TABLE kk_shop add COLUMN off INT(4) not null DEFAULT 0;
 
-CREATE TABLE kk_order_log
+create table if not exists `kk_product_sybase`(
+  `product_tm` int(11) NOT NULL COMMENT '条码',
+  `product_name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品名称',
+  `product_price` BIGINT NOT NULL DEFAULT '0' COMMENT '产品售价',
+  `product_spbm` VARCHAR(20) not NULL COMMENT '商品编码',
+  `product_unit` VARCHAR(5) NOT NULL COMMENT '商品单位',
+  `product_csbm` VARCHAR(20) not NULL COMMENT '厂商编码',
+  `create_time` TIMESTAMP not null DEFAULT current_timestamp comment '创建时间',
+  PRIMARY KEY (`product_tm`),
+  key idx_product_tm(`product_tm`),
+  key idx_product_name(`product_name`),
+  key idx_create_time(`create_time`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT 'sybase数据库产品表';
