@@ -87,6 +87,7 @@ public class Config extends JFinalConfig {
 //		me.add(c3);
 		me.add(dp);
 		ActiveRecordPlugin arp1 = new ActiveRecordPlugin("sybase",dp);
+		arp1.setShowSql(true);
 		me.add(arp1);
 	}
 		// 配置C3p0数据库连接池插件

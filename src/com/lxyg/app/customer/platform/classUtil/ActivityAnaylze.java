@@ -32,6 +32,7 @@ class validActivity extends ActivityAnaylze{ //活动是否有效 是否在有�
         Date now=new Date();
         Date start=record.getDate("start_time");
         Date end=record.getDate("end_time");
+
         if(start.before(now)&&end.after(now)){
             obj.put("msg","");
             obj.put("code",10002);
@@ -41,6 +42,7 @@ class validActivity extends ActivityAnaylze{ //活动是否有效 是否在有�
         }
         return obj;
     }
+
 }
 
 class validNewUser extends ActivityAnaylze{ //是否是新用户 新用户满足 首次下单 购买一件活动产品 产品数量为1
