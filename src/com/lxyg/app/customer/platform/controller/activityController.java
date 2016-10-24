@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by 秦帅 on 2015/12/2.
+ * Created by 绉﹀竻 on 2015/12/2.
  */
 public class activityController extends Controller{
     private static final Logger log = Logger.getLogger(activityController.class);
@@ -53,7 +53,7 @@ public class activityController extends Controller{
             page=getParaToInt("pg");
         }
         if(!isParaExists("shop_id")){
-            renderFaile("请选择店铺");
+            renderFaile("璇烽�夋嫨搴楅摵");
             return;
         }
         int shopId=getParaToInt("shop_id");
@@ -71,7 +71,7 @@ public class activityController extends Controller{
 //                "ON pa.activity_id = sa.id LEFT JOIN kk_activity a on sa.activity_type=a.id WHERE sa.shop_id =? "+b,objs);
         Page<Record> recordPage= Db.paginate(page, IConstant.PAGE_DATA,"SELECT s. name AS sname,sa.id, sa.label_cn, a. name AS aname, sa.start_time, sa.end_time, IFNULL(sa.limit_e, 0) AS limit_num,sa.activity_type ",
                 "FROM kk_shop_activity sa LEFT JOIN kk_shop s ON sa.shop_id = s.id LEFT JOIN kk_activity a ON sa.activity_type = a.id WHERE sa.shop_id = ?"+b,objs);
-        renderSuccess("获取成功",recordPage);
+        renderSuccess("鑾峰彇鎴愬姛",recordPage);
     }
 
     public void addActivity(){
@@ -132,7 +132,7 @@ public class activityController extends Controller{
 //            }
 //        }
         if(flag){
-            renderSuccess("添加成功",record);
+            renderSuccess("娣诲姞鎴愬姛",record);
         }
     }
 
@@ -156,7 +156,7 @@ public class activityController extends Controller{
                 Db.update("delete from kk_product_activity  where activity_id=?",act_id);
             }
         }
-        renderSuccess("删除成功",null);
+        renderSuccess("鍒犻櫎鎴愬姛",null);
     }
     public void updatePro(){
         int p_id=getParaToInt("ap_id");
@@ -167,7 +167,7 @@ public class activityController extends Controller{
         record.set("cover_img",getPara("ap_cover"));
         record.set("surplus_num",getParaToInt("ap_num"));
         Db.update("kk_product_activity",record);
-        renderSuccess("修改成功",null);
+        renderSuccess("淇敼鎴愬姛",null);
     }
 
     public void delAPro(){
@@ -176,7 +176,7 @@ public class activityController extends Controller{
         if(record!=null&&record.getInt("id")!=0){
             record.set("hide",0);
             Db.update("kk_product_activity",record);
-            renderSuccess("删除成功",null);
+            renderSuccess("鍒犻櫎鎴愬姛",null);
             return;
         }
     }

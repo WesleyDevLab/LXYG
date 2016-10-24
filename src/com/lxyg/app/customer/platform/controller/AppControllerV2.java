@@ -385,7 +385,8 @@ public class AppControllerV2 extends Controller {
             return;
         }
         String s_uid = json.getString("s_uid");
-        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm,s.service_phone,s.title from kk_shop s left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
+        Shop s = Shop.dao.findFirst("SELECT s.id as shopId,s.name,s.uuid ,s.cover_img,s.shop_type,st.sort,s.is_norm,s.service_phone,s.title from kk_shop s " +
+                "left join kk_shop_type st on s.id=st.s_id where s.uuid=? ", s_uid);
         if (s == null) {
             renderFaile("异常！");
             return;
@@ -405,8 +406,12 @@ public class AppControllerV2 extends Controller {
             renderSuccess("暂无上货", s);
             return;
         }
-        recommGoods = Goods.dao.find("SELECT  p.id AS productId, p.name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time,ps.product_number,s.uuid " +
-                "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id WHERE hide = 1 AND is_recomm != 0 AND s.uuid=? GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6", s.getStr("uuid"));
+        recommGoods = Goods.dao.find("SELECT  p.id AS productId, p.name, p.title, p.price, p.p_type_id, p.p_brand_id, p.p_type_name, p.p_brand_name, " +
+                "p.cover_img, p.p_unit_id, p.p_unit_name, p.cash_pay, p.hide, p.index_show, p.server_id, p.server_name, p.payment, p.create_time,ps.product_number,s.uuid " +
+                "FROM kk_product p RIGHT JOIN kk_shop_product ps ON p.id = ps.product_id LEFT JOIN kk_shop s ON ps.shop_id = s.id " +
+                "WHERE hide = 1 AND is_recomm != 0 and p.server_id=1 " +
+                "AND s.uuid=? GROUP BY p.id ORDER BY is_recomm DESC  LIMIT 6", s.getStr("uuid"));
+
         s.put("recommGoods", recommGoods);
         String[] sorts = s.getStr("sort").split(",");
         for (int i = 0; i < sorts.length; i++) {
@@ -420,13 +425,20 @@ public class AppControllerV2 extends Controller {
             obj.put("is_norm", record.getInt("is_norm"));
             types.add(obj);
             m.put("type", r);
-            List<Goods> g = new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name,p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name,p.payment,p.create_time,ps.product_number  " +
+
+            List<Goods> g = new Goods().find("select p.id as productId,p.name,p.title,p.price,p.p_type_id,p.p_brand_id,p.p_type_name," +
+                    "p.p_brand_name,p.cover_img,p.p_unit_id,p.p_unit_name,p.cash_pay,p.hide,p.index_show,p.server_id,p.server_name," +
+                    "p.payment,p.create_time,ps.product_number  " +
                     "from kk_product p right join kk_shop_product ps on p.id=ps.product_id " +
-                    "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=? and p.server_id=1  GROUP BY p.id order by ps.sort_id desc, is_recomm desc LIMIT 0,6", sorts[i], s.getStr("uuid"));
+                    "LEFT JOIN kk_shop s on ps.shop_id=s.id where p.p_type_id=? and s.uuid=? and p.server_id=1  " +
+                    "GROUP BY p.id order by ps.sort_id desc, is_recomm desc LIMIT 0,6", sorts[i], s.getStr("uuid"));
+
             if (g.size() != 0) {
                 m.put("products", g);
                 maps.add(m);
             }
+
+
         }
         s.put("types", maps);
         s.put("shopCount", 1);

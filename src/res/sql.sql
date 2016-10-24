@@ -81,9 +81,9 @@ CREATE TABLE if NOT EXISTS kk_join_info(
    PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0; //限购数量
-ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0; //剩余数量
-ALTER TABLE kk_product add code VARCHAR (50) DEFAULT NULL ; //产品条形码
+ALTER  TABLE kk_product_activity ADD limit_num int(5) DEFAULT 0; -- 限购数量
+ALTER  TABLE kk_product_activity ADD surplus_num int(5) DEFAULT 0; -- 剩余数量
+ALTER TABLE kk_product add code VARCHAR (50) DEFAULT NULL ; -- 产品条形码
 /**
 用户积分
 */
@@ -96,7 +96,7 @@ CREATE TABLE if not EXISTS kk_integral(
  PRIMARY KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER TABLE kk_shop_activity add activity_id int not null DEFAULT 0; //活动类型(新手/抢购/团购/预售)
+ALTER TABLE kk_shop_activity add activity_id int not null DEFAULT 0; -- 活动类型(新手/抢购/团购/预售)
 
 DROP TABLE if EXISTS kk_activity;
 CREATE TABLE if not EXISTS kk_activity(
@@ -108,7 +108,7 @@ CREATE TABLE if not EXISTS kk_activity(
 ALTER TABLE kk_product_activity add p_type_id int not null DEFAULT 0,
  add p_type_name VARCHAR(100) CHARACTER set utf8 not null,
  add p_brand_id int not null DEFAULT 0,
- add p_brand_name VARCHAR(100) CHARACTER set utf8 not null
+ add p_brand_name VARCHAR(100) CHARACTER set utf8 not null;
 
 
 /**
@@ -151,7 +151,7 @@ DROP TABLE if EXISTS kk_product_data;
   PRIMARY  KEY (id)
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER TABLE  kk_order_activity add s_uid VARCHAR (17) not null
+ALTER TABLE  kk_order_activity add s_uid VARCHAR (17) not null;
 ALTER TABLE kk_shop add scope VARCHAR(17) DEFAULT null;
 
 ALTER TABLE kk_shop_activity add price_rule VARCHAR (255) DEFAULT null;
@@ -238,16 +238,27 @@ ALTER TABLE `kk_shop` ADD COLUMN `push_phone`  varchar(255) NULL DEFAULT NULL CO
 
 ALTER TABLE kk_shop add COLUMN off INT(4) not null DEFAULT 0;
 
+DROP TABLE `kk_product_sybase`;
 create table if not exists `kk_product_sybase`(
-  `product_tm` int(11) NOT NULL COMMENT '条码',
+  `product_tm` VARCHAR(50) NOT NULL COMMENT '条码',
   `product_name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品名称',
   `product_price` BIGINT NOT NULL DEFAULT '0' COMMENT '产品售价',
   `product_spbm` VARCHAR(20) not NULL COMMENT '商品编码',
   `product_unit` VARCHAR(5) NOT NULL COMMENT '商品单位',
   `product_csbm` VARCHAR(20) not NULL COMMENT '厂商编码',
+  `product_category` int(11) NOT NULL DEFAULT 0 COMMENT '产品分类编码',
   `create_time` TIMESTAMP not null DEFAULT current_timestamp comment '创建时间',
   PRIMARY KEY (`product_tm`),
   key idx_product_tm(`product_tm`),
   key idx_product_name(`product_name`),
+  key idx_product_category(`product_category`),
   key idx_create_time(`create_time`)
 )ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT 'sybase数据库产品表';
+
+CREATE TABLE if NOT EXISTS `kk_category_sybase`(
+  `category_id` int(11) NOT NULL DEFAULT 0 COMMENT '类别编码',
+  `category_name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '类别名称',
+  `create_time` TIMESTAMP not null DEFAULT current_timestamp comment '创建时间',
+  PRIMARY KEY (`category_id`),
+  key idx_category_id(`category_id`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT 'sybase数据库分类表';
